@@ -1,0 +1,10 @@
+services:
+  # Тут буде база даних і сам додаток пізніше
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: inventory_db
+    ports:
+      - "5432:5432"

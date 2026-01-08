@@ -1,10 +1,21 @@
+version: '3.8'
+
 services:
-  # Тут буде база даних і сам додаток пізніше
   db:
     image: postgres:latest
+    container_name: inventory_db_container
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
       POSTGRES_DB: inventory_db
+      # Це важливий фікс: зберігаємо дані в підпапці, щоб уникнути конфліктів кореневої папки
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5432:5432"
+      - "5433:5432"
+    volumes:
+      # Нова назва тому змусить Docker створити все з нуля
+      - inventory_data_new:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  inventory_data_new:

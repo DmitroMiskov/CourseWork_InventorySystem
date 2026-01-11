@@ -4,7 +4,12 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. ПІДКЛЮЧАЄМО КОНТРОЛЕРИ (щоб ваш ProductsController запрацював)
-builder.Services.AddControllers();
+// Додаємо опцію ReferenceHandler.IgnoreCycles, щоб розірвати замкнене коло
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 
 // 2. НАЛАШТУВАННЯ SWAGGER (для візуального інтерфейсу)
 builder.Services.AddEndpointsApiExplorer();

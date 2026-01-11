@@ -1,7 +1,8 @@
+using Inventory.Application.Products.Commands.CreateProduct;
+using Inventory.Application.Products.Queries.GetProducts;
 using Inventory.Domain.Entities;
-using Inventory.Infrastructure.Persistence;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.API.Controllers
 {
@@ -9,41 +10,29 @@ namespace Inventory.API.Controllers
     [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IMediator _mediator;
 
-        public ProductsController(ApplicationDbContext context)
+        public ProductsController(IMediator mediator)
         {
-            _context = context;
+            _mediator = mediator;
         }
 
+        // GET: api/products
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var products = await _context.Products.Include(p => p.Category).ToListAsync();
+            // Відправляємо запит (Query)
+            var products = await _mediator.Send(new GetProductsQuery());
             return Ok(products);
         }
 
+        // POST: api/products
         [HttpPost]
-        public async Task<IActionResult> Create(Product product)
+        public async Task<IActionResult> Create(CreateProductCommand command)
         {
-            if(product.CategoryId == Guid.Empty)
-            {
-                return BadRequest("To create a product, you need a category ID. First, create a category.");
-            }
-
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetAll), new { id = product.Id }, product);
-        }
-
-        [HttpPost("category")]
-        public async Task<IActionResult> CreateCategory(Category category)
-        {
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
-
-            return Ok(category);
+            // Відправляємо команду (Command)
+            var productId = await _mediator.Send(command);
+            return Ok(productId);
         }
     }
 }

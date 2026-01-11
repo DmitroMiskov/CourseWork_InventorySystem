@@ -1,5 +1,6 @@
 using Inventory.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Inventory.Application.Common.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,21 +18,27 @@ builder.Services.AddSwaggerGen();
 
 // 3. ПІДКЛЮЧЕННЯ БАЗИ ДАНИХ (Залишаємо як було)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options => 
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+builder.Services.AddScoped<IApplicationDbContext>(provider =>
+    provider.GetRequiredService<ApplicationDbContext>());
+
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(Inventory.Application.Products.Commands.CreateProduct.CreateProductCommand).Assembly));
 
 var app = builder.Build();
 
 // 4. НАЛАШТУВАННЯ PIPELINE
 // Вмикаємо Swagger для зручності навіть не в Development режимі
 app.UseSwagger();
-app.UseSwaggerUI(); 
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 // Найголовніше: мапимо контролери
-app.MapControllers(); 
+app.MapControllers();
 
 app.Run();

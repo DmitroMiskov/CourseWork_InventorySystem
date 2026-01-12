@@ -1,5 +1,4 @@
-// 👇 1. Додаємо useCallback в імпорт
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   Dialog, DialogTitle, DialogContent, DialogActions, 
@@ -76,20 +75,20 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // 👇 2. ВИПРАВЛЕННЯ: Використовуємо useCallback, щоб "заморозити" функцію
-  const fetchCategories = useCallback(async () => {
-    try {
-      const res = await axios.get('/api/categories');
-      setCategories(res.data);
-    } catch (err) {
-      console.error("Не вдалося завантажити категорії", err);
-    }
-  }, []); // Пустий масив залежностей означає, що функція створюється лише раз
-
-  // 👇 3. Тепер додаємо функцію в залежності ефекту (це безпечно)
+  // 👇 ВИПРАВЛЕННЯ: Визначаємо логіку прямо тут, щоб уникнути проблем із залежностями
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    // Ця функція існує тільки всередині ефекту, тому лінтер щасливий
+    const loadCategories = async () => {
+      try {
+        const res = await axios.get('/api/categories');
+        setCategories(res.data);
+      } catch (err) {
+        console.error("Не вдалося завантажити категорії", err);
+      }
+    };
+    
+    loadCategories();
+  }, []); // [] означає "виконати один раз при відкритті"
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -123,6 +122,7 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
     }
   };
 
+  // Логіка для кнопки "+"
   const handleQuickCreateCategory = async () => {
     const newName = window.prompt("Введіть назву нової категорії:");
     if (!newName) return;
@@ -130,12 +130,9 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
     try {
       await axios.post('/api/categories', { name: newName });
       
-      // Оновлюємо список (викликаємо нашу "заморожену" функцію)
-      await fetchCategories();
-      
-      // Отримуємо актуальний список ще раз, щоб знайти нову категорію
-      // (або можна просто взяти з state, але після fetchCategories треба почекати)
+      // Оновлюємо список категорій вручну після додавання
       const res = await axios.get('/api/categories');
+      setCategories(res.data);
       
       const createdCat = res.data.find((c: Category) => c.name === newName);
       if (createdCat) {

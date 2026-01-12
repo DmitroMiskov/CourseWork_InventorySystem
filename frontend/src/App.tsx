@@ -1,24 +1,23 @@
-import { AppBar, Toolbar, Typography, CssBaseline } from '@mui/material';
-import ProductList from './components/ProductList';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import DashboardPage from './pages/DashboardPage';
+import ProductList from './components/ProductList'; // Це наша сторінка "Склад"
 
 function App() {
   return (
-    <>
-      {/* Скидання стандартних стилів браузера */}
-      <CssBaseline />
-      
-      {/* Верхня панель навігації */}
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            📦 Inventory System
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
-      {/* Наш компонент з таблицею */}
-      <ProductList />
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          {/* Головна сторінка - Дашборд */}
+          <Route index element={<DashboardPage />} />
+          
+          {/* Сторінка складу */}
+          <Route path="inventory" element={<ProductList />} />
+          
+          {/* Тут можна буде додати Route path="history" ... */}
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 

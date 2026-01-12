@@ -1,5 +1,7 @@
 using Inventory.Application.Products.Commands.CreateProduct;
 using Inventory.Application.Products.Queries.GetProducts;
+using Inventory.Application.Categories.Commands.CreateCategory;
+using Inventory.Application.Categories.Queries.GetCategories;
 using Inventory.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +35,33 @@ namespace Inventory.API.Controllers
             // Відправляємо команду (Command)
             var productId = await _mediator.Send(command);
             return Ok(productId);
+        }
+    }
+
+    [ApiController]
+    [Route("api/[controller]")]
+    public class CategoriesController : ControllerBase
+    {
+        private readonly IMediator _mediator;
+
+        public CategoriesController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
+        // 👇 НОВИЙ МЕТОД
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var categories = await _mediator.Send(new GetCategoriesQuery());
+            return Ok(categories);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(CreateCategoryCommand command)
+        {
+            var id = await _mediator.Send(command);
+            return Ok(id);
         }
     }
 }

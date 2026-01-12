@@ -5,16 +5,25 @@ import {
   Button, TextField, Box, Alert, MenuItem 
 } from '@mui/material';
 
-// Тип даних, який приходить з бекенду (згідно з вашим JSON)
+// 👇 1. ПРАВИЛЬНИЙ ТИПІЗОВАНИЙ ІНТЕРФЕЙС
+// Ми описуємо все, що може прийти, щоб не використовувати "any"
 interface Product {
   id: string;
   sku: string;
   name: string;
   description?: string;
   price: number;
-  minStock: number; // В JSON це minStock
-  unit: string;     // В JSON це unit
+  
+  // Основні поля (з GET запиту)
+  minStock: number;
   quantity: number;
+  unit: string;
+  
+  // Додаткові/альтернативні поля (позначаємо як необов'язкові "?")
+  // Це дозволяє безпечно перевіряти їх існування без помилок
+  minStockLevel?: number;
+  unitOfMeasurement?: string;
+
   category?: {
     id: string;
     name: string;
@@ -36,22 +45,32 @@ interface Category {
 
 export default function CreateProductModal({ onClose, onProductSaved, productToEdit }: CreateProductModalProps) {
   
-  // 1. Логіка визначення початкових значень
   const getInitialState = () => {
+    // Варіант 1: Створення нового (пуста форма)
     if (!productToEdit) {
       return {
         sku: '', name: '', description: '', price: '', 
-        minStockLevel: '', unitOfMeasurement: 'шт', 
-        quantity: productToEdit?.quantity !== undefined ? String(productToEdit.quantity) : '', 
-        categoryId: ''
+        minStockLevel: '', quantity: '', unitOfMeasurement: 'шт', categoryId: ''
       };
     }
 
-    // Трюк для коректної обробки 0. 
-    // Якщо minStock === 0, то String(0) дасть "0", який відобразиться у полі.
-    const safeMinStock = productToEdit.minStock !== undefined && productToEdit.minStock !== null 
-      ? String(productToEdit.minStock) 
-      : '';
+    // Варіант 2: Редагування (заповнення)
+    // 👇 ТЕПЕР МИ НЕ ВИКОРИСТОВУЄМО "any". 
+    // TypeScript бачить ці поля в інтерфейсі вище.
+    
+    // Логіка для minStock: шукаємо minStock, якщо немає — minStockLevel, якщо немає — пустий рядок
+    let initialMinStock = '';
+    if (productToEdit.minStock !== undefined) initialMinStock = String(productToEdit.minStock);
+    else if (productToEdit.minStockLevel !== undefined) initialMinStock = String(productToEdit.minStockLevel);
+
+    // Логіка для unit
+    let initialUnit = 'шт';
+    if (productToEdit.unit) initialUnit = productToEdit.unit;
+    else if (productToEdit.unitOfMeasurement) initialUnit = productToEdit.unitOfMeasurement;
+
+    // Логіка для quantity
+    let initialQuantity = '0';
+    if (productToEdit.quantity !== undefined) initialQuantity = String(productToEdit.quantity);
 
     return {
       sku: productToEdit.sku,
@@ -59,11 +78,9 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
       description: productToEdit.description || '',
       price: String(productToEdit.price),
       
-      // Мапінг: беремо з minStock, кладемо в minStockLevel
-      minStockLevel: safeMinStock,
-      
-      // Мапінг: беремо з unit, кладемо в unitOfMeasurement
-      unitOfMeasurement: productToEdit.unit || 'шт',
+      minStockLevel: initialMinStock,
+      quantity: initialQuantity,
+      unitOfMeasurement: initialUnit,
       
       categoryId: productToEdit.category?.id || productToEdit.categoryId || ''
     };
@@ -73,7 +90,6 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Завантаження категорій
   useEffect(() => {
     axios.get('/api/categories')
       .then(res => setCategories(res.data))
@@ -99,10 +115,8 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
       }
 
       if (productToEdit) {
-        // PUT: відправляємо оновлені дані
         await axios.put(`/api/products/${productToEdit.id}`, { ...payload, id: productToEdit.id });
       } else {
-        // POST: створюємо новий
         await axios.post('/api/products', payload);
       }
       
@@ -124,7 +138,15 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
           <TextField label="Артикул" name="sku" value={formData.sku} onChange={handleChange} fullWidth required />
           <TextField label="Назва" name="name" value={formData.name} onChange={handleChange} fullWidth required />
           
-          <TextField select label="Категорія" name="categoryId" value={categories.some(c => c.id === formData.categoryId) ? formData.categoryId : ''} onChange={handleChange} fullWidth  required>
+          <TextField 
+            select 
+            label="Категорія" 
+            name="categoryId" 
+            value={categories.some(c => c.id === formData.categoryId) ? formData.categoryId : ''}
+            onChange={handleChange} 
+            fullWidth 
+            required
+          >
             {categories.map((opt) => (
               <MenuItem key={opt.id} value={opt.id}>{opt.name}</MenuItem>
             ))}
@@ -135,17 +157,21 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
           
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField label="Ціна" name="price" type="number" value={formData.price} onChange={handleChange} fullWidth required />
-            <TextField label="Кількість на складі" name="quantity" type="number" value={formData.quantity} onChange={handleChange} fullWidth required />
-            <TextField label="Мін. залишок" name="minStockLevel" type="number" value={formData.minStockLevel} onChange={handleChange} fullWidth required/>
+            
+            <TextField 
+                label="Кількість на складі" 
+                name="quantity" 
+                type="number" 
+                value={formData.quantity} 
+                onChange={handleChange} 
+                fullWidth required 
+            />
           </Box>
           
-          <TextField 
-              label="Одиниці виміру" 
-              name="unitOfMeasurement" 
-              value={formData.unitOfMeasurement} 
-              onChange={handleChange} 
-              fullWidth 
-           />
+          <Box sx={{ display: 'flex', gap: 2 }}>
+             <TextField label="Мін. ліміт" name="minStockLevel" type="number" value={formData.minStockLevel} onChange={handleChange} fullWidth required />
+             <TextField label="Од. виміру" name="unitOfMeasurement" value={formData.unitOfMeasurement} onChange={handleChange} fullWidth />
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions>

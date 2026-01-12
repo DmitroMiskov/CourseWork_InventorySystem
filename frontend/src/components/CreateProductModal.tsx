@@ -1,29 +1,23 @@
-import { useState, useEffect } from 'react';
+// 👇 1. Додаємо useCallback в імпорт
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { 
   Dialog, DialogTitle, DialogContent, DialogActions, 
   Button, TextField, Box, Alert, MenuItem 
 } from '@mui/material';
 
-// 👇 1. ПРАВИЛЬНИЙ ТИПІЗОВАНИЙ ІНТЕРФЕЙС
-// Ми описуємо все, що може прийти, щоб не використовувати "any"
+// --- ТИПИ ---
 interface Product {
   id: string;
   sku: string;
   name: string;
   description?: string;
   price: number;
-  
-  // Основні поля (з GET запиту)
   minStock: number;
   quantity: number;
   unit: string;
-  
-  // Додаткові/альтернативні поля (позначаємо як необов'язкові "?")
-  // Це дозволяє безпечно перевіряти їх існування без помилок
   minStockLevel?: number;
   unitOfMeasurement?: string;
-
   category?: {
     id: string;
     name: string;
@@ -46,7 +40,6 @@ interface Category {
 export default function CreateProductModal({ onClose, onProductSaved, productToEdit }: CreateProductModalProps) {
   
   const getInitialState = () => {
-    // Варіант 1: Створення нового (пуста форма)
     if (!productToEdit) {
       return {
         sku: '', name: '', description: '', price: '', 
@@ -54,21 +47,14 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
       };
     }
 
-    // Варіант 2: Редагування (заповнення)
-    // 👇 ТЕПЕР МИ НЕ ВИКОРИСТОВУЄМО "any". 
-    // TypeScript бачить ці поля в інтерфейсі вище.
-    
-    // Логіка для minStock: шукаємо minStock, якщо немає — minStockLevel, якщо немає — пустий рядок
     let initialMinStock = '';
     if (productToEdit.minStock !== undefined) initialMinStock = String(productToEdit.minStock);
     else if (productToEdit.minStockLevel !== undefined) initialMinStock = String(productToEdit.minStockLevel);
 
-    // Логіка для unit
     let initialUnit = 'шт';
     if (productToEdit.unit) initialUnit = productToEdit.unit;
     else if (productToEdit.unitOfMeasurement) initialUnit = productToEdit.unitOfMeasurement;
 
-    // Логіка для quantity
     let initialQuantity = '0';
     if (productToEdit.quantity !== undefined) initialQuantity = String(productToEdit.quantity);
 
@@ -90,11 +76,20 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // 👇 2. ВИПРАВЛЕННЯ: Використовуємо useCallback, щоб "заморозити" функцію
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await axios.get('/api/categories');
+      setCategories(res.data);
+    } catch (err) {
+      console.error("Не вдалося завантажити категорії", err);
+    }
+  }, []); // Пустий масив залежностей означає, що функція створюється лише раз
+
+  // 👇 3. Тепер додаємо функцію в залежності ефекту (це безпечно)
   useEffect(() => {
-    axios.get('/api/categories')
-      .then(res => setCategories(res.data))
-      .catch(err => console.error(err));
-  }, []);
+    fetchCategories();
+  }, [fetchCategories]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -128,6 +123,30 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
     }
   };
 
+  const handleQuickCreateCategory = async () => {
+    const newName = window.prompt("Введіть назву нової категорії:");
+    if (!newName) return;
+
+    try {
+      await axios.post('/api/categories', { name: newName });
+      
+      // Оновлюємо список (викликаємо нашу "заморожену" функцію)
+      await fetchCategories();
+      
+      // Отримуємо актуальний список ще раз, щоб знайти нову категорію
+      // (або можна просто взяти з state, але після fetchCategories треба почекати)
+      const res = await axios.get('/api/categories');
+      
+      const createdCat = res.data.find((c: Category) => c.name === newName);
+      if (createdCat) {
+        setFormData(prev => ({ ...prev, categoryId: createdCat.id }));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Не вдалося створити категорію.");
+    }
+  };
+
   return (
     <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{productToEdit ? 'Редагувати товар' : 'Новий товар'}</DialogTitle>
@@ -138,20 +157,31 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
           <TextField label="Артикул" name="sku" value={formData.sku} onChange={handleChange} fullWidth required />
           <TextField label="Назва" name="name" value={formData.name} onChange={handleChange} fullWidth required />
           
-          <TextField 
-            select 
-            label="Категорія" 
-            name="categoryId" 
-            value={categories.some(c => c.id === formData.categoryId) ? formData.categoryId : ''}
-            onChange={handleChange} 
-            fullWidth 
-            required
-          >
-            {categories.map((opt) => (
-              <MenuItem key={opt.id} value={opt.id}>{opt.name}</MenuItem>
-            ))}
-            {categories.length === 0 && <MenuItem disabled value="">Завантаження...</MenuItem>}
-          </TextField>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+            <TextField 
+              select 
+              label="Категорія" 
+              name="categoryId" 
+              value={categories.some(c => c.id === formData.categoryId) ? formData.categoryId : ''}
+              onChange={handleChange} 
+              fullWidth 
+              required
+            >
+              {categories.map((opt) => (
+                <MenuItem key={opt.id} value={opt.id}>{opt.name}</MenuItem>
+              ))}
+              {categories.length === 0 && <MenuItem disabled value="">Завантаження...</MenuItem>}
+            </TextField>
+            
+            <Button 
+              variant="outlined" 
+              sx={{ height: 56, minWidth: 56, fontSize: '1.5rem', p: 0 }}
+              onClick={handleQuickCreateCategory}
+              title="Додати нову категорію"
+            >
+              +
+            </Button>
+          </Box>
 
           <TextField label="Опис" name="description" value={formData.description} onChange={handleChange} fullWidth multiline rows={2} />
           

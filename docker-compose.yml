@@ -1,21 +1,42 @@
-version: '3.8'
-
 services:
+  # 1. База даних
   db:
-    image: postgres:latest
-    container_name: inventory_db_container
+    image: postgres:15-alpine
+    container_name: inventory-db
     environment:
-      POSTGRES_USER: admin
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: inventory_db
-      # Це важливий фікс: зберігаємо дані в підпапці, щоб уникнути конфліктів кореневої папки
-      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
-      # Нова назва тому змусить Docker створити все з нуля
-      - inventory_data_new:/var/lib/postgresql/data
-    restart: always
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Backend API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inventory-api
+    depends_on:
+      - db
+    environment:
+      # Перевизначаємо ConnectionString для Docker (host = db, не localhost)
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=inventory_db;Username=postgres;Password=password"
+      ASPNETCORE_URLS: "http://+:8080"
+    ports:
+      - "8080:8080"
+
+  # 3. Frontend (React + Nginx)
+  client:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: inventory-client
+    depends_on:
+      - api
+    ports:
+      - "80:80" # Сайт буде доступний за адресою http://localhost
 
 volumes:
-  inventory_data_new:
+  postgres_data:

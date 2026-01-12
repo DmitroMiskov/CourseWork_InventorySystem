@@ -2,6 +2,7 @@ using Inventory.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Inventory.Application.Common.Interfaces;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. ПІДКЛЮЧАЄМО КОНТРОЛЕРИ (щоб ваш ProductsController запрацював)
@@ -37,6 +38,22 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Inventory.Application.Products.Commands.CreateProduct.CreateProductCommand).Assembly));
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        // Ця команда застосує всі міграції (створить таблиці), якщо їх ще немає
+        context.Database.Migrate();
+        Console.WriteLine("✅ База даних успішно оновлена (міграції застосовані).");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Помилка при оновленні бази даних: {ex.Message}");
+    }
+}
 
 // 4. НАЛАШТУВАННЯ PIPELINE
 // Вмикаємо Swagger для зручності навіть не в Development режимі

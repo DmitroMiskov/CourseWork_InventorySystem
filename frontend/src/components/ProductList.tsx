@@ -10,6 +10,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import CreateProductModal from './CreateProductModal';
+import DashboardStats from './DashboardStats';
 
 // Інтерфейс товару
 interface Product {
@@ -126,6 +127,8 @@ export default function ProductList() {
         </Button>
       </Box>
       
+      {!loading && <DashboardStats products={products} />}
+
       {/* 👇 ПАНЕЛЬ ФІЛЬТРІВ */}
       <Paper sx={{ p: 2, mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
         

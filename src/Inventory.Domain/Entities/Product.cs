@@ -11,6 +11,7 @@ namespace Inventory.Domain.Entities
         public string Unit { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public int MinStock { get; set; }
+        public int Quantity { get; set; }
         public Guid CategoryId { get; set; }
         public Category? Category { get; set; }
         public DateTime CreatedAt { get; set; }

@@ -24,6 +24,7 @@ namespace Inventory.Application.Products.Commands.CreateProduct
                 Description = request.Description,
                 Price = request.Price,
                 MinStock = request.MinStock,
+                Quantity = request.Quantity,
                 Unit = request.Unit,
                 CategoryId = request.CategoryId,
                 CreatedAt = DateTime.UtcNow

@@ -11,6 +11,7 @@ namespace Inventory.Application.Products.Commands.CreateProduct
         public decimal Price { get; init; }
         public int MinStock { get; init; }
         public string Unit { get; init; } = string.Empty;
+        public int Quantity { get; init; }
         public Guid CategoryId { get; init; }
     }
 }

@@ -19,6 +19,7 @@ interface Product {
   price: number;
   minStock: number;
   unit: string;
+  quantity: number;
   category?: {
     id: string;
     name: string;
@@ -118,45 +119,56 @@ export default function ProductList() {
                 <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Назва</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Категорія</TableCell>
                 <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Ціна</TableCell>
+                <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>К-сть</TableCell>
                 <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Статус</TableCell>
                 <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Дії</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {products.map((product) => (
-                <TableRow key={product.id} hover>
-                  <TableCell>{product.sku || '-'}</TableCell>
-                  <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>
-                    {product.name}
-                  </TableCell>
-                  <TableCell>{product.category?.name || 'Без категорії'}</TableCell>
-                  <TableCell align="right">{product.price} грн</TableCell>
-                  
-                  {/* Статус наявності */}
-                  <TableCell align="center">
-                    <Box sx={{ 
-                      color: 'green', // Тут можна додати умову: product.minStock > 0 ? 'green' : 'red'
-                      fontWeight: 'bold', 
-                      p: 1, 
-                      borderRadius: 1, 
-                      bgcolor: '#e8f5e9',
-                      display: 'inline-block'
-                    }}>
-                      В наявності
-                    </Box>
-                  </TableCell>
+              {products.map((product) => {
+                // 👇 ЛОГІКА: Чи мало товару?
+                const isLowStock = product.quantity <= product.minStock;
 
-                  {/* Кнопки Дій */}
-                  <TableCell align="center">
-                    <IconButton color="primary" onClick={() => handleEdit(product)} title="Редагувати">
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(product.id)} title="Видалити">
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
+                return (
+                  <TableRow key={product.id} hover>
+                    <TableCell>{product.sku || '-'}</TableCell>
+                    <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>
+                      {product.name}
+                    </TableCell>
+                    <TableCell>{product.category?.name || 'Без категорії'}</TableCell>
+                    <TableCell align="right">{product.price} грн</TableCell>
+                    
+                    {/* 👇 НОВА КОЛОНКА КІЛЬКОСТІ */}
+                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                      {product.quantity} {product.unit}
+                    </TableCell>
+
+                    {/* 👇 ОНОВЛЕНИЙ СТАТУС (ЧЕРВОНИЙ/ЗЕЛЕНИЙ) */}
+                    <TableCell align="center">
+                      <Box sx={{ 
+                        color: isLowStock ? '#d32f2f' : '#2e7d32', // Червоний або Зелений текст
+                        bgcolor: isLowStock ? '#ffcdd2' : '#e8f5e9', // Червоний або Зелений фон
+                        fontWeight: 'bold', 
+                        p: 1, 
+                        borderRadius: 1, 
+                        display: 'inline-block',
+                        minWidth: '100px'
+                      }}>
+                        {isLowStock ? 'Закінчується' : 'В наявності'}
+                      </Box>
+                    </TableCell>
+
+                    <TableCell align="center">
+                      <IconButton color="primary" onClick={() => handleEdit(product)}>
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton color="error" onClick={() => handleDelete(product.id)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
               
               {/* Якщо список пустий */}
               {products.length === 0 && (

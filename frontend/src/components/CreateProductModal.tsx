@@ -5,42 +5,58 @@ import {
   Button, TextField, Box, Alert, MenuItem 
 } from '@mui/material';
 
+// Типи (дублюємо для надійності)
+interface Product {
+  id: string;
+  sku: string;
+  name: string;
+  description?: string;
+  price: number;
+  minStock: number;
+  unit: string;
+  category?: {
+    id: string;
+    name: string;
+  };
+  categoryId?: string;
+}
+
 interface CreateProductModalProps {
   open: boolean;
   onClose: () => void;
-  onProductCreated: () => void;
+  onProductSaved: () => void;
+  productToEdit?: Product | null;
 }
 
-// Інтерфейс для категорії
 interface Category {
   id: string;
   name: string;
 }
 
-export default function CreateProductModal({ open, onClose, onProductCreated }: CreateProductModalProps) {
+export default function CreateProductModal({ onClose, onProductSaved, productToEdit }: CreateProductModalProps) {
+  // 👇 ГОЛОВНА ЗМІНА: Ми ініціалізуємо state відразу з props!
+  // Якщо є productToEdit — беремо дані з нього. Якщо ні — пусті рядки.
   const [formData, setFormData] = useState({
-    sku: '',
-    name: '',
-    description: '',
-    price: '',
-    minStockLevel: '',
-    unitOfMeasurement: 'шт',
-    categoryId: '' // Тут буде ID вибраної категорії
+    sku: productToEdit?.sku || '',
+    name: productToEdit?.name || '',
+    description: productToEdit?.description || '',
+    price: productToEdit?.price?.toString() || '',
+    minStockLevel: productToEdit?.minStock?.toString() || '',
+    unitOfMeasurement: productToEdit?.unit || 'шт',
+    categoryId: productToEdit?.category?.id || productToEdit?.categoryId || ''
   });
 
-  const [categories, setCategories] = useState<Category[]>([]); // Список категорій
+  const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Завантажуємо категорії при відкритті вікна
+  // Цей useEffect залишаємо, він безпечний (вантажить категорії)
   useEffect(() => {
-    if (open) {
-      axios.get('/api/categories')
-        .then(response => {
-          setCategories(response.data);
-        })
-        .catch(err => console.error("Не вдалося завантажити категорії", err));
-    }
-  }, [open]);
+    axios.get('/api/categories')
+      .then(res => setCategories(res.data))
+      .catch(err => console.error(err));
+  }, []);
+
+  // ❌ МИ ВИДАЛИЛИ ПРОБЛЕМНИЙ useEffect, який оновлював форму! ❌
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -54,62 +70,41 @@ export default function CreateProductModal({ open, onClose, onProductCreated }: 
         minStockLevel: parseInt(formData.minStockLevel),
       };
 
-      // Перевірка, чи вибрана категорія
       if (!payload.categoryId) {
-        setError("Будь ласка, виберіть категорію.");
+        setError("Виберіть категорію");
         return;
       }
 
-      await axios.post('/api/products', payload);
+      if (productToEdit) {
+        await axios.put(`/api/products/${productToEdit.id}`, { ...payload, id: productToEdit.id });
+      } else {
+        await axios.post('/api/products', payload);
+      }
       
-      onProductCreated();
-      handleClose();
+      onProductSaved();
+      onClose();
     } catch (err) {
       console.error(err);
-      setError('Не вдалося створити товар. Перевірте дані.');
+      setError('Помилка збереження. Перевірте дані.');
     }
   };
 
-  const handleClose = () => {
-    onClose();
-    // Очищаємо форму, але залишаємо unitOfMeasurement за замовчуванням
-    setFormData({ 
-      sku: '', name: '', description: '', price: '', 
-      minStockLevel: '', unitOfMeasurement: 'шт', categoryId: '' 
-    });
-    setError(null);
-  };
-
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Новий товар</DialogTitle>
+    // Додаємо open={true}, бо ми будемо керувати відкриттям ззовні
+    <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>{productToEdit ? 'Редагувати товар' : 'Новий товар'}</DialogTitle>
       <DialogContent>
         <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
           {error && <Alert severity="error">{error}</Alert>}
           
-          <TextField label="Артикул (SKU)" name="sku" value={formData.sku} onChange={handleChange} fullWidth required />
+          <TextField label="Артикул" name="sku" value={formData.sku} onChange={handleChange} fullWidth required />
           <TextField label="Назва" name="name" value={formData.name} onChange={handleChange} fullWidth required />
           
-          {/* 👇 ВИПАДАЮЧИЙ СПИСОК КАТЕГОРІЙ */}
-          <TextField
-            select
-            label="Категорія"
-            name="categoryId"
-            value={formData.categoryId}
-            onChange={handleChange}
-            fullWidth
-            required
-          >
-            {categories.map((option) => (
-              <MenuItem key={option.id} value={option.id}>
-                {option.name}
-              </MenuItem>
+          <TextField select label="Категорія" name="categoryId" value={formData.categoryId} onChange={handleChange} fullWidth required>
+            {categories.map((opt) => (
+              <MenuItem key={opt.id} value={opt.id}>{opt.name}</MenuItem>
             ))}
-            {categories.length === 0 && (
-              <MenuItem disabled value="">
-                <em>Немає категорій (створіть їх у Swagger)</em>
-              </MenuItem>
-            )}
+            {categories.length === 0 && <MenuItem disabled value="">Немає категорій</MenuItem>}
           </TextField>
 
           <TextField label="Опис" name="description" value={formData.description} onChange={handleChange} fullWidth multiline rows={2} />
@@ -118,13 +113,13 @@ export default function CreateProductModal({ open, onClose, onProductCreated }: 
             <TextField label="Ціна" name="price" type="number" value={formData.price} onChange={handleChange} fullWidth required />
             <TextField label="Мін. залишок" name="minStockLevel" type="number" value={formData.minStockLevel} onChange={handleChange} fullWidth required />
           </Box>
-
+          
           <TextField label="Одиниці виміру" name="unitOfMeasurement" value={formData.unitOfMeasurement} onChange={handleChange} fullWidth />
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="inherit">Скасувати</Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary">Створити</Button>
+        <Button onClick={onClose} color="inherit">Скасувати</Button>
+        <Button onClick={handleSubmit} variant="contained" color="primary">Зберегти</Button>
       </DialogActions>
     </Dialog>
   );

@@ -1,5 +1,6 @@
 using Inventory.Application.Products.Commands.CreateProduct;
 using Inventory.Application.Products.Commands.DeleteProduct;
+using Inventory.Application.Products.Commands.UpdateProduct;
 using Inventory.Application.Products.Queries.GetProducts;
 using Inventory.Application.Categories.Commands.CreateCategory;
 using Inventory.Application.Categories.Queries.GetCategories;
@@ -44,6 +45,19 @@ namespace Inventory.API.Controllers
         {
             await _mediator.Send(new DeleteProductCommand(id));
             return NoContent(); // 204 No Content — стандартна відповідь на успішне видалення
+        }
+
+        // PUT: api/products/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, UpdateProductCommand command)
+        {
+            if (id != command.Id)
+            {
+                return BadRequest();
+            }
+
+            await _mediator.Send(command);
+            return NoContent();
         }
     }
 

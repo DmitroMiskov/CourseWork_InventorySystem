@@ -2,58 +2,67 @@ import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { 
   Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow, Paper, Typography, Box, CircularProgress, Button, IconButton
+  TableHead, TableRow, Paper, Typography, Box, CircularProgress, 
+  Button, IconButton 
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import CreateProductModal from './CreateProductModal';
 
+// Інтерфейс товару (відповідає даним з Backend)
 interface Product {
   id: string;
   sku: string;
   name: string;
+  description?: string;
   price: number;
   minStock: number;
   unit: string;
   category?: {
+    id: string;
     name: string;
   };
+  categoryId?: string;
 }
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
-  // 1. Починаємо з true, щоб при першому запуску спінер вже крутився
   const [loading, setLoading] = useState(true);
+  
+  // Стан для модального вікна
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Стан для редагування (якщо null — значить створюємо новий)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // 2. Ця функція тепер просто тягне дані і вимикає спінер в кінці
+  // Функція завантаження товарів
   const fetchProducts = useCallback(() => {
-    // Ми ПРИБРАЛИ звідси setLoading(true), щоб не було конфлікту з useEffect
-    
+    // Не вмикаємо setLoading(true) тут, щоб уникнути циклічного рендерингу в useEffect
     axios.get('/api/products')
       .then(response => {
         setProducts(response.data);
       })
       .catch(error => {
-        console.error("Помилка:", error);
+        console.error("Помилка завантаження:", error);
       })
       .finally(() => {
-        // Вимикаємо спінер незалежно від результату
         setLoading(false);
       });
   }, []);
 
-  // 3. useEffect викликається один раз при старті
+  // Завантажуємо дані при першому запуску
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  // 4. Спеціальна функція для оновлення після створення товару
+  // Функція для примусового оновлення таблиці (після створення/редагування/видалення)
   const handleRefresh = () => {
-    setLoading(true); // Тут ми вручну вмикаємо спінер
-    fetchProducts();  // І запускаємо завантаження
+    setLoading(true);
+    fetchProducts();
   };
 
+  // Обробник видалення
   const handleDelete = async (id: string) => {
     if (!window.confirm('Ви впевнені, що хочете видалити цей товар?')) {
       return;
@@ -61,16 +70,28 @@ export default function ProductList() {
 
     try {
       await axios.delete(`/api/products/${id}`);
-      // Оновлюємо таблицю після видалення
-      handleRefresh(); 
+      handleRefresh(); // Оновлюємо список
     } catch (error) {
       console.error("Не вдалося видалити:", error);
       alert("Помилка при видаленні");
     }
   };
 
+  // Відкриття вікна для СТВОРЕННЯ
+  const handleCreate = () => {
+    setEditingProduct(null); // Очищаємо, бо це новий запис
+    setIsModalOpen(true);
+  };
+
+  // Відкриття вікна для РЕДАГУВАННЯ
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product); // Передаємо дані товару у форму
+    setIsModalOpen(true);
+  };
+
   return (
     <Box sx={{ p: 3, width: '100%' }}>
+      {/* Заголовок і кнопка Додати */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">
           Складські запаси
@@ -78,13 +99,14 @@ export default function ProductList() {
         <Button 
           variant="contained" 
           startIcon={<AddIcon />} 
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleCreate}
           sx={{ height: 40 }}
         >
           Додати товар
         </Button>
       </Box>
       
+      {/* Спінер завантаження або Таблиця */}
       {loading ? (
          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>
       ) : (
@@ -104,37 +126,56 @@ export default function ProductList() {
               {products.map((product) => (
                 <TableRow key={product.id} hover>
                   <TableCell>{product.sku || '-'}</TableCell>
-                  <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>{product.name}</TableCell>
+                  <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>
+                    {product.name}
+                  </TableCell>
                   <TableCell>{product.category?.name || 'Без категорії'}</TableCell>
                   <TableCell align="right">{product.price} грн</TableCell>
+                  
+                  {/* Статус наявності */}
                   <TableCell align="center">
                     <Box sx={{ 
-                      color: product.minStock === 0 ? 'green' : 'green', 
-                      fontWeight: 'bold', p: 1, borderRadius: 1, bgcolor: '#e8f5e9'
+                      color: 'green', // Тут можна додати умову: product.minStock > 0 ? 'green' : 'red'
+                      fontWeight: 'bold', 
+                      p: 1, 
+                      borderRadius: 1, 
+                      bgcolor: '#e8f5e9',
+                      display: 'inline-block'
                     }}>
                       В наявності
                     </Box>
                   </TableCell>
+
+                  {/* Кнопки Дій */}
                   <TableCell align="center">
-                    <IconButton color="error" onClick={() => handleDelete(product.id)}>
+                    <IconButton color="primary" onClick={() => handleEdit(product)} title="Редагувати">
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="error" onClick={() => handleDelete(product.id)} title="Видалити">
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
+              
+              {/* Якщо список пустий */}
               {products.length === 0 && (
-                <TableRow><TableCell colSpan={5} align="center">Даних немає</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} align="center">Даних немає</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
         </TableContainer>
       )}
 
-      <CreateProductModal 
-        open={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onProductCreated={handleRefresh} // <-- Використовуємо нову функцію refresh
-      />
+      {/* Модальне вікно (спільне для створення та редагування) */}
+      {isModalOpen && (
+        <CreateProductModal 
+          open={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          onProductSaved={handleRefresh} 
+          productToEdit={editingProduct} 
+        />
+      )}
     </Box>
   );
 }

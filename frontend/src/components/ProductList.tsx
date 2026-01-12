@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { 
   Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow, Paper, Typography, Box, CircularProgress, Button 
+  TableHead, TableRow, Paper, Typography, Box, CircularProgress, Button, IconButton
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import CreateProductModal from './CreateProductModal';
 
@@ -53,6 +54,21 @@ export default function ProductList() {
     fetchProducts();  // І запускаємо завантаження
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Ви впевнені, що хочете видалити цей товар?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/api/products/${id}`);
+      // Оновлюємо таблицю після видалення
+      handleRefresh(); 
+    } catch (error) {
+      console.error("Не вдалося видалити:", error);
+      alert("Помилка при видаленні");
+    }
+  };
+
   return (
     <Box sx={{ p: 3, width: '100%' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -81,6 +97,7 @@ export default function ProductList() {
                 <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Категорія</TableCell>
                 <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Ціна</TableCell>
                 <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Статус</TableCell>
+                <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Дії</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -97,6 +114,11 @@ export default function ProductList() {
                     }}>
                       В наявності
                     </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <IconButton color="error" onClick={() => handleDelete(product.id)}>
+                      <DeleteIcon />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}

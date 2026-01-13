@@ -1,17 +1,23 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { 
   Table, TableBody, TableCell, TableContainer, 
   TableHead, TableRow, Paper, Typography, Box, CircularProgress, 
-  Button, IconButton, TextField, MenuItem, FormControlLabel, Switch, InputAdornment 
+  Button, IconButton, TextField, MenuItem, FormControlLabel, Switch, InputAdornment, Tooltip 
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import CreateProductModal from './CreateProductModal';
+import DownloadIcon from '@mui/icons-material/Download';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import HistoryIcon from '@mui/icons-material/History';
 
-// Інтерфейс товару
+import * as XLSX from 'xlsx';
+import CreateProductModal from './CreateProductModal';
+import StockHistory from './StockHistory'; 
+
+// ... (Інтерфейси Product та Category залишаємо ті самі) ...
 interface Product {
   id: string;
   sku: string;
@@ -21,14 +27,10 @@ interface Product {
   minStock: number;
   quantity: number;
   unit: string;
-  category?: {
-    id: string;
-    name: string;
-  };
+  category?: { id: string; name: string };
   categoryId?: string;
 }
 
-// Інтерфейс категорії для фільтру
 interface Category {
   id: string;
   name: string;
@@ -36,54 +38,40 @@ interface Category {
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]); // Для фільтру
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Стан для модального вікна
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // 👇 СТАНИ ДЛЯ ФІЛЬТРІВ
+  // 👈 СТАН ДЛЯ ІСТОРІЇ
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyProductId, setHistoryProductId] = useState<string | null>(null);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
 
-  // Завантаження товарів
   const fetchProducts = useCallback(() => {
     axios.get('/api/products')
-      .then(response => {
-        setProducts(response.data);
-      })
+      .then(response => setProducts(response.data))
       .catch(error => console.error("Помилка завантаження товарів:", error))
       .finally(() => setLoading(false));
   }, []);
 
-  // Завантаження категорій (для випадаючого списку фільтру)
   useEffect(() => {
-    axios.get('/api/categories')
-      .then(res => setCategories(res.data))
-      .catch(err => console.error("Помилка завантаження категорій:", err));
-  }, []);
-
-  useEffect(() => {
+    axios.get('/api/categories').then(res => setCategories(res.data));
     fetchProducts();
   }, [fetchProducts]);
 
-  const handleRefresh = () => {
-    setLoading(true);
-    fetchProducts();
-  };
-
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Ви впевнені, що хочете видалити цей товар?')) {
-      return;
-    }
+    if (!window.confirm('Видалити цей товар?')) return;
     try {
       await axios.delete(`/api/products/${id}`);
-      handleRefresh();
+      fetchProducts();
     } catch (error) {
-      console.error("Не вдалося видалити:", error);
-      alert("Помилка при видаленні");
+      console.error(error);
+      alert("Помилка видалення");
     }
   };
 
@@ -97,154 +85,162 @@ export default function ProductList() {
     setIsModalOpen(true);
   };
 
-  // 👇 МАГІЯ ФІЛЬТРАЦІЇ
-  // useMemo дозволяє перераховувати список тільки коли змінюються фільтри або товари
+  // 👈 ФУНКЦІЯ ВІДКРИТТЯ ІСТОРІЇ
+  const handleOpenHistory = (id: string) => {
+    setHistoryProductId(id);
+    setHistoryOpen(true);
+  };
+
+  const handleExportExcel = () => {
+    const dataToExport = products.map(p => ({
+      'Артикул': p.sku,
+      'Назва': p.name,
+      'Категорія': p.category?.name || 'Без категорії',
+      'Ціна': p.price,
+      'Кількість': p.quantity,
+      'Од.': p.unit,
+      'Сума': p.price * p.quantity
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Залишки");
+    XLSX.writeFile(workbook, `Sklad_${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0) return;
+    const formData = new FormData();
+    formData.append("file", event.target.files[0]);
+
+    setLoading(true);
+    try {
+      await axios.post('/api/products/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      alert("Імпорт успішний!");
+      fetchProducts();
+    } catch (error: any) {
+      console.error(error);
+      alert(error.response?.data || "Помилка імпорту");
+    } finally {
+      setLoading(false);
+      event.target.value = '';
+    }
+  };
+
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
-      // 1. Пошук по назві або SKU (регістронезалежний)
-      const matchesSearch = 
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        product.sku.toLowerCase().includes(searchTerm.toLowerCase());
-
-      // 2. Фільтр по категорії
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            product.sku.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = filterCategory ? product.category?.id === filterCategory || product.categoryId === filterCategory : true;
-
-      // 3. Фільтр "Закінчується"
       const matchesStock = showLowStockOnly ? product.quantity <= product.minStock : true;
-
       return matchesSearch && matchesCategory && matchesStock;
     });
   }, [products, searchTerm, filterCategory, showLowStockOnly]);
 
   return (
     <Box sx={{ p: 3, width: '100%' }}>
-      {/* Заголовок */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Складські запаси</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate} sx={{ height: 40 }}>
-          Додати товар
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button variant="outlined" color="success" startIcon={<DownloadIcon />} onClick={handleExportExcel}>
+            Excel
+          </Button>
+          <Button variant="outlined" component="label" startIcon={<UploadFileIcon />}>
+            Імпорт CSV
+            <input type="file" hidden accept=".csv" onChange={handleFileUpload} />
+          </Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
+            Додати товар
+          </Button>
+        </Box>
       </Box>
 
-      {/* 👇 ПАНЕЛЬ ФІЛЬТРІВ */}
+      {/* Фільтри */}
       <Paper sx={{ p: 2, mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-        
-        {/* Пошук */}
         <TextField 
-          label="Пошук (Назва або SKU)" 
-          variant="outlined" 
-          size="small"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ flexGrow: 1, minWidth: '200px' }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="action" />
-              </InputAdornment>
-            ),
-          }}
+          label="Пошук" variant="outlined" size="small"
+          value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ flexGrow: 1 }}
+          InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }}
         />
-
-        {/* Категорія */}
         <TextField 
-          select 
-          label="Категорія" 
-          size="small"
-          value={filterCategory} 
-          onChange={(e) => setFilterCategory(e.target.value)}
-          sx={{ minWidth: '200px' }}
+          select label="Категорія" size="small" sx={{ minWidth: 200 }}
+          value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
         >
-          <MenuItem value=""><em>Всі категорії</em></MenuItem>
-          {categories.map((cat) => (
-            <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
-          ))}
+          <MenuItem value="">Всі категорії</MenuItem>
+          {categories.map((cat) => <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>)}
         </TextField>
-
-        {/* Тільки проблемні */}
         <FormControlLabel 
-          control={
-            <Switch 
-              checked={showLowStockOnly} 
-              onChange={(e) => setShowLowStockOnly(e.target.checked)} 
-              color="error" 
-            />
-          } 
-          label="Тільки проблемні (мало на складі)" 
+          control={<Switch checked={showLowStockOnly} onChange={(e) => setShowLowStockOnly(e.target.checked)} color="error" />} 
+          label="Тільки проблемні" 
         />
       </Paper>
 
-      {/* Таблиця */}
-      {loading ? (
-         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>
-      ) : (
-        <TableContainer component={Paper} sx={{ width: '100%', mb: 4 }}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+      {loading ? <Box sx={{ display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box> : (
+        <TableContainer component={Paper}>
+          <Table>
             <TableHead sx={{ backgroundColor: '#1976d2' }}>
               <TableRow>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Артикул</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Назва</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Категорія</TableCell>
-                <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Ціна</TableCell>
-                <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>К-сть</TableCell>
-                <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Статус</TableCell>
-                <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Дії</TableCell>
+                <TableCell sx={{ color: 'white' }}>Артикул</TableCell>
+                <TableCell sx={{ color: 'white' }}>Назва</TableCell>
+                <TableCell sx={{ color: 'white' }}>Категорія</TableCell>
+                <TableCell align="right" sx={{ color: 'white' }}>Ціна</TableCell>
+                <TableCell align="right" sx={{ color: 'white' }}>Кількість</TableCell>
+                <TableCell align="center" sx={{ color: 'white' }}>Дії</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {/* 👇 ТУТ ТЕПЕР filteredProducts ЗАМІСТЬ products */}
-              {filteredProducts.map((product) => {
-                const isLowStock = product.quantity <= product.minStock;
-                return (
-                  <TableRow key={product.id} hover>
-                    <TableCell>{product.sku || '-'}</TableCell>
-                    <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>{product.name}</TableCell>
-                    <TableCell>{product.category?.name || 'Без категорії'}</TableCell>
-                    <TableCell align="right">{product.price} грн</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>{product.quantity} {product.unit}</TableCell>
-                    
-                    <TableCell align="center">
-                      <Box sx={{ 
-                        color: isLowStock ? '#d32f2f' : '#2e7d32',
-                        bgcolor: isLowStock ? '#ffcdd2' : '#e8f5e9',
-                        fontWeight: 'bold', 
-                        p: 1, 
-                        borderRadius: 1, 
-                        display: 'inline-block',
-                        minWidth: '110px'
-                      }}>
-                        {isLowStock ? 'Закінчується' : 'В наявності'}
-                      </Box>
-                    </TableCell>
+              {filteredProducts.map((product) => (
+                <TableRow key={product.id} hover>
+                  <TableCell>{product.sku}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{product.name}</TableCell>
+                  <TableCell>{product.category?.name || '-'}</TableCell>
+                  <TableCell align="right">{product.price} грн</TableCell>
+                  <TableCell align="right" sx={{ 
+                    color: product.quantity <= product.minStock ? 'error.main' : 'success.main',
+                    fontWeight: 'bold' 
+                  }}>
+                    {product.quantity} {product.unit}
+                  </TableCell>
+                  <TableCell align="center">
+                    {/* 👈 КНОПКА ІСТОРІЇ */}
+                    <Tooltip title="Історія руху">
+                      <IconButton color="info" onClick={() => handleOpenHistory(product.id)}>
+                        <HistoryIcon />
+                      </IconButton>
+                    </Tooltip>
 
-                    <TableCell align="center">
-                      <IconButton color="primary" onClick={() => handleEdit(product)}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton color="error" onClick={() => handleDelete(product.id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              
-              {filteredProducts.length === 0 && (
-                <TableRow><TableCell colSpan={7} align="center">Товарів не знайдено</TableCell></TableRow>
-              )}
+                    <IconButton color="primary" onClick={() => handleEdit(product)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="error" onClick={() => handleDelete(product.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
       )}
 
+      {/* Модальне вікно редагування */}
       {isModalOpen && (
         <CreateProductModal 
           open={isModalOpen} 
           onClose={() => setIsModalOpen(false)} 
-          onProductSaved={handleRefresh} 
+          onProductSaved={fetchProducts} 
           productToEdit={editingProduct} 
         />
       )}
+
+      {/* 👈 МОДАЛЬНЕ ВІКНО ІСТОРІЇ */}
+      <StockHistory 
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        productId={historyProductId}
+      />
     </Box>
   );
 }

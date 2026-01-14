@@ -12,10 +12,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import HistoryIcon from '@mui/icons-material/History';
-
 import * as XLSX from 'xlsx';
 import CreateProductModal from './CreateProductModal';
-import StockHistory from './StockHistory'; 
+import StockHistory from './StockHistory';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import StockOperationModal from './StockOperationModal';
+import { AxiosError } from 'axios';
 
 // ... (Інтерфейси Product та Category залишаємо ті самі) ...
 interface Product {
@@ -51,6 +53,9 @@ export default function ProductList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+
+  const [opModalOpen, setOpModalOpen] = useState(false);
+  const [opProduct, setOpProduct] = useState<Product | null>(null);
 
   const fetchProducts = useCallback(() => {
     axios.get('/api/products')
@@ -119,9 +124,11 @@ export default function ProductList() {
       });
       alert("Імпорт успішний!");
       fetchProducts();
-    } catch (error: any) {
+    } catch (error: unknown) { // 👈 1. Змінюємо any на unknown
       console.error(error);
-      alert(error.response?.data || "Помилка імпорту");
+      const axiosError = error as AxiosError; // 👈 2. Приводимо до типу AxiosError
+      // Тепер TypeScript знає, що у axiosError є поле response
+      alert(axiosError.response?.data as string || "Помилка імпорту");
     } finally {
       setLoading(false);
       event.target.value = '';
@@ -137,6 +144,11 @@ export default function ProductList() {
       return matchesSearch && matchesCategory && matchesStock;
     });
   }, [products, searchTerm, filterCategory, showLowStockOnly]);
+
+  const handleOpenOperation = (product: Product) => {
+    setOpProduct(product);
+    setOpModalOpen(true);
+};
 
   return (
     <Box sx={{ p: 3, width: '100%' }}>
@@ -203,7 +215,15 @@ export default function ProductList() {
                   }}>
                     {product.quantity} {product.unit}
                   </TableCell>
+
+                  
                   <TableCell align="center">
+                    <Tooltip title="Прихід / Розхід">
+                      <IconButton color="warning" onClick={() => handleOpenOperation(product)}>
+                        <SyncAltIcon />
+                      </IconButton>
+                    </Tooltip>
+
                     {/* 👈 КНОПКА ІСТОРІЇ */}
                     <Tooltip title="Історія руху">
                       <IconButton color="info" onClick={() => handleOpenHistory(product.id)}>
@@ -240,6 +260,17 @@ export default function ProductList() {
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
         productId={historyProductId}
+      />
+
+      <StockOperationModal
+        key={opModalOpen ? "open" : "closed"}
+        open={opModalOpen}
+        onClose={() => setOpModalOpen(false)}
+        product={opProduct}
+        onSuccess={() => {
+          fetchProducts(); // Оновити цифри в таблиці
+          setOpModalOpen(false);
+        }}
       />
     </Box>
   );

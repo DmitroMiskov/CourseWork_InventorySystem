@@ -1,10 +1,12 @@
 using Inventory.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Inventory.Application.Common.Interfaces;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Inventory.Infrastructure.Persistence
 {
-    public partial class ApplicationDbContext : DbContext, IApplicationDbContext
+    public partial class ApplicationDbContext : IdentityDbContext<IdentityUser>, IApplicationDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

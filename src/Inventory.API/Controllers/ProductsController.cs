@@ -13,6 +13,7 @@ using Inventory.API.Dtos;
 using Microsoft.EntityFrameworkCore; 
 using Inventory.Infrastructure.Persistence;
 using CsvHelper.Configuration;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inventory.API.Controllers
 {
@@ -40,6 +41,7 @@ namespace Inventory.API.Controllers
 
         // POST: api/products
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create(CreateProductCommand command)
         {
             // Відправляємо команду (Command)
@@ -49,6 +51,7 @@ namespace Inventory.API.Controllers
 
         // DELETE: api/products/{id}
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _mediator.Send(new DeleteProductCommand(id));
@@ -57,6 +60,7 @@ namespace Inventory.API.Controllers
 
         // PUT: api/products/{id}
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> Update(Guid id, UpdateProductCommand command)
         {
             if (id != command.Id)
@@ -69,6 +73,7 @@ namespace Inventory.API.Controllers
         }
 
         [HttpPost("import")]
+        [Authorize]
         public async Task<IActionResult> Import(IFormFile file)
         {
             if (file == null || file.Length == 0)

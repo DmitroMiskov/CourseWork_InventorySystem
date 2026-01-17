@@ -27,7 +27,8 @@ namespace Inventory.Application.Products.Commands.CreateProduct
                 Quantity = request.Quantity,
                 Unit = request.Unit,
                 CategoryId = request.CategoryId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                ImageUrl = request.ImageUrl
             };
             _context.Products.Add(entity);
             await _context.SaveChangesAsync(cancellationToken);

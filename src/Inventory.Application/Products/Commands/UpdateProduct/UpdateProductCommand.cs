@@ -16,5 +16,6 @@ namespace Inventory.Application.Products.Commands.UpdateProduct
         public int Quantity { get; init; }
         
         public Guid CategoryId { get; init; }
+        public string? ImageUrl { get; init; }
     }
 }

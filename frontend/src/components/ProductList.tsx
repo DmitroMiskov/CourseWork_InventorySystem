@@ -1,115 +1,308 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState, useMemo } from 'react';
+import axios, { AxiosError } from 'axios';
 import { 
-  Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow, Paper, Typography, Box, CircularProgress, 
-  Button, IconButton, TextField, MenuItem, FormControlLabel, Switch, InputAdornment, Tooltip 
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
+  Button, TextField, IconButton, Dialog, DialogActions, DialogContent, 
+  DialogTitle, MenuItem, Select, InputLabel, FormControl, Typography, 
+  Toolbar, Tooltip, TablePagination, InputAdornment, Chip, LinearProgress, 
+  Alert, Snackbar, Box 
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
+
+// Іконки
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
-import DownloadIcon from '@mui/icons-material/Download';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import HistoryIcon from '@mui/icons-material/History';
-import * as XLSX from 'xlsx';
-import CreateProductModal from './CreateProductModal';
-import StockHistory from './StockHistory';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
+
+// Бібліотеки для Excel
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
+// Наші компоненти
+import StockHistory from './StockHistory';
 import StockOperationModal from './StockOperationModal';
-import { AxiosError } from 'axios';
 
-// ... (Інтерфейси Product та Category залишаємо ті самі) ...
-interface Product {
-  id: string;
-  sku: string;
-  name: string;
-  description?: string;
-  price: number;
-  minStock: number;
-  quantity: number;
-  unit: string;
-  category?: { id: string; name: string };
-  categoryId?: string;
-}
-
+// --- ТИПИ ---
 interface Category {
   id: string;
   name: string;
 }
 
-export default function ProductList() {
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
+  unit: string;
+  categoryId: string;
+  category?: Category;
+  minStock: number;
+  imageUrl?: string;
+}
+
+interface ProductListProps {
+  isAdmin?: boolean;
+}
+
+interface ServerError {
+  title?: string;
+  status?: number;
+  errors?: Record<string, string[]>;
+}
+
+// --- НАДІЙНИЙ КОМПОНЕНТ ДЛЯ КАРТИНОК ---
+// Цей компонент сам вирішує: показати картинку чи іконку заглушки
+// --- НАДІЙНИЙ КОМПОНЕНТ ДЛЯ КАРТИНОК (Виправлено дублювання шляху) ---
+const ProductImage = ({ imageName, alt, size = 50, radius = 4 }: { imageName?: string; alt?: string; size?: number; radius?: number }) => {
+  const [hasError, setHasError] = useState(false);
+  const SERVER_URL = 'http://localhost:8080';
+
+  useEffect(() => {
+    setHasError(false);
+  }, [imageName]);
+
+  if (!imageName || hasError) {
+    return (
+      <Box sx={{ 
+        width: size, height: size, 
+        bgcolor: '#f5f5f5', borderRadius: radius, border: '1px dashed #ccc',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#999', flexShrink: 0 
+      }}>
+        <PhotoCamera sx={{ fontSize: size * 0.5 }} />
+      </Box>
+    );
+  }
+
+  // 👇 ЛОГІКА ВИПРАВЛЕННЯ ШЛЯХУ
+  let src = '';
+  
+  if (imageName.startsWith('http')) {
+      src = imageName;
+  } else {
+      // 1. Прибираємо слеш на початку, якщо є ( "/img.jpg" -> "img.jpg" )
+      let cleanName = imageName.startsWith('/') ? imageName.slice(1) : imageName;
+
+      // 2. Прибираємо папку "images/", якщо вона вже є в назві ( "images/img.jpg" -> "img.jpg" )
+      if (cleanName.startsWith('images/')) {
+          cleanName = cleanName.replace('images/', '');
+      }
+
+      // 3. Формуємо чисте посилання
+      src = `${SERVER_URL}/images/${cleanName}`;
+  }
+
+  return (
+    <Box 
+        component="img"
+        src={src}
+        alt={alt || 'Product'}
+        sx={{ 
+            width: size, height: size, objectFit: 'cover', 
+            borderRadius: radius, border: '1px solid #ddd', flexShrink: 0 
+        }}
+        onError={(e) => {
+            console.warn(`⚠️ Картинка не знайдена: ${src}`);
+            setHasError(true); 
+        }}
+    />
+  );
+};
+
+export default function ProductList({ isAdmin = false }: ProductListProps) {
+  // --- СТАНИ (STATE) ---
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // 👈 СТАН ДЛЯ ІСТОРІЇ
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [historyProductId, setHistoryProductId] = useState<string | null>(null);
-
+  // Пагінація та Пошук
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
-  const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+
+  // Сортування
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Product; direction: 'asc' | 'desc' } | null>(null);
+
+  // Модальні вікна
+  const [open, setOpen] = useState(false);
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+  
+  const [formData, setFormData] = useState({
+    name: '', description: '', price: '', quantity: '', unit: '', categoryId: '', minStock: '', imageUrl: ''
+  });
+
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [historyProduct, setHistoryProduct] = useState<Product | null>(null);
 
   const [opModalOpen, setOpModalOpen] = useState(false);
   const [opProduct, setOpProduct] = useState<Product | null>(null);
 
-  const fetchProducts = useCallback(() => {
-    axios.get('/api/products')
-      .then(response => setProducts(response.data))
-      .catch(error => console.error("Помилка завантаження товарів:", error))
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    axios.get('/api/categories').then(res => setCategories(res.data));
-    fetchProducts();
-  }, [fetchProducts]);
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Видалити цей товар?')) return;
+  // --- ЗАВАНТАЖЕННЯ ДАНИХ ---
+  const fetchProducts = async () => {
+    setLoading(true);
+    setError('');
     try {
-      await axios.delete(`/api/products/${id}`);
-      fetchProducts();
-    } catch (error) {
-      console.error(error);
-      alert("Помилка видалення");
+      const res = await axios.get<Product[]>('/api/products');
+      setProducts(res.data);
+      const catRes = await axios.get<Category[]>('/api/categories');
+      setCategories(catRes.data);
+    } catch (err) {
+      console.error(err);
+      setError("Не вдалося завантажити дані. Перевірте з'єднання.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCreate = () => {
-    setEditingProduct(null);
-    setIsModalOpen(true);
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // --- ЛОГІКА СОРТУВАННЯ ---
+  const handleSort = (key: keyof Product) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
   };
 
-  const handleEdit = (product: Product) => {
-    setEditingProduct(product);
-    setIsModalOpen(true);
+  const sortedProducts = useMemo(() => {
+    const sortableItems = [...products]; 
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        if (aValue === undefined || bValue === undefined) return 0;
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [products, sortConfig]);
+
+  // --- ФІЛЬТРАЦІЯ ---
+  const filteredProducts = sortedProducts.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategory ? product.categoryId === filterCategory : true;
+    return matchesSearch && matchesCategory;
+  });
+
+  // --- CRUD ОПЕРАЦІЇ ---
+  const handleOpen = (product?: Product) => {
+    if (product) {
+      setCurrentProduct(product);
+      setFormData({
+        name: product.name,
+        description: product.description,
+        price: product.price.toString(),
+        quantity: product.quantity.toString(),
+        unit: product.unit,
+        categoryId: product.categoryId,
+        minStock: product.minStock?.toString() || '0',
+        imageUrl: product.imageUrl || ''
+      });
+    } else {
+      setCurrentProduct(null);
+      setFormData({ name: '', description: '', price: '', quantity: '', unit: '', categoryId: '', minStock: '', imageUrl: '' });
+    }
+    setOpen(true);
   };
 
-  // 👈 ФУНКЦІЯ ВІДКРИТТЯ ІСТОРІЇ
-  const handleOpenHistory = (id: string) => {
-    setHistoryProductId(id);
-    setHistoryOpen(true);
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      setLoading(true);
+      // Завантажуємо на сервер
+      const res = await axios.post<{ url: string }>('/api/products/upload-image', uploadData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      // Зберігаємо отримане URL (це буде просто ім'я файлу, наприклад "abc.jpg")
+      setFormData(prev => ({ ...prev, imageUrl: res.data.url }));
+    } catch (err) {
+      console.error(err);
+      setError("Не вдалося завантажити фото");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleExportExcel = () => {
-    const dataToExport = products.map(p => ({
-      'Артикул': p.sku,
-      'Назва': p.name,
-      'Категорія': p.category?.name || 'Без категорії',
-      'Ціна': p.price,
-      'Кількість': p.quantity,
-      'Од.': p.unit,
-      'Сума': p.price * p.quantity
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Ви впевнені, що хочете видалити цей товар?')) {
+      try {
+        await axios.delete(`/api/products/${id}`);
+        fetchProducts();
+      } catch (error) {
+        console.error(error);
+        setError("Помилка при видаленні товару");
+      }
+    }
+  };
+
+  const handleSave = async () => {
+    if (!formData.name || !formData.categoryId || !formData.price) {
+      setError("Заповніть назву, категорію та ціну!");
+      return;
+    }
+
+    const payload = {
+      id: currentProduct?.id,
+      name: formData.name,
+      description: formData.description,
+      unit: formData.unit,
+      categoryId: formData.categoryId,
+      imageUrl: formData.imageUrl,
+      price: parseFloat(formData.price) || 0,
+      quantity: parseInt(formData.quantity) || 0,
+      minStock: parseInt(formData.minStock) || 0
+    };
+
+    try {
+      if (currentProduct) {
+        await axios.put(`/api/products/${currentProduct.id}`, payload);
+      } else {
+        await axios.post('/api/products', payload);
+      }
+      setOpen(false);
+      fetchProducts();
+    } catch (error) {
+      console.error(error);
+      const axiosError = error as AxiosError<ServerError>;
+      const msg = axiosError.response?.data?.title || "Помилка збереження";
+      setError(`Сервер: ${JSON.stringify(msg)}`);
+    }
+  };
+
+  // --- ЕКСПОРТ/ІМПОРТ ---
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(products.map(p => ({
+      Назва: p.name,
+      Категорія: p.category?.name || '',
+      Ціна: p.price,
+      Кількість: p.quantity,
+      Одиниця: p.unit,
+      Опис: p.description
+    })));
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Залишки");
-    XLSX.writeFile(workbook, `Sklad_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Товари");
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    saveAs(data, 'inventory_export.xlsx');
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,154 +317,238 @@ export default function ProductList() {
       });
       alert("Імпорт успішний!");
       fetchProducts();
-    } catch (error: unknown) { // 👈 1. Змінюємо any на unknown
+    } catch (error) {
       console.error(error);
-      const axiosError = error as AxiosError; // 👈 2. Приводимо до типу AxiosError
-      // Тепер TypeScript знає, що у axiosError є поле response
-      alert(axiosError.response?.data as string || "Помилка імпорту");
+      const axiosError = error as AxiosError<string>;
+      const msg = axiosError.response?.data || "Помилка імпорту";
+      setError(typeof msg === 'string' ? msg : "Сталася помилка імпорту");
     } finally {
       setLoading(false);
       event.target.value = '';
     }
   };
 
-  const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            product.sku.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = filterCategory ? product.category?.id === filterCategory || product.categoryId === filterCategory : true;
-      const matchesStock = showLowStockOnly ? product.quantity <= product.minStock : true;
-      return matchesSearch && matchesCategory && matchesStock;
-    });
-  }, [products, searchTerm, filterCategory, showLowStockOnly]);
-
+  // --- ОБРОБНИКИ ДЛЯ ДОДАТКОВИХ МОДАЛОК ---
   const handleOpenOperation = (product: Product) => {
     setOpProduct(product);
     setOpModalOpen(true);
-};
+  };
+
+  const handleOpenHistory = (product: Product) => {
+    setHistoryProduct(product);
+    setHistoryModalOpen(true);
+  };
 
   return (
-    <Box sx={{ p: 3, width: '100%' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">Складські запаси</Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="outlined" color="success" startIcon={<DownloadIcon />} onClick={handleExportExcel}>
-            Excel
-          </Button>
-          <Button variant="outlined" component="label" startIcon={<UploadFileIcon />}>
-            Імпорт CSV
+    <Paper sx={{ p: 2, borderRadius: 2 }}>
+      <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
+        <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
+      </Snackbar>
+
+      {/* ВЕРХНЯ ПАНЕЛЬ */}
+      <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 }, flexWrap: 'wrap', gap: 2 }}>
+        <Typography variant="h6" component="div" sx={{ flex: '1 1 100%' }}>
+          Список товарів
+        </Typography>
+
+        <TextField
+          label="Пошук"
+          variant="outlined"
+          size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
+          }}
+        />
+
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Категорія</InputLabel>
+          <Select
+            value={filterCategory}
+            label="Категорія"
+            onChange={(e) => setFilterCategory(e.target.value)}
+          >
+            <MenuItem value=""><em>Всі</em></MenuItem>
+            {categories.map(cat => (
+              <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Tooltip title="Експорт в Excel">
+          <IconButton onClick={exportToExcel} color="success"><SaveAltIcon /></IconButton>
+        </Tooltip>
+
+        <Tooltip title="Імпорт з CSV">
+          <IconButton component="label" color="primary">
+            <UploadFileIcon />
             <input type="file" hidden accept=".csv" onChange={handleFileUpload} />
-          </Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
-            Додати товар
-          </Button>
-        </Box>
-      </Box>
+          </IconButton>
+        </Tooltip>
 
-      {/* Фільтри */}
-      <Paper sx={{ p: 2, mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-        <TextField 
-          label="Пошук" variant="outlined" size="small"
-          value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ flexGrow: 1 }}
-          InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }}
-        />
-        <TextField 
-          select label="Категорія" size="small" sx={{ minWidth: 200 }}
-          value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
-        >
-          <MenuItem value="">Всі категорії</MenuItem>
-          {categories.map((cat) => <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>)}
-        </TextField>
-        <FormControlLabel 
-          control={<Switch checked={showLowStockOnly} onChange={(e) => setShowLowStockOnly(e.target.checked)} color="error" />} 
-          label="Тільки проблемні" 
-        />
-      </Paper>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
+          Додати товар
+        </Button>
+      </Toolbar>
 
-      {loading ? <Box sx={{ display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box> : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead sx={{ backgroundColor: '#1976d2' }}>
-              <TableRow>
-                <TableCell sx={{ color: 'white' }}>Артикул</TableCell>
-                <TableCell sx={{ color: 'white' }}>Назва</TableCell>
-                <TableCell sx={{ color: 'white' }}>Категорія</TableCell>
-                <TableCell align="right" sx={{ color: 'white' }}>Ціна</TableCell>
-                <TableCell align="right" sx={{ color: 'white' }}>Кількість</TableCell>
-                <TableCell align="center" sx={{ color: 'white' }}>Дії</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.id} hover>
-                  <TableCell>{product.sku}</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>{product.name}</TableCell>
-                  <TableCell>{product.category?.name || '-'}</TableCell>
-                  <TableCell align="right">{product.price} грн</TableCell>
-                  <TableCell align="right" sx={{ 
-                    color: product.quantity <= product.minStock ? 'error.main' : 'success.main',
-                    fontWeight: 'bold' 
-                  }}>
-                    {product.quantity} {product.unit}
+      {loading && <LinearProgress sx={{ mb: 2 }} />}
+
+      {/* ТАБЛИЦЯ */}
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+              <TableCell onClick={() => handleSort('name')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Назва ↕</TableCell>
+              <TableCell onClick={() => handleSort('categoryId')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Категорія ↕</TableCell>
+              <TableCell onClick={() => handleSort('price')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Ціна ↕</TableCell>
+              <TableCell onClick={() => handleSort('quantity')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Кількість ↕</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Дії</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredProducts
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((product) => (
+                <TableRow 
+                    key={product.id}
+                    sx={{ backgroundColor: product.quantity <= product.minStock ? '#fff0f0' : 'inherit' }}
+                >
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        {/* ✅ ВИКОРИСТОВУЄМО НАДІЙНИЙ КОМПОНЕНТ */}
+                        <ProductImage 
+                            imageName={product.imageUrl} 
+                            alt={product.name} 
+                            size={40} 
+                        />
+                        <Typography variant="body2">{product.name}</Typography>
+                    </Box>
                   </TableCell>
-
-                  
-                  <TableCell align="center">
+                  <TableCell>
+                    <Chip label={product.category?.name || 'Без категорії'} size="small" />
+                  </TableCell>
+                  <TableCell>{product.price} грн</TableCell>
+                  <TableCell>
+                      {product.quantity} {product.unit}
+                      {product.quantity <= product.minStock && (
+                        <Typography variant="caption" color="error" display="block">(Закінчується!)</Typography>
+                      )}
+                  </TableCell>
+                  <TableCell>
                     <Tooltip title="Прихід / Розхід">
-                      <IconButton color="warning" onClick={() => handleOpenOperation(product)}>
-                        <SyncAltIcon />
-                      </IconButton>
+                        <IconButton color="warning" onClick={() => handleOpenOperation(product)}>
+                            <SyncAltIcon />
+                        </IconButton>
                     </Tooltip>
-
-                    {/* 👈 КНОПКА ІСТОРІЇ */}
                     <Tooltip title="Історія руху">
-                      <IconButton color="info" onClick={() => handleOpenHistory(product.id)}>
-                        <HistoryIcon />
+                        <IconButton color="info" onClick={() => handleOpenHistory(product)}>
+                            <HistoryIcon />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Редагувати">
+                      <IconButton color="primary" onClick={() => handleOpen(product)}>
+                        <EditIcon />
                       </IconButton>
                     </Tooltip>
-
-                    <IconButton color="primary" onClick={() => handleEdit(product)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(product.id)}>
-                      <DeleteIcon />
-                    </IconButton>
+                    {isAdmin && (
+                        <Tooltip title="Видалити">
+                        <IconButton color="error" onClick={() => handleDelete(product.id)}>
+                            <DeleteIcon />
+                        </IconButton>
+                        </Tooltip>
+                    )}
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      {/* Модальне вікно редагування */}
-      {isModalOpen && (
-        <CreateProductModal 
-          open={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-          onProductSaved={fetchProducts} 
-          productToEdit={editingProduct} 
-        />
-      )}
-
-      {/* 👈 МОДАЛЬНЕ ВІКНО ІСТОРІЇ */}
-      <StockHistory 
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        productId={historyProductId}
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={filteredProducts.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={(_, newPage) => setPage(newPage)}
+        onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+        }}
       />
 
+      {/* МОДАЛКА РЕДАГУВАННЯ */}
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{currentProduct ? 'Редагувати товар' : 'Новий товар'}</DialogTitle>
+        <DialogContent dividers>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+             {/* ✅ ПРЕВ'Ю КАРТИНКИ */}
+             <ProductImage 
+                imageName={formData.imageUrl} 
+                alt="Preview" 
+                size={100} 
+                radius={8} // Передаємо число, а не рядок
+             />
+             
+             <Box>
+                <Button variant="outlined" component="label" startIcon={<PhotoCamera />}>
+                    Завантажити фото
+                    <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+                </Button>
+                <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
+                    Формати: JPG, PNG, WEBP
+                </Typography>
+             </Box>
+          </Box>
+
+          <TextField margin="dense" label="Назва" fullWidth value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+          <TextField margin="dense" label="Опис" fullWidth multiline rows={2} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+          
+          <Box sx={{ display: 'flex', gap: 2 }}>
+             <TextField margin="dense" label="Ціна" type="number" fullWidth value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
+             <TextField margin="dense" label="Кількість" type="number" fullWidth value={formData.quantity} onChange={(e) => setFormData({ ...formData, quantity: e.target.value })} />
+          </Box>
+          
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <TextField margin="dense" label="Одиниця виміру" fullWidth value={formData.unit} onChange={(e) => setFormData({ ...formData, unit: e.target.value })} />
+            <TextField margin="dense" label="Мін. залишок" type="number" fullWidth value={formData.minStock} onChange={(e) => setFormData({ ...formData, minStock: e.target.value })} />
+          </Box>
+
+          <FormControl fullWidth margin="dense" sx={{ mt: 2 }}>
+            <InputLabel>Категорія</InputLabel>
+            <Select value={formData.categoryId} label="Категорія" onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}>
+              {categories.map(cat => <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>)}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Скасувати</Button>
+          <Button onClick={handleSave} variant="contained">Зберегти</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* МОДАЛКА ІСТОРІЇ */}
+      <StockHistory 
+        key={historyModalOpen ? "hist-open" : "hist-closed"}
+        open={historyModalOpen}
+        onClose={() => setHistoryModalOpen(false)}
+        productId={historyProduct?.id || null} 
+        productName={historyProduct?.name}
+      />
+
+      {/* МОДАЛКА ОПЕРАЦІЙ */}
       <StockOperationModal
-        key={opModalOpen ? "open" : "closed"}
+        key={opModalOpen ? "open" : "closed"} 
         open={opModalOpen}
         onClose={() => setOpModalOpen(false)}
         product={opProduct}
         onSuccess={() => {
-          fetchProducts(); // Оновити цифри в таблиці
+          fetchProducts();
           setOpModalOpen(false);
         }}
       />
-    </Box>
+    </Paper>
   );
 }

@@ -1,69 +1,95 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { 
-  Dialog, DialogTitle, DialogContent, 
-  Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow, Paper, Typography, Chip 
+  Dialog, DialogTitle, DialogContent, Table, TableBody, 
+  TableCell, TableContainer, TableHead, TableRow, 
+  CircularProgress, Chip, Typography, Button, DialogActions 
 } from '@mui/material';
 
 interface StockMovement {
   id: string;
-  movementDate: string;
-  type: number; // 1 = In, 2 = Out
+  type: number;
   quantity: number;
-  note?: string;
+  movementDate: string;
+  note: string;
 }
 
 interface StockHistoryProps {
-  productId: string | null;
   open: boolean;
   onClose: () => void;
+  productId: string | null;
+  productName?: string;
 }
 
-export default function StockHistory({ productId, open, onClose }: StockHistoryProps) {
+export default function StockHistory({ open, onClose, productId, productName }: StockHistoryProps) {
   const [movements, setMovements] = useState<StockMovement[]>([]);
+  
+  // 👇 1. ВИПРАВЛЕННЯ: Починаємо з loading = true
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (productId && open) {
+    // Якщо ID є, робимо запит
+    if (productId) {
+      // ❌ setLoading(true) ТУТ БІЛЬШЕ НЕМАЄ (це прибирає помилку ESLint)
+      
       axios.get(`/api/stockmovements/product/${productId}`)
-        .then(res => setMovements(res.data))
-        .catch(err => console.error(err));
+        .then(res => {
+          setMovements(res.data);
+        })
+        .catch(err => {
+          console.error(err);
+        })
+        .finally(() => {
+          setLoading(false); // 👇 Тільки вимикаємо в кінці
+        });
     }
-  }, [productId, open]);
+  }, [productId]); // Залежимо тільки від ID
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Історія руху товару</DialogTitle>
-      <DialogContent>
-        {movements.length === 0 ? (
-          <Typography sx={{ p: 2, textAlign: 'center' }}>Історія порожня</Typography>
+      <DialogTitle>
+        Історія руху: <b>{productName || 'Товар'}</b>
+      </DialogTitle>
+      
+      <DialogContent dividers>
+        {loading ? (
+          <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2 }} />
+        ) : movements.length === 0 ? (
+          <Typography align="center" color="text.secondary">
+            Історія порожня
+          </Typography>
         ) : (
-          <TableContainer component={Paper} variant="outlined">
+          <TableContainer>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Дата</TableCell>
-                  <TableCell>Тип</TableCell>
-                  <TableCell align="right">Кількість</TableCell>
-                  <TableCell>Примітка</TableCell>
+                  <TableCell><b>Дата</b></TableCell>
+                  <TableCell><b>Тип</b></TableCell>
+                  <TableCell align="right"><b>Кількість</b></TableCell>
+                  <TableCell><b>Примітка</b></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {movements.map((m) => (
-                  <TableRow key={m.id}>
-                    <TableCell>{new Date(m.movementDate).toLocaleString()}</TableCell>
+                {movements.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell>
+                      {new Date(row.movementDate).toLocaleString('uk-UA')}
+                    </TableCell>
                     <TableCell>
                       <Chip 
-                        label={m.type === 1 ? "Надходження" : "Відвантаження"} 
-                        color={m.type === 1 ? "success" : "warning"} 
+                        label={row.type === 1 ? "Прихід" : "Розхід"} 
+                        color={row.type === 1 ? "success" : "error"} 
                         size="small" 
                         variant="outlined"
                       />
                     </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                      {m.type === 1 ? '+' : '-'}{m.quantity}
+                    <TableCell align="right" sx={{ 
+                        color: row.type === 1 ? 'green' : 'red', 
+                        fontWeight: 'bold' 
+                    }}>
+                      {row.type === 1 ? '+' : '-'}{row.quantity}
                     </TableCell>
-                    <TableCell>{m.note || '-'}</TableCell>
+                    <TableCell>{row.note || '-'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -71,6 +97,9 @@ export default function StockHistory({ productId, open, onClose }: StockHistoryP
           </TableContainer>
         )}
       </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Закрити</Button>
+      </DialogActions>
     </Dialog>
   );
 }

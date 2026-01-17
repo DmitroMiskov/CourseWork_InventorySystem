@@ -12,31 +12,47 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # 2. Backend API
+  # 2. Backend API (Режим розробки)
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: mcr.microsoft.com/dotnet/sdk:9.0
     container_name: inventory-api
+    # 👇 Вказуємо, де лежить .csproj, щоб команда запуску була простою
+    working_dir: /app/src/Inventory.API
     depends_on:
       - db
     environment:
-      # Перевизначаємо ConnectionString для Docker (host = db, не localhost)
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=inventory_db;Username=postgres;Password=password"
-      ASPNETCORE_URLS: "http://+:8080"
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=inventory_db;Username=postgres;Password=password
     ports:
       - "8080:8080"
+    volumes:
+      # Монтуємо весь код, щоб працював Hot Reload
+      - ./src:/app/src
+      # Монтуємо картинки, щоб вони зберігалися на комп'ютері
+      - ./src/Inventory.API/wwwroot/images:/app/src/Inventory.API/wwwroot/images
+    # 👇 Команда запуску (автоматично перезавантажує сервер при змінах)
+    command: dotnet watch run --no-launch-profile
 
-  # 3. Frontend (React + Nginx)
+  # 3. Frontend (React + Vite Hot Reload)
   client:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: node:20-alpine
     container_name: inventory-client
+    working_dir: /app
     depends_on:
       - api
+    environment:
+      # Важливо для Windows, щоб бачити зміни файлів
+      - CHOKIDAR_USEPOLLING=true
     ports:
-      - "80:80" # Сайт буде доступний за адресою http://localhost
+      - "80:5173" # Зовні порт 80 -> Всередині порт 5173 (стандарт Vite)
+    volumes:
+      # 👇 ВИПРАВЛЕНО: Ваша папка називається 'frontend', а не 'client'
+      - ./frontend:/app
+      # Це щоб node_modules не затиралися при монтуванні
+      - /app/node_modules
+    # Встановлюємо пакети і запускаємо сервер розробки
+    command: sh -c "npm install && npm run dev -- --host"
 
 volumes:
   postgres_data:

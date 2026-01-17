@@ -38,6 +38,8 @@ namespace Inventory.Application.Products.Commands.UpdateProduct
             
             entity.CategoryId = request.CategoryId;
 
+            entity.ImageUrl = request.ImageUrl;
+
             await _context.SaveChangesAsync(cancellationToken);
         }
     }

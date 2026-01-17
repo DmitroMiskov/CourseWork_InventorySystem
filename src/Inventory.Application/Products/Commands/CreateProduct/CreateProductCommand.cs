@@ -13,5 +13,6 @@ namespace Inventory.Application.Products.Commands.CreateProduct
         public string Unit { get; init; } = string.Empty;
         public int Quantity { get; init; }
         public Guid CategoryId { get; init; }
+        public string? ImageUrl { get; init; }
     }
 }

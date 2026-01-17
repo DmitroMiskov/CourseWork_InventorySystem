@@ -1,16 +1,25 @@
-import { useState } from 'react'; // ❌ Прибрали useEffect
-import axios, { AxiosError } from 'axios'; // 👈 1. Додали тип помилки
+import { useState, useEffect } from 'react';
 import { 
-  Dialog, DialogTitle, DialogContent, DialogActions, 
-  Button, TextField, ToggleButton, ToggleButtonGroup, 
-  Typography, Box, Alert 
+  Dialog, DialogTitle, DialogContent, DialogActions, Button, 
+  TextField, MenuItem, Select, FormControl, InputLabel, Box, Typography 
 } from '@mui/material';
+import axios from 'axios';
 
+// Типи
 interface Product {
   id: string;
   name: string;
   quantity: number;
-  unit: string;
+}
+
+interface Supplier {
+  id: string;
+  name: string;
+}
+
+interface Customer {
+  id: string;
+  name: string;
 }
 
 interface StockOperationModalProps {
@@ -21,69 +30,121 @@ interface StockOperationModalProps {
 }
 
 export default function StockOperationModal({ open, onClose, product, onSuccess }: StockOperationModalProps) {
-  // Початкові значення (State)
-  const [type, setType] = useState<number>(1);
-  const [quantity, setQuantity] = useState<string>('1');
-  const [note, setNote] = useState('');
-  const [error, setError] = useState('');
+  const [type, setType] = useState<'Incoming' | 'Outgoing'>('Incoming');
+  const [quantity, setQuantity] = useState('');
+  const [reason, setReason] = useState('');
+  
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedSupplier, setSelectedSupplier] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState('');
 
-  // ❌ 2. МИ ВИДАЛИЛИ useEffect ЗВІДСИ.
-  // Замість нього ми змусимо компонент "перезавантажитись" через ProductList (див. нижче)
+  // 1. Ефект ТІЛЬКИ для завантаження даних (API)
+  useEffect(() => {
+    if (open) {
+      // Завантажуємо списки тільки коли вікно відкривається
+      axios.get<Supplier[]>('/api/suppliers')
+        .then(res => setSuppliers(res.data))
+        .catch(err => console.error(err));
+
+      axios.get<Customer[]>('/api/customers')
+        .then(res => setCustomers(res.data))
+        .catch(err => console.error(err));
+    }
+  }, [open]);
+
+  // 2. Функція очищення полів
+  const resetForm = () => {
+    setQuantity('');
+    setReason('');
+    setSelectedSupplier('');
+    setSelectedCustomer('');
+    setType('Incoming');
+  };
+
+  // 3. Обгортка для закриття (чистимо форму ПЕРЕД закриттям)
+  const handleClose = () => {
+    resetForm(); // Спочатку чистимо
+    onClose();   // Потім закриваємо
+  };
 
   const handleSubmit = async () => {
-    const qty = parseInt(quantity);
-    if (!qty || qty <= 0) {
-      setError("Кількість має бути більше 0");
-      return;
-    }
+    if (!product || !quantity) return;
 
-    if (type === 2 && product && qty > product.quantity) {
-      setError(`Не можна списати більше, ніж є на складі (${product.quantity} ${product.unit})`);
-      return;
-    }
+    const payload = {
+      productId: product.id,
+      type,
+      quantity: parseInt(quantity),
+      reason,
+      supplierId: type === 'Incoming' && selectedSupplier ? selectedSupplier : null,
+      customerId: type === 'Outgoing' && selectedCustomer ? selectedCustomer : null
+    };
 
     try {
-      await axios.post('/api/stockmovements', {
-        productId: product?.id,
-        type: type,
-        quantity: qty,
-        note: note
-      });
-      onSuccess();
-      onClose();
-    } catch (err: unknown) { // 👈 3. Виправили any на unknown
-      console.error(err);
-      // Безпечне перетворення типу помилки
-      const axiosError = err as AxiosError;
-      setError(axiosError.response?.data as string || "Помилка при збереженні");
+      await axios.post('/api/stockmovements', payload);
+      resetForm(); // Чистимо форму після успіху
+      onSuccess(); // Закриваємо через батьківський метод
+    } catch (error) {
+      alert('Помилка виконання операції');
+      console.error(error);
     }
   };
 
   if (!product) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Операція: {product.name}</DialogTitle>
-      {/* ... решта коду без змін (DialogContent, DialogActions) ... */}
+    // 👇 Використовуємо handleClose замість onClose
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
+      <DialogTitle>
+        Операція: {product.name} 
+        <Typography variant="caption" display="block" color="text.secondary">
+          Поточний залишок: {product.quantity}
+        </Typography>
+      </DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-          <ToggleButtonGroup
-            value={type}
-            exclusive
-            onChange={(_, newVal) => newVal && setType(newVal)}
-            fullWidth
-          >
-            <ToggleButton value={1} color="success" sx={{ fontWeight: 'bold' }}>
-              📥 Прихід
-            </ToggleButton>
-            <ToggleButton value={2} color="error" sx={{ fontWeight: 'bold' }}>
-              📤 Розхід (Списання)
-            </ToggleButton>
-          </ToggleButtonGroup>
+          
+          <FormControl fullWidth>
+            <InputLabel>Тип операції</InputLabel>
+            <Select
+              value={type}
+              label="Тип операції"
+              onChange={(e) => setType(e.target.value as 'Incoming' | 'Outgoing')}
+            >
+              <MenuItem value="Incoming">➕ Прихід (Закупівля)</MenuItem>
+              <MenuItem value="Outgoing">➖ Розхід (Продаж)</MenuItem>
+            </Select>
+          </FormControl>
 
-          <Typography variant="body2" color="text.secondary" align="center">
-            Поточний залишок: <b>{product.quantity} {product.unit}</b>
-          </Typography>
+          {type === 'Incoming' ? (
+             <FormControl fullWidth>
+               <InputLabel>Постачальник</InputLabel>
+               <Select
+                 value={selectedSupplier}
+                 label="Постачальник"
+                 onChange={(e) => setSelectedSupplier(e.target.value)}
+               >
+                 <MenuItem value=""><em>Не вказано</em></MenuItem>
+                 {suppliers.map(s => (
+                   <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
+                 ))}
+               </Select>
+             </FormControl>
+          ) : (
+             <FormControl fullWidth>
+               <InputLabel>Клієнт</InputLabel>
+               <Select
+                 value={selectedCustomer}
+                 label="Клієнт"
+                 onChange={(e) => setSelectedCustomer(e.target.value)}
+               >
+                 <MenuItem value=""><em>Не вказано</em></MenuItem>
+                 {customers.map(c => (
+                   <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                 ))}
+               </Select>
+             </FormControl>
+          )}
 
           <TextField
             label="Кількість"
@@ -91,26 +152,23 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
             fullWidth
-            autoFocus
           />
 
           <TextField
-            label="Примітка (необов'язково)"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            fullWidth
+            label="Коментар"
             multiline
             rows={2}
-            placeholder="Напр: Нова поставка або Брак"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            fullWidth
           />
-
-          {error && <Alert severity="error">{error}</Alert>}
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Скасувати</Button>
-        <Button variant="contained" onClick={handleSubmit} color={type === 1 ? "success" : "error"}>
-          Зберегти
+        {/* 👇 Тут теж використовуємо handleClose */}
+        <Button onClick={handleClose}>Скасувати</Button>
+        <Button onClick={handleSubmit} variant="contained" color={type === 'Incoming' ? 'success' : 'error'}>
+          {type === 'Incoming' ? 'Зарахувати' : 'Списати'}
         </Button>
       </DialogActions>
     </Dialog>

@@ -72,72 +72,125 @@ namespace Inventory.API.Controllers
             return NoContent();
         }
 
-        [HttpPost("import")]
-        [Authorize]
+       [HttpPost("import")]
         public async Task<IActionResult> Import(IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return BadRequest("Файл не вибрано");
+                return BadRequest("Файл порожній");
 
             try
             {
-                using var stream = new StreamReader(file.OpenReadStream());
-                
-                // 👇 НАЛАШТУВАННЯ ДЛЯ "ВСЕЇДНОСТІ"
-                var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+                using (var stream = new StreamReader(file.OpenReadStream()))
                 {
-                    DetectDelimiter = true, // Автоматично знайде ; або ,
-                    PrepareHeaderForMatch = args => args.Header.ToLower(), // Ігнорує регістр (Name = name)
-                    MissingFieldFound = null, // Не ламається, якщо чогось не вистачає
-                    HeaderValidated = null,
-                    BadDataFound = null, // Пропускає побиті рядки
-                };
+                    var productsToAdd = new List<Product>();
+                    
+                    // Читаємо перший рядок (заголовки), щоб пропустити його
+                    // або перевірити формат, але для простоти просто пропускаємо
+                    var headerLine = await stream.ReadLineAsync();
 
-                using var csv = new CsvReader(stream, config);
-
-                var records = csv.GetRecords<ProductCsvDto>().ToList();
-                
-                var newProducts = new List<Product>();
-
-                foreach (var record in records)
-                {
-                    // 1. Знаходимо або створюємо категорію
-                    var category = await _context.Categories
-                        .FirstOrDefaultAsync(c => c.Name.ToLower() == record.CategoryName.ToLower());
-
-                    if (category == null)
+                    while (!stream.EndOfStream)
                     {
-                        category = new Category { Id = Guid.NewGuid(), Name = record.CategoryName };
-                        _context.Categories.Add(category);
+                        var line = await stream.ReadLineAsync();
+                        if (string.IsNullOrWhiteSpace(line)) continue;
+
+                        // Розбиваємо по комі (або крапці з комою)
+                        var values = line.Split(new[] { ',', ';' });
+
+                        // Очікуваний формат CSV:
+                        // Назва, Опис, Ціна, Кількість, Одиниця, Категорія(Назва), МінЗалишок
+                        if (values.Length < 5) continue; // Пропускаємо биті рядки
+
+                        var name = values[0].Trim();
+                        // Якщо такого товару вже є назва - пропускаємо (або можна оновлювати)
+                        if (_context.Products.Any(p => p.Name == name)) continue;
+
+                        var description = values.Length > 1 ? values[1].Trim() : "";
+                        
+                        // Парсинг чисел (з заміною крапки на кому і навпаки для надійності)
+                        decimal.TryParse(values[2].Replace('.', ','), out decimal price);
+                        int.TryParse(values[3], out int quantity);
+                        
+                        var unit = values.Length > 4 ? values[4].Trim() : "шт";
+                        
+                        // --- РОЗУМНА РОБОТА З КАТЕГОРІЄЮ ---
+                        var categoryName = values.Length > 5 ? values[5].Trim() : "Інше";
+                        var category = _context.Categories.FirstOrDefault(c => c.Name == categoryName);
+                        
+                        // Якщо категорії немає - створюємо її "на льоту"
+                        if (category == null)
+                        {
+                            category = new Category { Name = categoryName };
+                            _context.Categories.Add(category);
+                            await _context.SaveChangesAsync(); // Зберігаємо, щоб отримати ID
+                        }
+                        
+                        int.TryParse(values.Length > 6 ? values[6] : "0", out int minStock);
+
+                        var product = new Product
+                        {
+                            Name = name,
+                            Description = description,
+                            Price = price,
+                            Quantity = quantity,
+                            Unit = unit,
+                            CategoryId = category.Id, // Використовуємо ID знайденої/створеної категорії
+                            MinStock = minStock,
+                            ImageUrl = "" // Порожнє фото
+                        };
+
+                        productsToAdd.Add(product);
+                    }
+
+                    if (productsToAdd.Count > 0)
+                    {
+                        await _context.Products.AddRangeAsync(productsToAdd);
                         await _context.SaveChangesAsync();
                     }
 
-                    // 2. Створюємо товар
-                    var product = new Product
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = record.Name,
-                        SKU = record.Sku,
-                        Price = record.Price,
-                        Quantity = record.Quantity,
-                        Unit = record.Unit,
-                        MinStock = record.MinStock,
-                        CategoryId = category.Id,
-                        CreatedAt = DateTime.UtcNow
-                    };
-
-                    newProducts.Add(product);
+                    return Ok($"Успішно імпортовано {productsToAdd.Count} товарів.");
                 }
-
-                _context.Products.AddRange(newProducts);
-                await _context.SaveChangesAsync();
-
-                return Ok(new { message = $"Успішно імпортовано {newProducts.Count} товарів" });
             }
             catch (Exception ex)
             {
-                // Цей текст ви побачите в Response, якщо щось піде не так
-                return BadRequest($"Помилка: {ex.Message}. \nСпробуйте замінити ';' на ',' у файлі або перевірте заголовки.");
+                // 👇 ОСЬ ЦЕ ПОКАЖЕ ВАМ СПРАВЖНЮ ПРИЧИНУ ПОМИЛКИ
+                var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return BadRequest($"Помилка імпорту: {innerMessage}");
+            }
+        }
+
+        [HttpPost("upload-image")]
+        [Authorize]
+        public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            try 
+            {
+                if (file == null || file.Length == 0)
+                    return BadRequest("Файл не обрано");
+
+                var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+                
+                // Створюємо папку, якщо немає
+                if (!Directory.Exists(folderPath))
+                    Directory.CreateDirectory(folderPath);
+
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                var filePath = Path.Combine(folderPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                var url = $"/images/{fileName}";
+                
+                // 👇 Явно повертаємо статус 200 OK з JSON
+                return StatusCode(200, new { url });
+            }
+            catch (Exception ex)
+            {
+                // Це покаже помилку в консолі Docker
+                Console.WriteLine($"UPLOAD ERROR: {ex.Message}");
+                return StatusCode(500, "Internal server error uploading file");
             }
         }
     }

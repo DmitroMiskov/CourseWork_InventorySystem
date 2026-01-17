@@ -1,6 +1,6 @@
 using Inventory.Domain.Entities;
 using Inventory.Domain.Enums;
-using Inventory.Infrastructure.Persistence; // Або ваш namespace контексту
+using Inventory.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,8 +22,11 @@ namespace Inventory.API.Controllers
         public async Task<ActionResult<IEnumerable<StockMovement>>> GetByProduct(Guid productId)
         {
             return await _context.StockMovements
+                // 👇 ВАЖЛИВО: Підтягуємо дані про Постачальника та Клієнта
+                .Include(m => m.Supplier)
+                .Include(m => m.Customer)
                 .Where(m => m.ProductId == productId)
-                .OrderByDescending(m => m.MovementDate) // Спочатку нові
+                .OrderByDescending(m => m.MovementDate)
                 .ToListAsync();
         }
 
@@ -43,7 +46,11 @@ namespace Inventory.API.Controllers
                 Type = dto.Type,
                 Quantity = dto.Quantity,
                 Note = dto.Note,
-                MovementDate = DateTime.UtcNow
+                MovementDate = DateTime.UtcNow,
+
+                // 👇 НОВЕ: Зберігаємо зв'язки (якщо вони прийшли)
+                SupplierId = dto.SupplierId,
+                CustomerId = dto.CustomerId
             };
 
             // 3. Оновлюємо кількість самого товару (Бізнес-логіка)
@@ -60,7 +67,7 @@ namespace Inventory.API.Controllers
                 product.Quantity -= dto.Quantity;
             }
 
-            // 4. Зберігаємо все разом (транзакція)
+            // 4. Зберігаємо все разом
             _context.StockMovements.Add(movement);
             await _context.SaveChangesAsync();
 
@@ -75,5 +82,7 @@ namespace Inventory.API.Controllers
         public MovementType Type { get; set; } // 1 = In, 2 = Out
         public int Quantity { get; set; }
         public string? Note { get; set; }
+        public Guid? SupplierId { get; set; }
+        public Guid? CustomerId { get; set; }
     }
 }

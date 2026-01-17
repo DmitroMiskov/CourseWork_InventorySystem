@@ -21,5 +21,11 @@ namespace Inventory.Domain.Entities
 
         // Примітка (наприклад: "Накладна №123" або "Брак")
         public string? Note { get; set; }
+
+        public Guid? SupplierId { get; set; }
+        public Supplier? Supplier { get; set; }
+
+        public Guid? CustomerId { get; set; }
+        public Customer? Customer { get; set; }
     }
 }

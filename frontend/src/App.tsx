@@ -1,47 +1,75 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Container, CssBaseline, AppBar, Toolbar, Typography, Button, Box, IconButton, Tooltip } from '@mui/material';
+import { jwtDecode } from "jwt-decode";
+import { Container, CssBaseline, AppBar, Toolbar, Typography, Button, Box, IconButton, Tooltip, Chip } from '@mui/material';
+
+// Іконки
 import InventoryIcon from '@mui/icons-material/Inventory';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
+import PeopleIcon from '@mui/icons-material/People';
 
-// Ваші компоненти
+// Компоненти
 import ProductList from './components/ProductList';
 import LoginPage from './components/LoginPage';
-// 👇 ПЕРЕКОНАЙТЕСЯ, ЩО ЦЕЙ ІМПОРТ ПРАВИЛЬНИЙ (назва файлу вашого дашборда)
 import Dashboard from './components/Dashboard';
+import Partners from './components/Partners';
+
+// Тип для нашого Токена
+interface CustomJwtPayload {
+  unique_name: string; // Логін
+  role: string;        // Роль (Admin/User)
+  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string;
+}
 
 function App() {
-  // 1. Стан авторизації (Лінива ініціалізація)
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // 👇 Розширили тип state, щоб додати 'partners'
+  const [currentView, setCurrentView] = useState<'list' | 'dashboard' | 'partners'>('list');
+  
+  const [userRole, setUserRole] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
+
+  // Функція для перевірки токена і ролі
+  const checkAuth = () => {
     const token = localStorage.getItem('token');
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      return true;
+      try {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const decoded = jwtDecode<CustomJwtPayload>(token);
+        const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decoded.role || "User";
+        
+        setUserRole(role);
+        setUsername(decoded.unique_name || "Користувач");
+        setIsAuthenticated(true);
+        return true;
+      } catch (error) {
+        console.error("Invalid token", error);
+        localStorage.removeItem('token');
+        return false;
+      }
     }
     return false;
-  });
+  };
 
-  // 2. Стан навігації: 'list' (Таблиця) або 'dashboard' (Графіки)
-  const [currentView, setCurrentView] = useState<'list' | 'dashboard'>('list');
+  useState(() => {
+    checkAuth();
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
     setIsAuthenticated(false);
+    setUserRole('');
   };
 
-  // Якщо не авторизовані — показуємо Логін
   if (!isAuthenticated) {
-    return <LoginPage onLoginSuccess={() => {
-      const token = localStorage.getItem('token');
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setIsAuthenticated(true);
-    }} />;
+    return <LoginPage onLoginSuccess={checkAuth} />;
   }
 
-  // Якщо авторизовані — показуємо Меню і Контент
   return (
     <>
       <CssBaseline />
@@ -52,7 +80,7 @@ function App() {
             Складський Облік
           </Typography>
 
-          {/* 👇 КНОПКИ НАВІГАЦІЇ */}
+          {/* Меню навігації */}
           <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
             <Button 
               color="inherit" 
@@ -64,6 +92,17 @@ function App() {
               Склад
             </Button>
             
+            {/* 👇 НОВА КНОПКА КОНТРАГЕНТИ */}
+            <Button 
+              color="inherit" 
+              startIcon={<PeopleIcon />}
+              variant={currentView === 'partners' ? "outlined" : "text"}
+              onClick={() => setCurrentView('partners')}
+              sx={{ backgroundColor: currentView === 'partners' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
+            >
+              Контрагенти
+            </Button>
+
             <Button 
               color="inherit" 
               startIcon={<BarChartIcon />}
@@ -74,6 +113,15 @@ function App() {
               Дашборд
             </Button>
           </Box>
+
+          {/* Інфо про юзера */}
+          <Chip 
+            icon={<PersonIcon />} 
+            label={`${username} (${userRole})`} 
+            color={userRole === 'Admin' ? "warning" : "default"}
+            variant="outlined"
+            sx={{ mr: 2, color: 'white', borderColor: 'rgba(255,255,255,0.5)' }} 
+          />
 
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Вийти">
@@ -86,13 +134,9 @@ function App() {
       </AppBar>
 
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        {/* 👇 ПЕРЕМИКАННЯ КОНТЕНТУ */}
-        {currentView === 'list' ? (
-          <ProductList />
-        ) : (
-          // Якщо у вас компонент називається інакше, змініть назву тут
-          <Dashboard/>
-        )}
+        {currentView === 'list' && <ProductList isAdmin={userRole === 'Admin'} />}
+        {currentView === 'partners' && <Partners />}
+        {currentView === 'dashboard' && <Dashboard />}
       </Container>
     </>
   );

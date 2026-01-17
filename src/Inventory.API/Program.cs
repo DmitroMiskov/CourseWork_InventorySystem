@@ -85,9 +85,13 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        // context.Database.Migrate();
-        context.Database.EnsureCreated();
-        Console.WriteLine("✅ База даних успішно оновлена (міграції застосовані).");
+        
+        //context.Database.EnsureDeleted(); 
+        
+        // Цей рядок створює базу наново вже з колонкою ImageUrl
+        context.Database.EnsureCreated(); 
+        
+        Console.WriteLine("✅ База даних успішно перестворена.");
     }
     catch (Exception ex)
     {
@@ -104,8 +108,10 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
 // Порядок важливий!
-app.UseAuthentication(); // 1. Перевіряємо, хто це (Login)
-app.UseAuthorization();  // 2. Перевіряємо, що йому можна (Role)
+app.UseAuthentication();
+app.UseAuthorization(); 
+
+app.UseStaticFiles();
 
 app.MapControllers();
 

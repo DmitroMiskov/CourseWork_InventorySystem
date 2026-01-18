@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import {
   Box, Paper, Tabs, Tab, Typography, Button, Table, TableBody, TableCell,
@@ -12,36 +12,31 @@ import AddIcon from '@mui/icons-material/Add';
 import PersonIcon from '@mui/icons-material/Person';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
-// Інтерфейс (підходить і для Supplier, і для Customer)
 interface Partner {
   id: string;
   name: string;
   phone?: string;
   email?: string;
-  // Для клієнтів є address, для постачальників contactPerson - це врахуємо
   address?: string; 
   contactPerson?: string;
 }
 
 export default function Partners() {
-  // 0 - Постачальники, 1 - Клієнти
   const [tabIndex, setTabIndex] = useState(0);
   const [data, setData] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Стан для модального вікна
   const [open, setOpen] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '', phone: '', email: '', address: '', contactPerson: ''
   });
 
-  // Визначаємо URL залежно від вкладки
   const endpoint = tabIndex === 0 ? '/api/suppliers' : '/api/customers';
   const entityName = tabIndex === 0 ? 'Постачальник' : 'Клієнт';
 
-  // --- ЗАВАНТАЖЕННЯ ДАНИХ ---
-  const fetchData = async () => {
+  // 👇 FIX 1: Wrapped in useCallback to make it a stable dependency
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get<Partner[]>(endpoint);
@@ -52,13 +47,13 @@ export default function Partners() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [endpoint]); // Re-creates function only when endpoint changes
 
+  // 👇 FIX 1 (Continued): Added fetchData to the dependency array
   useEffect(() => {
     fetchData();
-  }, [tabIndex]);
+  }, [fetchData]);
 
-  // --- CRUD ОПЕРАЦІЇ ---
   const handleDelete = async (id: string) => {
     if (!window.confirm(`Видалити ${entityName}а?`)) return;
     try {
@@ -92,12 +87,8 @@ export default function Partners() {
 
     try {
       if (currentId) {
-        // Редагування (PUT поки не реалізований на бекенді, тому просто створимо нового або ігноруємо)
-        // Для курсової часто достатньо Create/Delete, але якщо треба Update - треба додати метод в контролер.
-        // Зараз зробимо імітацію (або реалізуйте PUT в контролері)
         alert("Редагування поки не налаштовано на сервері, видаліть і створіть заново.");
       } else {
-        // Створення
         await axios.post(endpoint, formData);
       }
       setOpen(false);
@@ -110,10 +101,10 @@ export default function Partners() {
 
   return (
     <Paper sx={{ width: '100%', mb: 2 }}>
-      {/* --- ВКЛАДКИ --- */}
       <Tabs
         value={tabIndex}
-        onChange={(e, val) => setTabIndex(val)}
+        // 👇 FIX 2: Removed unused 'e' parameter (replaced with _)
+        onChange={(_, val) => setTabIndex(val)}
         indicatorColor="primary"
         textColor="primary"
         centered
@@ -122,7 +113,6 @@ export default function Partners() {
         <Tab icon={<PersonIcon />} label="Клієнти" />
       </Tabs>
 
-      {/* --- ПАНЕЛЬ ІНСТРУМЕНТІВ --- */}
       <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#f9f9f9' }}>
         <Typography variant="h6">{entityName}и</Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
@@ -132,7 +122,6 @@ export default function Partners() {
 
       {loading && <LinearProgress />}
 
-      {/* --- ТАБЛИЦЯ --- */}
       <TableContainer>
         <Table>
           <TableHead>
@@ -140,7 +129,6 @@ export default function Partners() {
               <TableCell>Назва / ПІБ</TableCell>
               <TableCell>Телефон</TableCell>
               <TableCell>Email</TableCell>
-              {/* Показуємо різні колонки для різних типів */}
               {tabIndex === 0 && <TableCell>Контактна особа</TableCell>}
               {tabIndex === 1 && <TableCell>Адреса</TableCell>}
               <TableCell align="right">Дії</TableCell>
@@ -173,7 +161,6 @@ export default function Partners() {
         </Table>
       </TableContainer>
 
-      {/* --- МОДАЛКА СТВОРЕННЯ --- */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{currentId ? 'Редагувати' : 'Додати'} {entityName}а</DialogTitle>
         <DialogContent dividers>
@@ -197,7 +184,6 @@ export default function Partners() {
                 onChange={e => setFormData({...formData, email: e.target.value})} 
             />
             
-            {/* Додаткові поля залежно від вкладки */}
             {tabIndex === 0 ? (
                 <TextField 
                     label="Контактна особа (Менеджер)" 

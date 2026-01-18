@@ -18,6 +18,7 @@ namespace Inventory.Infrastructure.Persistence
         public DbSet<StockMovement> StockMovements => Set<StockMovement>();
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<ProductHistory> ProductHistories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

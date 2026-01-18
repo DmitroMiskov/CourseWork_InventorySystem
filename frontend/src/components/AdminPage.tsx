@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import axios, { AxiosError } from 'axios';
 import { 
     Box, Button, TextField, Typography, Paper, Alert, 
@@ -22,7 +22,6 @@ interface User {
     role: string;
 }
 
-// Інтерфейс для помилки від сервера
 interface ErrorResponse {
     message?: string;
 }
@@ -30,6 +29,9 @@ interface ErrorResponse {
 const AdminPage = ({ onBack }: AdminPageProps) => {
     // Стан для списку юзерів
     const [users, setUsers] = useState<User[]>([]);
+    
+    // 👇 НОВЕ: Тригер оновлення. Змінюємо його, коли треба перезавантажити список.
+    const [refreshKey, setRefreshKey] = useState(0);
     
     // Стан для форми додавання
     const [openDialog, setOpenDialog] = useState(false);
@@ -40,20 +42,20 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
     // Стан для повідомлень
     const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
-    // 👇 1. ВИПРАВЛЕННЯ: Використовуємо useCallback, щоб "заморозити" функцію
-    const fetchUsers = useCallback(async () => {
-        try {
-            const res = await axios.get('/api/Auth/users');
-            setUsers(res.data);
-        } catch (error) {
-            console.error("Не вдалося завантажити користувачів", error);
-        }
-    }, []); // Порожній масив означає, що функція створюється один раз
-
-    // 👇 2. Тепер викликаємо її в useEffect (додавши в залежності)
+    // 👇 1. useEffect тепер залежить від refreshKey.
+    // Коли refreshKey зміниться (наприклад, стане 1, 2, 3...), useEffect спрацює знову.
     useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const res = await axios.get('/api/Auth/users');
+                setUsers(res.data);
+            } catch (error) {
+                console.error("Не вдалося завантажити користувачів", error);
+            }
+        };
+
         fetchUsers();
-    }, [fetchUsers]);
+    }, [refreshKey]); // ✅ Залежність проста (число), лінтер щасливий.
 
     const handleCreateUser = async () => {
         if (!username || !password) {
@@ -65,11 +67,13 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
             await axios.post('/api/Auth/register', { username, password, role });
             setMessage({ type: 'success', text: `Співробітника ${username} додано!` });
             
-            // Очистка і оновлення
+            // Очистка полів
             setUsername('');
             setPassword('');
             setOpenDialog(false);
-            fetchUsers(); 
+            
+            // 👇 2. Замість виклику функції, просто "смикаємо" тригер
+            setRefreshKey(prev => prev + 1); 
         } catch (error) {
             const axiosError = error as AxiosError<ErrorResponse>;
             const errorText = axiosError.response?.data?.message || 'Помилка створення';
@@ -83,7 +87,9 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
         try {
             await axios.delete(`/api/Auth/users/${id}`);
             setMessage({ type: 'success', text: `Користувача ${name} видалено` });
-            fetchUsers();
+            
+            // 👇 3. Тут теж оновлюємо тригер
+            setRefreshKey(prev => prev + 1);
         } catch (error) {
             console.error(error);
             setMessage({ type: 'error', text: 'Не вдалося видалити користувача' });

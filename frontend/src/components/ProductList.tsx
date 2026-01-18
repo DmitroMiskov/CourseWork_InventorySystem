@@ -5,7 +5,7 @@ import {
   Button, TextField, IconButton, Dialog, DialogActions, DialogContent, 
   DialogTitle, MenuItem, Select, InputLabel, FormControl, Typography, 
   Toolbar, Tooltip, TablePagination, InputAdornment, Chip, LinearProgress, 
-  Alert, Snackbar, Box 
+  Alert, Snackbar, Box, Checkbox, Badge, Fab 
 } from '@mui/material';
 
 // Іконки
@@ -18,15 +18,16 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import HistoryIcon from '@mui/icons-material/History';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 // Бібліотеки для Excel та навігації
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-// import { useNavigate } from 'react-router-dom';
 
 // Наші компоненти
 import StockHistory from './StockHistory';
 import StockOperationModal from './StockOperationModal';
+import IssuanceModal from './IssuanceModal';
 
 // --- ТИПИ ---
 interface Category {
@@ -60,7 +61,7 @@ interface ServerError {
 // --- НАДІЙНИЙ КОМПОНЕНТ ДЛЯ КАРТИНОК ---
 const ProductImage = ({ imageName, alt, size = 50, radius = 4 }: { imageName?: string; alt?: string; size?: number; radius?: number }) => {
   const [hasError, setHasError] = useState(false);
-  const SERVER_URL = 'http://localhost:8080';
+  const SERVER_URL = 'http://localhost:8080'; // Змініть, якщо порт інший
 
   if (!imageName || hasError) {
     return (
@@ -97,7 +98,6 @@ const ProductImage = ({ imageName, alt, size = 50, radius = 4 }: { imageName?: s
             width: size, height: size, objectFit: 'cover', 
             borderRadius: radius, border: '1px solid #ddd', flexShrink: 0 
         }}
-        // 👇 ВИПРАВЛЕННЯ: прибрали аргумент 'e', бо ми його не використовуємо
         onError={() => {
             console.warn(`⚠️ Картинка не знайдена: ${src}`);
             setHasError(true); 
@@ -120,9 +120,6 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   
-  // Навігація
-  // const navigate = useNavigate();
-
   // Сортування
   const [sortConfig, setSortConfig] = useState<{ key: keyof Product; direction: 'asc' | 'desc' } | null>(null);
 
@@ -139,6 +136,10 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
 
   const [opModalOpen, setOpModalOpen] = useState(false);
   const [opProduct, setOpProduct] = useState<Product | null>(null);
+
+  // 👇 СТАНИ ДЛЯ МАСОВОЇ ВИДАЧІ
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [issueModalOpen, setIssueModalOpen] = useState(false);
 
   // --- ЗАВАНТАЖЕННЯ ДАНИХ ---
   const fetchProducts = async () => {
@@ -329,6 +330,25 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
     setHistoryModalOpen(true);
   };
 
+  // 👇 ЛОГІКА ВИБОРУ (CHECKBOXES)
+  const handleSelect = (id: string) => {
+    setSelectedIds(prev => 
+        prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+        const idsOnPage = filteredProducts
+            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+            .map(p => p.id);
+        // Додаємо тільки унікальні
+        setSelectedIds(prev => Array.from(new Set([...prev, ...idsOnPage])));
+    } else {
+        setSelectedIds([]);
+    }
+  };
+
   return (
     <Paper sx={{ p: 2, borderRadius: 2 }}>
       <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
@@ -377,18 +397,6 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
           </IconButton>
         </Tooltip>
 
-        {/* {isAdmin && (
-          <Button 
-              variant="outlined" 
-              color="secondary" 
-              startIcon={<SupervisorAccountIcon />} 
-              onClick={() => navigate('/admin')}
-              sx={{ mr: 2 }} 
-          >
-              Персонал
-          </Button>
-        )} */}
-
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
           Додати товар
         </Button>
@@ -401,6 +409,14 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+              {/* 👇 ЧЕКБОКС "ВИБРАТИ ВСЕ" */}
+              <TableCell padding="checkbox">
+                  <Checkbox 
+                      onChange={handleSelectAll} 
+                      checked={selectedIds.length > 0 && selectedIds.length === filteredProducts.length}
+                      indeterminate={selectedIds.length > 0 && selectedIds.length < filteredProducts.length}
+                  />
+              </TableCell>
               <TableCell onClick={() => handleSort('name')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Назва ↕</TableCell>
               <TableCell onClick={() => handleSort('categoryId')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Категорія ↕</TableCell>
               <TableCell onClick={() => handleSort('price')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Ціна ↕</TableCell>
@@ -416,9 +432,15 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
                     key={product.id}
                     sx={{ backgroundColor: product.quantity <= product.minStock ? '#fff0f0' : 'inherit' }}
                 >
+                  {/* 👇 ЧЕКБОКС РЯДКА */}
+                  <TableCell padding="checkbox">
+                    <Checkbox 
+                        checked={selectedIds.includes(product.id)}
+                        onChange={() => handleSelect(product.id)}
+                    />
+                  </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        {/* ✅ КЛЮЧОВИЙ МОМЕНТ: додано key={product.imageUrl} */}
                         <ProductImage 
                             key={product.imageUrl || 'no-img'}
                             imageName={product.imageUrl} 
@@ -550,6 +572,29 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         onSuccess={() => {
           fetchProducts();
           setOpModalOpen(false);
+        }}
+      />
+
+      {/* 👇 ПЛАВАЮЧА КНОПКА КОШИКА (З'являється, коли щось вибрано) */}
+      {selectedIds.length > 0 && (
+        <Box sx={{ position: 'fixed', bottom: 30, right: 30, zIndex: 1000 }}>
+            <Badge badgeContent={selectedIds.length} color="error">
+                <Fab color="primary" variant="extended" onClick={() => setIssueModalOpen(true)}>
+                    <ShoppingCartIcon sx={{ mr: 1 }} />
+                    Оформити видачу
+                </Fab>
+            </Badge>
+        </Box>
+      )}
+
+      {/* 👇 МОДАЛКА ВИДАЧІ */}
+      <IssuanceModal 
+        open={issueModalOpen}
+        onClose={() => setIssueModalOpen(false)}
+        selectedProducts={products.filter(p => selectedIds.includes(p.id))}
+        onSuccess={() => {
+            fetchProducts();
+            setSelectedIds([]); // Очистити вибір після успіху
         }}
       />
     </Paper>

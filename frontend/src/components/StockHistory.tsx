@@ -3,15 +3,17 @@ import axios from 'axios';
 import { 
   Dialog, DialogTitle, DialogContent, Table, TableBody, 
   TableCell, TableContainer, TableHead, TableRow, 
-  CircularProgress, Chip, Typography, Button, DialogActions 
+  CircularProgress, Chip, Typography, Button, DialogActions, Box 
 } from '@mui/material';
+import PersonIcon from '@mui/icons-material/Person';
 
-interface StockMovement {
+interface HistoryRecord {
   id: string;
-  type: number;
-  quantity: number;
-  movementDate: string;
+  change: number;
+  stockAfter: number;
   note: string;
+  userName: string;
+  createdAt: string;
 }
 
 interface StockHistoryProps {
@@ -22,73 +24,86 @@ interface StockHistoryProps {
 }
 
 export default function StockHistory({ open, onClose, productId, productName }: StockHistoryProps) {
-  const [movements, setMovements] = useState<StockMovement[]>([]);
-  
-  // 👇 1. ВИПРАВЛЕННЯ: Починаємо з loading = true
-  const [loading, setLoading] = useState(true);
+  const [history, setHistory] = useState<HistoryRecord[]>([]);
+  const [loading, setLoading] = useState(false); // 👇 Початковий стан false
 
   useEffect(() => {
-    // Якщо ID є, робимо запит
-    if (productId) {
-      // ❌ setLoading(true) ТУТ БІЛЬШЕ НЕМАЄ (це прибирає помилку ESLint)
-      
-      axios.get(`/api/stockmovements/product/${productId}`)
-        .then(res => {
-          setMovements(res.data);
-        })
-        .catch(err => {
-          console.error(err);
-        })
-        .finally(() => {
-          setLoading(false); // 👇 Тільки вимикаємо в кінці
-        });
-    }
-  }, [productId]); // Залежимо тільки від ID
+    // Якщо вікно закрите або немає ID, нічого не робимо
+    if (!productId || !open) return;
+
+    // 👇 Оголошуємо функцію всередині ефекту
+    const fetchHistory = async () => {
+      setLoading(true); // Тепер це всередині функції, лінтер не сваритиметься
+      try {
+        const res = await axios.get<HistoryRecord[]>(`/api/products/${productId}/history`);
+        setHistory(res.data);
+      } catch (err) {
+        console.error("Помилка завантаження історії:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory(); // Викликаємо її
+
+  }, [productId, open]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        Історія руху: <b>{productName || 'Товар'}</b>
+        📜 Історія руху: <b>{productName || 'Товар'}</b>
       </DialogTitle>
       
       <DialogContent dividers>
         {loading ? (
           <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2 }} />
-        ) : movements.length === 0 ? (
-          <Typography align="center" color="text.secondary">
-            Історія порожня
+        ) : history.length === 0 ? (
+          <Typography align="center" color="text.secondary" sx={{ py: 3 }}>
+            Історія операцій порожня
           </Typography>
         ) : (
           <TableContainer>
             <Table size="small">
               <TableHead>
-                <TableRow>
-                  <TableCell><b>Дата</b></TableCell>
-                  <TableCell><b>Тип</b></TableCell>
-                  <TableCell align="right"><b>Кількість</b></TableCell>
+                <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                  <TableCell><b>Дата / Час</b></TableCell>
+                  <TableCell><b>Користувач</b></TableCell>
+                  <TableCell align="center"><b>Зміна</b></TableCell>
+                  <TableCell align="center"><b>Залишок</b></TableCell>
                   <TableCell><b>Примітка</b></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {movements.map((row) => (
-                  <TableRow key={row.id}>
+                {history.map((row) => (
+                  <TableRow key={row.id} hover>
                     <TableCell>
-                      {new Date(row.movementDate).toLocaleString('uk-UA')}
+                      {new Date(row.createdAt).toLocaleString('uk-UA', { 
+                        day: '2-digit', month: '2-digit', year: 'numeric', 
+                        hour: '2-digit', minute: '2-digit' 
+                      })}
                     </TableCell>
+                    
                     <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <PersonIcon fontSize="small" color="action" />
+                        <Typography variant="body2">{row.userName || 'Система'}</Typography>
+                      </Box>
+                    </TableCell>
+
+                    <TableCell align="center">
                       <Chip 
-                        label={row.type === 1 ? "Прихід" : "Розхід"} 
-                        color={row.type === 1 ? "success" : "error"} 
+                        label={row.change > 0 ? `+${row.change}` : row.change} 
+                        color={row.change > 0 ? "success" : "error"} 
                         size="small" 
-                        variant="outlined"
+                        variant="filled"
+                        sx={{ fontWeight: 'bold', minWidth: 50 }}
                       />
                     </TableCell>
-                    <TableCell align="right" sx={{ 
-                        color: row.type === 1 ? 'green' : 'red', 
-                        fontWeight: 'bold' 
-                    }}>
-                      {row.type === 1 ? '+' : '-'}{row.quantity}
+
+                    <TableCell align="center" sx={{ color: 'text.secondary' }}>
+                      {row.stockAfter}
                     </TableCell>
+
                     <TableCell>{row.note || '-'}</TableCell>
                   </TableRow>
                 ))}

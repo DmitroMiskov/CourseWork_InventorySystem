@@ -25,6 +25,7 @@ namespace Inventory.API.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ApplicationDbContext _context;
+        public DbSet<ProductHistory> ProductHistories { get; set; }
 
         public ProductsController(IMediator mediator, ApplicationDbContext context)
         {
@@ -183,6 +184,57 @@ namespace Inventory.API.Controllers
                 return StatusCode(500, "Internal server error uploading file");
             }
         }
+
+        [HttpPost("issue")]
+        [Authorize] // Це може робити і звичайний юзер (Комірник)
+        public async Task<IActionResult> IssueProducts([FromBody] List<CheckoutItemDto> items)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                foreach (var item in items)
+                {
+                    var product = await _context.Products.FindAsync(item.ProductId);
+                    
+                    if (product == null) 
+                        return BadRequest($"Товар з ID {item.ProductId} не знайдено");
+
+                    if (product.Quantity < item.Quantity)
+                        return BadRequest($"Недостатньо товару '{product.Name}'. На складі: {product.Quantity}, запит: {item.Quantity}");
+
+                    // Списуємо
+                    product.Quantity -= item.Quantity;
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync(); // Зберігаємо все разом
+
+                return Ok(new { message = "Товари успішно видано" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(); // Якщо помилка - скасовуємо все
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("{id}/history")]
+        [Authorize]
+        public async Task<IActionResult> GetProductHistory(Guid id)
+        {
+            var history = await _context.ProductHistories
+                .Where(h => h.ProductId == id)
+                .OrderByDescending(h => h.CreatedAt) // Спочатку нові
+                .ToListAsync();
+
+            return Ok(history);
+        }
+    }
+
+    public class CheckoutItemDto
+    {
+        public Guid ProductId { get; set; }
+        public int Quantity { get; set; }
     }
 
     [ApiController]

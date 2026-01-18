@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.API.Controllers
 {
@@ -85,6 +86,47 @@ namespace Inventory.API.Controllers
                 });
             }
             return Unauthorized();
+        }
+
+        // 👇 1. Отримати список усіх користувачів
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            // Беремо всіх юзерів з бази
+            var users = await _userManager.Users.ToListAsync();
+
+            // Важливо: Не віддаємо паролі! Робимо гарний список.
+            var userList = new List<object>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                userList.Add(new 
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    Role = roles.FirstOrDefault() ?? "User" // Беремо першу роль або User
+                });
+            }
+
+            return Ok(userList);
+        }
+
+        // 👇 2. Видалити користувача (Звільнення)
+        [HttpDelete("users/{id}")]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound("Користувача не знайдено");
+
+            // Захист: не можна видалити самого себе або головного адміна (опціонально)
+            if (user.UserName.ToLower() == "admin" || user.UserName.ToLower() == "boss")
+            {
+                return BadRequest("Цього користувача не можна видалити");
+            }
+
+            await _userManager.DeleteAsync(user);
+            return Ok(new { message = "Користувача видалено" });
         }
     }
 }

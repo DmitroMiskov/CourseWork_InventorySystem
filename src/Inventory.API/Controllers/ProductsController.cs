@@ -19,6 +19,8 @@ namespace Inventory.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // 👇 1. Базовий рівень захисту: Пускаємо тільки тих, хто увійшов (має токен)
+    [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -31,36 +33,38 @@ namespace Inventory.API.Controllers
         }
 
         // GET: api/products
+        // 👇 Доступно ВСІМ (User + Admin), бо тут немає уточнення Roles
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            // Відправляємо запит (Query)
             var products = await _mediator.Send(new GetProductsQuery());
             return Ok(products);
         }
 
         // POST: api/products
+        // 👇 Тільки АДМІН може створювати
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(CreateProductCommand command)
         {
-            // Відправляємо команду (Command)
             var productId = await _mediator.Send(command);
             return Ok(productId);
         }
 
         // DELETE: api/products/{id}
+        // 👇 Тільки АДМІН може видаляти
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _mediator.Send(new DeleteProductCommand(id));
-            return NoContent(); // 204 No Content — стандартна відповідь на успішне видалення
+            return NoContent();
         }
 
         // PUT: api/products/{id}
+        // 👇 Тільки АДМІН може редагувати
         [HttpPut("{id}")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(Guid id, UpdateProductCommand command)
         {
             if (id != command.Id)
@@ -72,7 +76,10 @@ namespace Inventory.API.Controllers
             return NoContent();
         }
 
-       [HttpPost("import")]
+        // POST: api/products/import
+        // 👇 Тільки АДМІН може імпортувати
+        [HttpPost("import")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Import(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -83,9 +90,6 @@ namespace Inventory.API.Controllers
                 using (var stream = new StreamReader(file.OpenReadStream()))
                 {
                     var productsToAdd = new List<Product>();
-                    
-                    // Читаємо перший рядок (заголовки), щоб пропустити його
-                    // або перевірити формат, але для простоти просто пропускаємо
                     var headerLine = await stream.ReadLineAsync();
 
                     while (!stream.EndOfStream)
@@ -93,35 +97,25 @@ namespace Inventory.API.Controllers
                         var line = await stream.ReadLineAsync();
                         if (string.IsNullOrWhiteSpace(line)) continue;
 
-                        // Розбиваємо по комі (або крапці з комою)
                         var values = line.Split(new[] { ',', ';' });
-
-                        // Очікуваний формат CSV:
-                        // Назва, Опис, Ціна, Кількість, Одиниця, Категорія(Назва), МінЗалишок
-                        if (values.Length < 5) continue; // Пропускаємо биті рядки
+                        if (values.Length < 5) continue;
 
                         var name = values[0].Trim();
-                        // Якщо такого товару вже є назва - пропускаємо (або можна оновлювати)
                         if (_context.Products.Any(p => p.Name == name)) continue;
 
                         var description = values.Length > 1 ? values[1].Trim() : "";
-                        
-                        // Парсинг чисел (з заміною крапки на кому і навпаки для надійності)
                         decimal.TryParse(values[2].Replace('.', ','), out decimal price);
                         int.TryParse(values[3], out int quantity);
-                        
                         var unit = values.Length > 4 ? values[4].Trim() : "шт";
                         
-                        // --- РОЗУМНА РОБОТА З КАТЕГОРІЄЮ ---
                         var categoryName = values.Length > 5 ? values[5].Trim() : "Інше";
                         var category = _context.Categories.FirstOrDefault(c => c.Name == categoryName);
                         
-                        // Якщо категорії немає - створюємо її "на льоту"
                         if (category == null)
                         {
                             category = new Category { Name = categoryName };
                             _context.Categories.Add(category);
-                            await _context.SaveChangesAsync(); // Зберігаємо, щоб отримати ID
+                            await _context.SaveChangesAsync();
                         }
                         
                         int.TryParse(values.Length > 6 ? values[6] : "0", out int minStock);
@@ -133,9 +127,9 @@ namespace Inventory.API.Controllers
                             Price = price,
                             Quantity = quantity,
                             Unit = unit,
-                            CategoryId = category.Id, // Використовуємо ID знайденої/створеної категорії
+                            CategoryId = category.Id,
                             MinStock = minStock,
-                            ImageUrl = "" // Порожнє фото
+                            ImageUrl = ""
                         };
 
                         productsToAdd.Add(product);
@@ -152,14 +146,15 @@ namespace Inventory.API.Controllers
             }
             catch (Exception ex)
             {
-                // 👇 ОСЬ ЦЕ ПОКАЖЕ ВАМ СПРАВЖНЮ ПРИЧИНУ ПОМИЛКИ
                 var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 return BadRequest($"Помилка імпорту: {innerMessage}");
             }
         }
 
+        // POST: api/products/upload-image
+        // 👇 Тільки АДМІН може завантажувати фото
         [HttpPost("upload-image")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
             try 
@@ -168,8 +163,6 @@ namespace Inventory.API.Controllers
                     return BadRequest("Файл не обрано");
 
                 var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-                
-                // Створюємо папку, якщо немає
                 if (!Directory.Exists(folderPath))
                     Directory.CreateDirectory(folderPath);
 
@@ -182,13 +175,10 @@ namespace Inventory.API.Controllers
                 }
 
                 var url = $"/images/{fileName}";
-                
-                // 👇 Явно повертаємо статус 200 OK з JSON
                 return StatusCode(200, new { url });
             }
             catch (Exception ex)
             {
-                // Це покаже помилку в консолі Docker
                 Console.WriteLine($"UPLOAD ERROR: {ex.Message}");
                 return StatusCode(500, "Internal server error uploading file");
             }
@@ -197,6 +187,8 @@ namespace Inventory.API.Controllers
 
     [ApiController]
     [Route("api/[controller]")]
+    // 👇 Те саме для категорій: клас захищений
+    [Authorize]
     public class CategoriesController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -206,7 +198,7 @@ namespace Inventory.API.Controllers
             _mediator = mediator;
         }
 
-        // 👇 НОВИЙ МЕТОД
+        // 👇 Бачити категорії можуть ВСІ
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -214,7 +206,9 @@ namespace Inventory.API.Controllers
             return Ok(categories);
         }
 
+        // 👇 Створювати категорії тільки АДМІН
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(CreateCategoryCommand command)
         {
             var id = await _mediator.Send(command);

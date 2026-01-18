@@ -1,22 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App'
-import axios from 'axios';
-
-// 👇 Налаштування Axios (тепер запити йтимуть на бекенд)
-axios.defaults.baseURL = 'http://localhost:8080';
-
-// 👇 Додаємо перехоплювач, щоб автоматично чіпляти токен до кожного запиту
-axios.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
+import App from './App.tsx'
+import './index.css' // (або інший файл стилів, якщо є)
+// 👇 1. Імпортуємо BrowserRouter
+import { BrowserRouter } from 'react-router-dom'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    {/* 👇 2. Обгортаємо App у BrowserRouter */}
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>,
 )

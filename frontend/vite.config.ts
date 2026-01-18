@@ -5,12 +5,20 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    host: true, // Це важливо для Docker
+    port: 5173,
     proxy: {
-      // Коли React бачить запит на /api, він перенаправляє його на бекенд
       '/api': {
-        target: 'http://localhost:5066', // <-- ВАЖЛИВО: Перевірте, чи порт збігається з вашим Swagger
+        // 👇 ГОЛОВНА ЗМІНА ТУТ:
+        target: 'http://inventory-api:8080', 
         changeOrigin: true,
         secure: false,
+      },
+      '/images': {
+         // 👇 І ТУТ ТАКОЖ:
+         target: 'http://inventory-api:8080',
+         changeOrigin: true,
+         secure: false,
       }
     }
   }

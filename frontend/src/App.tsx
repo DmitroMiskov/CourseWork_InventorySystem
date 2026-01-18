@@ -10,12 +10,14 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import PeopleIcon from '@mui/icons-material/People';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 
 // Компоненти
 import ProductList from './components/ProductList';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import Partners from './components/Partners';
+import AdminPage from './components/AdminPage';
 
 // Тип для нашого Токена
 interface CustomJwtPayload {
@@ -25,50 +27,63 @@ interface CustomJwtPayload {
 }
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-  // 👇 Розширили тип state, щоб додати 'partners'
-  const [currentView, setCurrentView] = useState<'list' | 'dashboard' | 'partners'>('list');
-  
-  const [userRole, setUserRole] = useState<string>('');
-  const [username, setUsername] = useState<string>('');
-
-  // Функція для перевірки токена і ролі
-  const checkAuth = () => {
+  // 👇 КРОК 1: Функція для отримання початкового стану (працює синхронно)
+  const getInitialState = () => {
     const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        const decoded = jwtDecode<CustomJwtPayload>(token);
-        const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decoded.role || "User";
-        
-        setUserRole(role);
-        setUsername(decoded.unique_name || "Користувач");
-        setIsAuthenticated(true);
-        return true;
-      } catch (error) {
-        console.error("Invalid token", error);
-        localStorage.removeItem('token');
-        return false;
-      }
+    if (!token) return { auth: false, role: '', name: '' };
+
+    try {
+      const decoded = jwtDecode<CustomJwtPayload>(token);
+      const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decoded.role || "User";
+      
+      // Налаштовуємо axios одразу, якщо токен є
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      return { 
+        auth: true, 
+        role: role, 
+        name: decoded.unique_name || "Користувач" 
+      };
+    } catch (error) {
+      console.error("Invalid token on startup", error);
+      localStorage.removeItem('token');
+      return { auth: false, role: '', name: '' };
     }
-    return false;
   };
 
-  useState(() => {
-    checkAuth();
-  });
+  // 👇 КРОК 2: Ініціалізуємо змінні ОДРАЗУ правильними значеннями
+  const [initialState] = useState(getInitialState);
+
+  const [isAuthenticated, setIsAuthenticated] = useState(initialState.auth);
+  const [userRole, setUserRole] = useState(initialState.role);
+  const [username, setUsername] = useState(initialState.name);
+  
+  const [currentView, setCurrentView] = useState<'list' | 'dashboard' | 'partners' | 'admin'>('list');
+
+  // Функція для оновлення стану після успішного входу
+  const handleLoginSuccess = () => {
+    const newState = getInitialState();
+    setIsAuthenticated(newState.auth);
+    setUserRole(newState.role);
+    setUsername(newState.name);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
     setIsAuthenticated(false);
     setUserRole('');
+    setUsername('');
+    setCurrentView('list');
   };
 
+  // Якщо не залогінений — показуємо форму входу
   if (!isAuthenticated) {
-    return <LoginPage onLoginSuccess={checkAuth} />;
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
+
+  // 👇 Перевірка: чи є користувач адміном (незалежно від регістру: Admin, admin, ADMIN)
+  const isAdmin = userRole.toLowerCase() === 'admin';
 
   return (
     <>
@@ -80,7 +95,7 @@ function App() {
             Складський Облік
           </Typography>
 
-          {/* Меню навігації */}
+          {/* МЕНЮ НАВІГАЦІЇ */}
           <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
             <Button 
               color="inherit" 
@@ -92,7 +107,6 @@ function App() {
               Склад
             </Button>
             
-            {/* 👇 НОВА КНОПКА КОНТРАГЕНТИ */}
             <Button 
               color="inherit" 
               startIcon={<PeopleIcon />}
@@ -112,15 +126,28 @@ function App() {
             >
               Дашборд
             </Button>
+
+            {/* Кнопка Адмінки (Тільки для Адміна, ігноруючи регістр) */}
+            {isAdmin && (
+                <Button 
+                  color="warning" 
+                  startIcon={<SupervisorAccountIcon />}
+                  variant={currentView === 'admin' ? "outlined" : "text"}
+                  onClick={() => setCurrentView('admin')}
+                  sx={{ backgroundColor: currentView === 'admin' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
+                >
+                  Персонал
+                </Button>
+            )}
           </Box>
 
-          {/* Інфо про юзера */}
+          {/* ІНФО ПРО ЮЗЕРА */}
           <Chip 
             icon={<PersonIcon />} 
             label={`${username} (${userRole})`} 
-            color={userRole === 'Admin' ? "warning" : "default"}
+            color={isAdmin ? "warning" : "default"}
             variant="outlined"
-            sx={{ mr: 2, color: 'white', borderColor: 'rgba(255,255,255,0.5)' }} 
+            sx={{ mr: 2, color: 'white', borderColor: 'rgba(255,255,255,0.5)', '& .MuiChip-icon': { color: 'white' } }} 
           />
 
           <Box sx={{ flexGrow: 0 }}>
@@ -133,10 +160,16 @@ function App() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        {currentView === 'list' && <ProductList isAdmin={userRole === 'Admin'} />}
+      {/* ОСНОВНИЙ КОНТЕНТ */}
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        {/* Передаємо isAdmin (true/false) у список товарів */}
+        {currentView === 'list' && <ProductList isAdmin={isAdmin} />}
+        
         {currentView === 'partners' && <Partners />}
+        
         {currentView === 'dashboard' && <Dashboard />}
+        
+        {currentView === 'admin' && isAdmin && (<AdminPage onBack={() => setCurrentView('list')} />)}
       </Container>
     </>
   );

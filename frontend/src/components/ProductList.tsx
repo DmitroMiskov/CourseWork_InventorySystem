@@ -19,9 +19,10 @@ import HistoryIcon from '@mui/icons-material/History';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
-// Бібліотеки для Excel
+// Бібліотеки для Excel та навігації
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+// import { useNavigate } from 'react-router-dom';
 
 // Наші компоненти
 import StockHistory from './StockHistory';
@@ -57,15 +58,9 @@ interface ServerError {
 }
 
 // --- НАДІЙНИЙ КОМПОНЕНТ ДЛЯ КАРТИНОК ---
-// Цей компонент сам вирішує: показати картинку чи іконку заглушки
-// --- НАДІЙНИЙ КОМПОНЕНТ ДЛЯ КАРТИНОК (Виправлено дублювання шляху) ---
 const ProductImage = ({ imageName, alt, size = 50, radius = 4 }: { imageName?: string; alt?: string; size?: number; radius?: number }) => {
   const [hasError, setHasError] = useState(false);
   const SERVER_URL = 'http://localhost:8080';
-
-  useEffect(() => {
-    setHasError(false);
-  }, [imageName]);
 
   if (!imageName || hasError) {
     return (
@@ -86,15 +81,10 @@ const ProductImage = ({ imageName, alt, size = 50, radius = 4 }: { imageName?: s
   if (imageName.startsWith('http')) {
       src = imageName;
   } else {
-      // 1. Прибираємо слеш на початку, якщо є ( "/img.jpg" -> "img.jpg" )
       let cleanName = imageName.startsWith('/') ? imageName.slice(1) : imageName;
-
-      // 2. Прибираємо папку "images/", якщо вона вже є в назві ( "images/img.jpg" -> "img.jpg" )
       if (cleanName.startsWith('images/')) {
           cleanName = cleanName.replace('images/', '');
       }
-
-      // 3. Формуємо чисте посилання
       src = `${SERVER_URL}/images/${cleanName}`;
   }
 
@@ -107,7 +97,8 @@ const ProductImage = ({ imageName, alt, size = 50, radius = 4 }: { imageName?: s
             width: size, height: size, objectFit: 'cover', 
             borderRadius: radius, border: '1px solid #ddd', flexShrink: 0 
         }}
-        onError={(e) => {
+        // 👇 ВИПРАВЛЕННЯ: прибрали аргумент 'e', бо ми його не використовуємо
+        onError={() => {
             console.warn(`⚠️ Картинка не знайдена: ${src}`);
             setHasError(true); 
         }}
@@ -128,6 +119,9 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
+  
+  // Навігація
+  // const navigate = useNavigate();
 
   // Сортування
   const [sortConfig, setSortConfig] = useState<{ key: keyof Product; direction: 'asc' | 'desc' } | null>(null);
@@ -228,11 +222,9 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
 
     try {
       setLoading(true);
-      // Завантажуємо на сервер
       const res = await axios.post<{ url: string }>('/api/products/upload-image', uploadData, {
           headers: { 'Content-Type': 'multipart/form-data' }
       });
-      // Зберігаємо отримане URL (це буде просто ім'я файлу, наприклад "abc.jpg")
       setFormData(prev => ({ ...prev, imageUrl: res.data.url }));
     } catch (err) {
       console.error(err);
@@ -288,7 +280,6 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
     }
   };
 
-  // --- ЕКСПОРТ/ІМПОРТ ---
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(products.map(p => ({
       Назва: p.name,
@@ -328,7 +319,6 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
     }
   };
 
-  // --- ОБРОБНИКИ ДЛЯ ДОДАТКОВИХ МОДАЛОК ---
   const handleOpenOperation = (product: Product) => {
     setOpProduct(product);
     setOpModalOpen(true);
@@ -387,6 +377,18 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
           </IconButton>
         </Tooltip>
 
+        {/* {isAdmin && (
+          <Button 
+              variant="outlined" 
+              color="secondary" 
+              startIcon={<SupervisorAccountIcon />} 
+              onClick={() => navigate('/admin')}
+              sx={{ mr: 2 }} 
+          >
+              Персонал
+          </Button>
+        )} */}
+
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
           Додати товар
         </Button>
@@ -416,8 +418,9 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
                 >
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        {/* ✅ ВИКОРИСТОВУЄМО НАДІЙНИЙ КОМПОНЕНТ */}
+                        {/* ✅ КЛЮЧОВИЙ МОМЕНТ: додано key={product.imageUrl} */}
                         <ProductImage 
+                            key={product.imageUrl || 'no-img'}
                             imageName={product.imageUrl} 
                             alt={product.name} 
                             size={40} 
@@ -484,12 +487,12 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         <DialogContent dividers>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-             {/* ✅ ПРЕВ'Ю КАРТИНКИ */}
              <ProductImage 
+                key={formData.imageUrl || 'preview'}
                 imageName={formData.imageUrl} 
                 alt="Preview" 
                 size={100} 
-                radius={8} // Передаємо число, а не рядок
+                radius={8} 
              />
              
              <Box>

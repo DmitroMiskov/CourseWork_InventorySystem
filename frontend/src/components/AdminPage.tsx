@@ -12,6 +12,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PersonIcon from '@mui/icons-material/Person';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 
+const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
+
 interface AdminPageProps {
     onBack: () => void;
 }
@@ -27,27 +29,29 @@ interface ErrorResponse {
 }
 
 const AdminPage = ({ onBack }: AdminPageProps) => {
-    // Стан для списку юзерів
     const [users, setUsers] = useState<User[]>([]);
-    
-    // 👇 НОВЕ: Тригер оновлення. Змінюємо його, коли треба перезавантажити список.
     const [refreshKey, setRefreshKey] = useState(0);
     
-    // Стан для форми додавання
     const [openDialog, setOpenDialog] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('User');
     
-    // Стан для повідомлень
     const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
-    // 👇 1. useEffect тепер залежить від refreshKey.
-    // Коли refreshKey зміниться (наприклад, стане 1, 2, 3...), useEffect спрацює знову.
+    const getAuthConfig = () => {
+        const token = localStorage.getItem('token');
+        return {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        };
+    };
+
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const res = await axios.get('/api/Auth/users');
+                const res = await axios.get(`${AZURE_API_URL}/api/Auth/users`, getAuthConfig());
                 setUsers(res.data);
             } catch (error) {
                 console.error("Не вдалося завантажити користувачів", error);
@@ -55,7 +59,7 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
         };
 
         fetchUsers();
-    }, [refreshKey]); // ✅ Залежність проста (число), лінтер щасливий.
+    }, [refreshKey]);
 
     const handleCreateUser = async () => {
         if (!username || !password) {
@@ -64,15 +68,14 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
         }
 
         try {
-            await axios.post('/api/Auth/register', { username, password, role });
+            await axios.post(`${AZURE_API_URL}/api/Auth/register`, { username, password, role }); 
+            
             setMessage({ type: 'success', text: `Співробітника ${username} додано!` });
             
-            // Очистка полів
             setUsername('');
             setPassword('');
             setOpenDialog(false);
             
-            // 👇 2. Замість виклику функції, просто "смикаємо" тригер
             setRefreshKey(prev => prev + 1); 
         } catch (error) {
             const axiosError = error as AxiosError<ErrorResponse>;
@@ -85,10 +88,9 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
         if (!window.confirm(`Ви точно хочете звільнити ${name}?`)) return;
 
         try {
-            await axios.delete(`/api/Auth/users/${id}`);
-            setMessage({ type: 'success', text: `Користувача ${name} видалено` });
+            await axios.delete(`${AZURE_API_URL}/api/Auth/users/${id}`, getAuthConfig());
             
-            // 👇 3. Тут теж оновлюємо тригер
+            setMessage({ type: 'success', text: `Користувача ${name} видалено` });
             setRefreshKey(prev => prev + 1);
         } catch (error) {
             console.error(error);
@@ -98,7 +100,6 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
 
     return (
         <Paper sx={{ p: 3, borderRadius: 2 }}>
-            {/* Заголовок і навігація */}
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                 <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
                     Назад
@@ -117,7 +118,6 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
                 </Alert>
             )}
 
-            {/* ТАБЛИЦЯ КОРИСТУВАЧІВ */}
             <TableContainer component={Paper} elevation={2}>
                 <Table>
                     <TableHead sx={{ bgcolor: '#f5f5f5' }}>
@@ -155,7 +155,6 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
                 </Table>
             </TableContainer>
 
-            {/* МОДАЛЬНЕ ВІКНО ДОДАВАННЯ */}
             <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="xs">
                 <DialogTitle>Новий співробітник</DialogTitle>
                 <DialogContent>

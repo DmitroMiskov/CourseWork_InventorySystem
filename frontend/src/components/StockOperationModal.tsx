@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { 
   Dialog, DialogTitle, DialogContent, DialogActions, Button, 
-  TextField, MenuItem, Select, FormControl, InputLabel, Box, Typography 
+  TextField, MenuItem, Select, FormControl, InputLabel, Box, //Typography 
 } from '@mui/material';
-import axios, { AxiosError } from 'axios'; // 👈 ЗМІНА 1: Додали імпорт типу помилки
+import axios, { AxiosError } from 'axios';
 
-// Типи
+// --- ТИПИ ---
 interface Product {
   id: string;
   name: string;
@@ -29,10 +29,12 @@ interface StockOperationModalProps {
   onSuccess: () => void;
 }
 
-// 👈 ЗМІНА 2: Інтерфейс для відповіді про помилку від сервера
-interface ErrorResponse {
-    title?: string;
-    message?: string;
+// 👇 НОВЕ: Інтерфейс для помилки бекенду (стандартний для ASP.NET Core)
+interface ServerErrorResponse {
+  title?: string;
+  status?: number;
+  errors?: Record<string, string[]>;
+  message?: string;
 }
 
 export default function StockOperationModal({ open, onClose, product, onSuccess }: StockOperationModalProps) {
@@ -52,30 +54,24 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const config = {
-        headers: { 'Authorization': `Bearer ${token}` }
-      };
+      const config = { headers: { 'Authorization': `Bearer ${token}` } };
 
       axios.get<Supplier[]>(`${AZURE_API_URL}/api/suppliers`, config)
         .then(res => setSuppliers(res.data))
-        .catch(err => console.error("Помилка завантаження постачальників:", err));
+        .catch(err => console.error(err));
 
       axios.get<Customer[]>(`${AZURE_API_URL}/api/customers`, config)
         .then(res => setCustomers(res.data))
-        .catch(err => console.error("Помилка завантаження клієнтів:", err));
+        .catch(err => console.error(err));
     }
   }, [open]);
 
-  const resetForm = () => {
+  const handleClose = () => {
     setQuantity('');
     setReason('');
     setSelectedSupplier('');
     setSelectedCustomer('');
     setType('Incoming');
-  };
-
-  const handleClose = () => {
-    resetForm(); 
     onClose();   
   };
 
@@ -84,18 +80,20 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
 
     const qtyNumber = Number(quantity);
     if (isNaN(qtyNumber) || qtyNumber <= 0) {
-        alert("Введіть коректну кількість");
+        alert("Кількість має бути числом більше 0");
         return;
     }
 
     const payload = {
       productId: product.id,
-      type,
+      type: type, 
       quantity: qtyNumber,
       reason: reason || "Ручна операція",
-      supplierId: (type === 'Incoming' && selectedSupplier !== "") ? selectedSupplier : null,
-      customerId: (type === 'Outgoing' && selectedCustomer !== "") ? selectedCustomer : null
+      supplierId: (type === 'Incoming' && selectedSupplier) ? selectedSupplier : null,
+      customerId: (type === 'Outgoing' && selectedCustomer) ? selectedCustomer : null
     };
+
+    console.log("Відправляю payload:", payload);
 
     try {
       const token = localStorage.getItem('token');
@@ -104,16 +102,35 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      resetForm(); 
+      alert("Операцію успішно виконано!");
+      handleClose(); 
       onSuccess(); 
-    } catch (error) { // 👈 ЗМІНА 3: Прибрали ": any"
+    } catch (error) {
       console.error("Помилка операції:", error);
       
-      // 👇 ЗМІНА 4: Безпечне приведення типів
-      const axiosError = error as AxiosError<ErrorResponse>;
-      const errorMessage = axiosError.response?.data?.title || axiosError.message || "Помилка виконання операції";
+      // 👇 ВИПРАВЛЕННЯ: Використовуємо типізовану помилку замість any
+      const axiosError = error as AxiosError<ServerErrorResponse>;
+      const data = axiosError.response?.data;
       
-      alert(`Помилка: ${errorMessage}`);
+      let errorMessage = "Сталася помилка (400)";
+      
+      if (data) {
+          // Якщо є список помилок валідації (наприклад, "Quantity must be > 0")
+          if (data.errors) {
+              const validationErrors = Object.values(data.errors).flat().join('\n');
+              errorMessage = `Помилки валідації:\n${validationErrors}`;
+          } 
+          // Якщо є просто заголовок помилки
+          else if (data.title) {
+              errorMessage = data.title;
+          } 
+          // Якщо сервер повернув просто текст (рідко, але буває)
+          else if (typeof data === 'string') {
+              errorMessage = data;
+          }
+      }
+      
+      alert(errorMessage);
     }
   };
 
@@ -122,10 +139,7 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
       <DialogTitle>
-        Операція: {product.name} 
-        <Typography variant="caption" display="block" color="text.secondary">
-          Поточний залишок: {product.quantity}
-        </Typography>
+        {product.name} (Залишок: {product.quantity})
       </DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
@@ -137,8 +151,8 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
               label="Тип операції"
               onChange={(e) => setType(e.target.value as 'Incoming' | 'Outgoing')}
             >
-              <MenuItem value="Incoming">➕ Прихід (Закупівля)</MenuItem>
-              <MenuItem value="Outgoing">➖ Розхід (Продаж)</MenuItem>
+              <MenuItem value="Incoming">➕ Прихід</MenuItem>
+              <MenuItem value="Outgoing">➖ Розхід</MenuItem>
             </Select>
           </FormControl>
 
@@ -193,7 +207,7 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
       <DialogActions>
         <Button onClick={handleClose}>Скасувати</Button>
         <Button onClick={handleSubmit} variant="contained" color={type === 'Incoming' ? 'success' : 'error'}>
-          {type === 'Incoming' ? 'Зарахувати' : 'Списати'}
+          Виконати
         </Button>
       </DialogActions>
     </Dialog>

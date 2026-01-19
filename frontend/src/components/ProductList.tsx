@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import axios from 'axios';
 import { 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
   Button, TextField, IconButton, Dialog, DialogActions, DialogContent, 
@@ -28,6 +29,8 @@ import { saveAs } from 'file-saver';
 import StockHistory from './StockHistory';
 import StockOperationModal from './StockOperationModal';
 import IssuanceModal from './IssuanceModal';
+
+const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
 
 // --- ТИПИ ---
 interface Category {
@@ -61,7 +64,8 @@ interface ServerError {
 // --- НАДІЙНИЙ КОМПОНЕНТ ДЛЯ КАРТИНОК ---
 const ProductImage = ({ imageName, alt, size = 50, radius = 4 }: { imageName?: string; alt?: string; size?: number; radius?: number }) => {
   const [hasError, setHasError] = useState(false);
-  const SERVER_URL = 'http://localhost:8080'; // Змініть, якщо порт інший
+  
+  const SERVER_URL = AZURE_API_URL; 
 
   if (!imageName || hasError) {
     return (
@@ -76,7 +80,6 @@ const ProductImage = ({ imageName, alt, size = 50, radius = 4 }: { imageName?: s
     );
   }
 
-  // 👇 ЛОГІКА ВИПРАВЛЕННЯ ШЛЯХУ
   let src = '';
   
   if (imageName.startsWith('http')) {
@@ -99,7 +102,6 @@ const ProductImage = ({ imageName, alt, size = 50, radius = 4 }: { imageName?: s
             borderRadius: radius, border: '1px solid #ddd', flexShrink: 0 
         }}
         onError={() => {
-            console.warn(`⚠️ Картинка не знайдена: ${src}`);
             setHasError(true); 
         }}
     />
@@ -137,18 +139,27 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
   const [opModalOpen, setOpModalOpen] = useState(false);
   const [opProduct, setOpProduct] = useState<Product | null>(null);
 
-  // 👇 СТАНИ ДЛЯ МАСОВОЇ ВИДАЧІ
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [issueModalOpen, setIssueModalOpen] = useState(false);
+
+  const getAuthConfig = () => {
+    const token = localStorage.getItem('token');
+    return {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    };
+  };
 
   // --- ЗАВАНТАЖЕННЯ ДАНИХ ---
   const fetchProducts = async () => {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.get<Product[]>('/api/products');
+      const res = await axios.get<Product[]>(`${AZURE_API_URL}/api/products`, getAuthConfig());
       setProducts(res.data);
-      const catRes = await axios.get<Category[]>('/api/categories');
+      
+      const catRes = await axios.get<Category[]>(`${AZURE_API_URL}/api/categories`, getAuthConfig());
       setCategories(catRes.data);
     } catch (err) {
       console.error(err);
@@ -223,8 +234,12 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
 
     try {
       setLoading(true);
-      const res = await axios.post<{ url: string }>('/api/products/upload-image', uploadData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+      const token = localStorage.getItem('token');
+      const res = await axios.post<{ url: string }>(`${AZURE_API_URL}/api/products/upload-image`, uploadData, {
+          headers: { 
+              'Content-Type': 'multipart/form-data',
+              'Authorization': `Bearer ${token}`
+          }
       });
       setFormData(prev => ({ ...prev, imageUrl: res.data.url }));
     } catch (err) {
@@ -238,7 +253,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
   const handleDelete = async (id: string) => {
     if (window.confirm('Ви впевнені, що хочете видалити цей товар?')) {
       try {
-        await axios.delete(`/api/products/${id}`);
+        await axios.delete(`${AZURE_API_URL}/api/products/${id}`, getAuthConfig());
         fetchProducts();
       } catch (error) {
         console.error(error);
@@ -267,9 +282,9 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
 
     try {
       if (currentProduct) {
-        await axios.put(`/api/products/${currentProduct.id}`, payload);
+        await axios.put(`${AZURE_API_URL}/api/products/${currentProduct.id}`, payload, getAuthConfig());
       } else {
-        await axios.post('/api/products', payload);
+        await axios.post(`${AZURE_API_URL}/api/products`, payload, getAuthConfig());
       }
       setOpen(false);
       fetchProducts();
@@ -299,13 +314,17 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0) return;
-    const formData = new FormData();
-    formData.append("file", event.target.files[0]);
+    const uploadData = new FormData();
+    uploadData.append("file", event.target.files[0]);
 
     setLoading(true);
     try {
-      await axios.post('/api/products/import', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const token = localStorage.getItem('token');
+      await axios.post(`${AZURE_API_URL}/api/products/import`, uploadData, {
+        headers: { 
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
+        }
       });
       alert("Імпорт успішний!");
       fetchProducts();
@@ -330,7 +349,6 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
     setHistoryModalOpen(true);
   };
 
-  // 👇 ЛОГІКА ВИБОРУ (CHECKBOXES)
   const handleSelect = (id: string) => {
     setSelectedIds(prev => 
         prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
@@ -409,7 +427,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-              {/* 👇 ЧЕКБОКС "ВИБРАТИ ВСЕ" */}
+              {/* ЧЕКБОКС "ВИБРАТИ ВСЕ" */}
               <TableCell padding="checkbox">
                   <Checkbox 
                       onChange={handleSelectAll} 
@@ -432,7 +450,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
                     key={product.id}
                     sx={{ backgroundColor: product.quantity <= product.minStock ? '#fff0f0' : 'inherit' }}
                 >
-                  {/* 👇 ЧЕКБОКС РЯДКА */}
+                  {/* ЧЕКБОКС РЯДКА */}
                   <TableCell padding="checkbox">
                     <Checkbox 
                         checked={selectedIds.includes(product.id)}
@@ -575,7 +593,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         }}
       />
 
-      {/* 👇 ПЛАВАЮЧА КНОПКА КОШИКА (З'являється, коли щось вибрано) */}
+      {/* ПЛАВАЮЧА КНОПКА КОШИКА (З'являється, коли щось вибрано) */}
       {selectedIds.length > 0 && (
         <Box sx={{ position: 'fixed', bottom: 30, right: 30, zIndex: 1000 }}>
             <Badge badgeContent={selectedIds.length} color="error">
@@ -587,7 +605,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         </Box>
       )}
 
-      {/* 👇 МОДАЛКА ВИДАЧІ */}
+      {/* МОДАЛКА ВИДАЧІ */}
       <IssuanceModal 
         open={issueModalOpen}
         onClose={() => setIssueModalOpen(false)}

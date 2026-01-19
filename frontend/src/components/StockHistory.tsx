@@ -25,17 +25,27 @@ interface StockHistoryProps {
 
 export default function StockHistory({ open, onClose, productId, productName }: StockHistoryProps) {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
-  const [loading, setLoading] = useState(false); // 👇 Початковий стан false
+  const [loading, setLoading] = useState(false);
+
+  const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
 
   useEffect(() => {
-    // Якщо вікно закрите або немає ID, нічого не робимо
     if (!productId || !open) return;
 
-    // 👇 Оголошуємо функцію всередині ефекту
     const fetchHistory = async () => {
-      setLoading(true); // Тепер це всередині функції, лінтер не сваритиметься
+      setLoading(true);
       try {
-        const res = await axios.get<HistoryRecord[]>(`/api/products/${productId}/history`);
+        const token = localStorage.getItem('token');
+        
+        if (!token) return;
+
+        const res = await axios.get<HistoryRecord[]>(
+          `${AZURE_API_URL}/api/products/${productId}/history`,
+          {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }
+        );
+        
         setHistory(res.data);
       } catch (err) {
         console.error("Помилка завантаження історії:", err);
@@ -44,7 +54,7 @@ export default function StockHistory({ open, onClose, productId, productName }: 
       }
     };
 
-    fetchHistory(); // Викликаємо її
+    fetchHistory(); 
 
   }, [productId, open]);
 

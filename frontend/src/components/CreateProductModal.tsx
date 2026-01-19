@@ -5,6 +5,8 @@ import {
   Button, TextField, Box, Alert, MenuItem 
 } from '@mui/material';
 
+const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
+
 // --- ТИПИ ---
 interface Product {
   id: string;
@@ -38,6 +40,15 @@ interface Category {
 
 export default function CreateProductModal({ onClose, onProductSaved, productToEdit }: CreateProductModalProps) {
   
+  const getAuthConfig = () => {
+    const token = localStorage.getItem('token');
+    return {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    };
+  };
+
   const getInitialState = () => {
     if (!productToEdit) {
       return {
@@ -75,12 +86,10 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // 👇 ВИПРАВЛЕННЯ: Визначаємо логіку прямо тут, щоб уникнути проблем із залежностями
   useEffect(() => {
-    // Ця функція існує тільки всередині ефекту, тому лінтер щасливий
     const loadCategories = async () => {
       try {
-        const res = await axios.get('/api/categories');
+        const res = await axios.get(`${AZURE_API_URL}/api/categories`, getAuthConfig());
         setCategories(res.data);
       } catch (err) {
         console.error("Не вдалося завантажити категорії", err);
@@ -88,7 +97,7 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
     };
     
     loadCategories();
-  }, []); // [] означає "виконати один раз при відкритті"
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -109,9 +118,9 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
       }
 
       if (productToEdit) {
-        await axios.put(`/api/products/${productToEdit.id}`, { ...payload, id: productToEdit.id });
+        await axios.put(`${AZURE_API_URL}/api/products/${productToEdit.id}`, { ...payload, id: productToEdit.id }, getAuthConfig());
       } else {
-        await axios.post('/api/products', payload);
+        await axios.post(`${AZURE_API_URL}/api/products`, payload, getAuthConfig());
       }
       
       onProductSaved();
@@ -122,16 +131,15 @@ export default function CreateProductModal({ onClose, onProductSaved, productToE
     }
   };
 
-  // Логіка для кнопки "+"
   const handleQuickCreateCategory = async () => {
     const newName = window.prompt("Введіть назву нової категорії:");
     if (!newName) return;
 
     try {
-      await axios.post('/api/categories', { name: newName });
+      await axios.post(`${AZURE_API_URL}/api/categories`, { name: newName }, getAuthConfig());
       
-      // Оновлюємо список категорій вручну після додавання
-      const res = await axios.get('/api/categories');
+      // Refresh list
+      const res = await axios.get(`${AZURE_API_URL}/api/categories`, getAuthConfig());
       setCategories(res.data);
       
       const createdCat = res.data.find((c: Category) => c.name === newName);

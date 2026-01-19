@@ -39,21 +39,28 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState('');
 
-  // 1. Ефект ТІЛЬКИ для завантаження даних (API)
+  const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
+
   useEffect(() => {
     if (open) {
-      // Завантажуємо списки тільки коли вікно відкривається
-      axios.get<Supplier[]>('/api/suppliers')
-        .then(res => setSuppliers(res.data))
-        .catch(err => console.error(err));
+      const token = localStorage.getItem('token');
+      
+      if (!token) return;
 
-      axios.get<Customer[]>('/api/customers')
+      const config = {
+        headers: { 'Authorization': `Bearer ${token}` }
+      };
+
+      axios.get<Supplier[]>(`${AZURE_API_URL}/api/suppliers`, config)
+        .then(res => setSuppliers(res.data))
+        .catch(err => console.error("Помилка завантаження постачальників:", err));
+
+      axios.get<Customer[]>(`${AZURE_API_URL}/api/customers`, config)
         .then(res => setCustomers(res.data))
-        .catch(err => console.error(err));
+        .catch(err => console.error("Помилка завантаження клієнтів:", err));
     }
   }, [open]);
 
-  // 2. Функція очищення полів
   const resetForm = () => {
     setQuantity('');
     setReason('');
@@ -62,10 +69,9 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
     setType('Incoming');
   };
 
-  // 3. Обгортка для закриття (чистимо форму ПЕРЕД закриттям)
   const handleClose = () => {
-    resetForm(); // Спочатку чистимо
-    onClose();   // Потім закриваємо
+    resetForm(); 
+    onClose();   
   };
 
   const handleSubmit = async () => {
@@ -81,11 +87,16 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
     };
 
     try {
-      await axios.post('/api/stockmovements', payload);
-      resetForm(); // Чистимо форму після успіху
-      onSuccess(); // Закриваємо через батьківський метод
+      const token = localStorage.getItem('token');
+      
+      await axios.post(`${AZURE_API_URL}/api/stockmovements`, payload, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      resetForm(); 
+      onSuccess(); 
     } catch (error) {
-      alert('Помилка виконання операції');
+      alert('Помилка виконання операції. Перевірте консоль.');
       console.error(error);
     }
   };
@@ -93,7 +104,6 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
   if (!product) return null;
 
   return (
-    // 👇 Використовуємо handleClose замість onClose
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
       <DialogTitle>
         Операція: {product.name} 
@@ -165,7 +175,6 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
         </Box>
       </DialogContent>
       <DialogActions>
-        {/* 👇 Тут теж використовуємо handleClose */}
         <Button onClick={handleClose}>Скасувати</Button>
         <Button onClick={handleSubmit} variant="contained" color={type === 'Incoming' ? 'success' : 'error'}>
           {type === 'Incoming' ? 'Зарахувати' : 'Списати'}

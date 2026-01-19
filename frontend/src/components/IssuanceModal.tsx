@@ -5,9 +5,12 @@ import {
     TextField, LinearProgress, Typography, Box
 } from '@mui/material';
 import PrintIcon from '@mui/icons-material/Print';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import axios from 'axios';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
+const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
 
 interface Product {
     id: string;
@@ -24,7 +27,6 @@ interface IssuanceModalProps {
     onSuccess: () => void;
 }
 
-// 👇 1. ХЕЛПЕР: Конвертує файл шрифту в рядок, зрозумілий для PDF
 function arrayBufferToBase64(buffer: ArrayBuffer) {
     let binary = '';
     const bytes = new Uint8Array(buffer);
@@ -37,7 +39,16 @@ function arrayBufferToBase64(buffer: ArrayBuffer) {
 
 export default function IssuanceModal({ open, onClose, selectedProducts, onSuccess }: IssuanceModalProps) {
     const [quantities, setQuantities] = useState<Record<string, number>>({});
-    const [isGenerating, setIsGenerating] = useState(false); // Щоб показати загрузку поки качаємо шрифт
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    const getAuthConfig = () => {
+        const token = localStorage.getItem('token');
+        return {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        };
+    };
 
     const handleQuantityChange = (id: string, val: string) => {
         const num = parseInt(val) || 0;
@@ -56,10 +67,9 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
         }
 
         try {
-            await axios.post('/api/products/issue', payload);
+            await axios.post(`${AZURE_API_URL}/api/products/issue`, payload, getAuthConfig());
             alert("Успішно списано!");
             
-            // Запускаємо генерацію PDF
             await generatePDF(); 
             
             onSuccess();   
@@ -74,19 +84,15 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
         setIsGenerating(true);
         try {
             const doc = new jsPDF();
-
-            // 👇 ТЕПЕР ШРИФТ ЗАВАНТАЖУЄТЬСЯ З ВАШОГО СЕРВЕРА (швидко і без помилок)
-            const fontUrl = '/fonts/Roboto-Regular.ttf';
+            const fontUrl = `${AZURE_API_URL}/fonts/Roboto-Regular.ttf`;
             
             const response = await axios.get(fontUrl, { responseType: 'arraybuffer' });
             const fontBase64 = arrayBufferToBase64(response.data);
 
-            // Додаємо шрифт
             doc.addFileToVFS('Roboto-Regular.ttf', fontBase64);
             doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
             doc.setFont('Roboto');
 
-            // --- МАЛЮЄМО ЧЕК ---
             doc.setFontSize(18);
             doc.text("Накладна на видачу", 14, 22);
             
@@ -108,7 +114,7 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
                 body: tableData,
                 startY: 40,
                 styles: {
-                    font: 'Roboto',     // Використовуємо наш шрифт
+                    font: 'Roboto',     
                     fontStyle: 'normal',
                 },
                 headStyles: {
@@ -128,8 +134,7 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
 
         } catch (error) {
             console.error("PDF Error:", error);
-            // Виводимо справжню помилку, щоб зрозуміти причину
-            alert(`Не вдалося згенерувати PDF. Деталі: ${error instanceof Error ? error.message : String(error)}`);
+            alert(`Не вдалося згенерувати PDF (шрифт). Деталі: ${error instanceof Error ? error.message : String(error)}`);
         } finally {
             setIsGenerating(false);
         }
@@ -139,7 +144,6 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
             <DialogTitle>Оформлення видачі (Кошик)</DialogTitle>
             <DialogContent>
-                {/* Показуємо лоадер, якщо генеруємо PDF */}
                 {isGenerating && (
                     <Box sx={{ width: '100%', mb: 2 }}>
                         <Typography variant="caption">Завантаження шрифтів та друк...</Typography>

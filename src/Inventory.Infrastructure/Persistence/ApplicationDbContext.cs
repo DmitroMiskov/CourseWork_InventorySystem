@@ -31,7 +31,7 @@ namespace Inventory.Infrastructure.Persistence
                 entity.Property(e => e.Unit).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.MinStock).HasDefaultValue(0);
-                entity.Property(e => e.CreatedAt).HasDefaultValueSql("NOW()");
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
                 entity.HasOne(e => e.Category)
                       .WithMany(c => c.Products)
                       .HasForeignKey(e => e.CategoryId)

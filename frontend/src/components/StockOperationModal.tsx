@@ -3,7 +3,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, 
   TextField, MenuItem, Select, FormControl, InputLabel, Box, Typography 
 } from '@mui/material';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios'; // 👈 ЗМІНА 1: Додали імпорт типу помилки
 
 // Типи
 interface Product {
@@ -29,6 +29,12 @@ interface StockOperationModalProps {
   onSuccess: () => void;
 }
 
+// 👈 ЗМІНА 2: Інтерфейс для відповіді про помилку від сервера
+interface ErrorResponse {
+    title?: string;
+    message?: string;
+}
+
 export default function StockOperationModal({ open, onClose, product, onSuccess }: StockOperationModalProps) {
   const [type, setType] = useState<'Incoming' | 'Outgoing'>('Incoming');
   const [quantity, setQuantity] = useState('');
@@ -44,7 +50,6 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
   useEffect(() => {
     if (open) {
       const token = localStorage.getItem('token');
-      
       if (!token) return;
 
       const config = {
@@ -77,13 +82,19 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
   const handleSubmit = async () => {
     if (!product || !quantity) return;
 
+    const qtyNumber = Number(quantity);
+    if (isNaN(qtyNumber) || qtyNumber <= 0) {
+        alert("Введіть коректну кількість");
+        return;
+    }
+
     const payload = {
       productId: product.id,
       type,
-      quantity: parseInt(quantity),
-      reason,
-      supplierId: type === 'Incoming' && selectedSupplier ? selectedSupplier : null,
-      customerId: type === 'Outgoing' && selectedCustomer ? selectedCustomer : null
+      quantity: qtyNumber,
+      reason: reason || "Ручна операція",
+      supplierId: (type === 'Incoming' && selectedSupplier !== "") ? selectedSupplier : null,
+      customerId: (type === 'Outgoing' && selectedCustomer !== "") ? selectedCustomer : null
     };
 
     try {
@@ -95,9 +106,14 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
 
       resetForm(); 
       onSuccess(); 
-    } catch (error) {
-      alert('Помилка виконання операції. Перевірте консоль.');
-      console.error(error);
+    } catch (error) { // 👈 ЗМІНА 3: Прибрали ": any"
+      console.error("Помилка операції:", error);
+      
+      // 👇 ЗМІНА 4: Безпечне приведення типів
+      const axiosError = error as AxiosError<ErrorResponse>;
+      const errorMessage = axiosError.response?.data?.title || axiosError.message || "Помилка виконання операції";
+      
+      alert(`Помилка: ${errorMessage}`);
     }
   };
 

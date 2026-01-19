@@ -83,22 +83,20 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
         return;
     }
 
-    // 👇 ГОЛОВНЕ ВИПРАВЛЕННЯ ТУТ:
-    // Сервер .NET чекає Enum як число (0 або 1), а не як рядок.
-    // 0 = Incoming (Прихід)
-    // 1 = Outgoing (Розхід)
+    // 0 = Incoming, 1 = Outgoing
     const typeEnum = type === 'Incoming' ? 0 : 1;
 
+    // 👇 ВАЖЛИВО: Використовуємо PascalCase (Велика літера), щоб C# зрозумів
     const payload = {
-      productId: product.id,
-      type: typeEnum, // Відправляємо число!
-      quantity: qtyNumber,
-      reason: reason || "Ручна операція",
-      supplierId: (type === 'Incoming' && selectedSupplier) ? selectedSupplier : null,
-      customerId: (type === 'Outgoing' && selectedCustomer) ? selectedCustomer : null
+      ProductId: product.id,      // Велика літера P
+      Type: typeEnum,             // Велика літера T
+      Quantity: qtyNumber,        // Велика літера Q
+      Reason: reason || "Ручна операція",
+      SupplierId: (type === 'Incoming' && selectedSupplier) ? selectedSupplier : null,
+      CustomerId: (type === 'Outgoing' && selectedCustomer) ? selectedCustomer : null
     };
 
-    console.log("Відправляю payload:", payload);
+    console.log("Відправляю payload (PascalCase):", payload);
 
     try {
       const token = localStorage.getItem('token');
@@ -108,8 +106,13 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
       });
 
       alert("Операцію успішно виконано!");
+      
+      // Закриваємо модалку
       handleClose(); 
+      
+      // Викликаємо оновлення даних на сторінці
       onSuccess(); 
+      
     } catch (error) {
       console.error("Помилка операції:", error);
       

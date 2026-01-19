@@ -81,7 +81,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             size="large" 
             sx={{ mt: 3 }}
           >
-            Увійти
+            УВІЙТИ
           </Button>
         </form>
       </Paper>

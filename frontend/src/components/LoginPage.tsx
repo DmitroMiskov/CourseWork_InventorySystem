@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from "../api/axiosConfig";
 import { Box, Button, TextField, Typography, Paper, Alert } from '@mui/material';
 
 interface LoginPageProps {
@@ -17,7 +17,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
     try {
       // 1. Відправляємо логін/пароль на сервер
-      const response = await axios.post('/api/Auth/login', {
+      const response = await api.post('/api/Auth/login', {
         username,
         password
       });

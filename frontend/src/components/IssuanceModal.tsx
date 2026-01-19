@@ -27,15 +27,15 @@ interface IssuanceModalProps {
     onSuccess: () => void;
 }
 
-function arrayBufferToBase64(buffer: ArrayBuffer) {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
-    return window.btoa(binary);
-}
+// function arrayBufferToBase64(buffer: ArrayBuffer) {
+//     let binary = '';
+//     const bytes = new Uint8Array(buffer);
+//     const len = bytes.byteLength;
+//     for (let i = 0; i < len; i++) {
+//         binary += String.fromCharCode(bytes[i]);
+//     }
+//     return window.btoa(binary);
+// }
 
 export default function IssuanceModal({ open, onClose, selectedProducts, onSuccess }: IssuanceModalProps) {
     const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -80,46 +80,37 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
         }
     };
 
-    const generatePDF = async () => {
+    const generatePDF = () => {
         setIsGenerating(true);
         try {
             const doc = new jsPDF();
-            const fontUrl = `${AZURE_API_URL}/fonts/Roboto-Regular.ttf`;
             
-            const response = await axios.get(fontUrl, { responseType: 'arraybuffer' });
-            const fontBase64 = arrayBufferToBase64(response.data);
+            // 👇 ТИМЧАСОВО: Використовуємо стандартний шрифт, щоб не було помилки 404
+            // (Кирилиця може не відображатися коректно, але файл створиться)
+            doc.setFont("helvetica", "normal"); 
 
-            doc.addFileToVFS('Roboto-Regular.ttf', fontBase64);
-            doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
-            doc.setFont('Roboto');
-
+            // --- МАЛЮЄМО ЧЕК ---
             doc.setFontSize(18);
-            doc.text("Накладна на видачу", 14, 22);
+            doc.text("Receipt (Nakladna)", 14, 22); // Англійською, щоб точно працювало
             
             doc.setFontSize(11);
-            doc.text(`Дата: ${new Date().toLocaleDateString()}`, 14, 30);
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 30);
 
             const tableData = selectedProducts
                 .filter(p => (quantities[p.id] || 0) > 0)
                 .map((p, index) => [
                     index + 1,
-                    p.name, 
+                    p.name, // Якщо тут кирилиця, можуть бути "кракозябри" у стандартному шрифті
                     `${quantities[p.id]} ${p.unit}`,
-                    `${p.price} грн`,
-                    `${(p.price * quantities[p.id]).toFixed(2)} грн`
+                    `${p.price}`,
+                    `${(p.price * quantities[p.id]).toFixed(2)}`
                 ]);
 
             autoTable(doc, {
-                head: [['#', 'Товар', 'К-сть', 'Ціна', 'Сума']],
+                head: [['#', 'Item', 'Qty', 'Price', 'Sum']],
                 body: tableData,
                 startY: 40,
-                styles: {
-                    font: 'Roboto',     
-                    fontStyle: 'normal',
-                },
-                headStyles: {
-                    fillColor: [41, 128, 185]
-                }
+                headStyles: { fillColor: [41, 128, 185] }
             });
 
             const totalSum = selectedProducts.reduce((acc, p) => acc + (p.price * (quantities[p.id] || 0)), 0);
@@ -127,14 +118,14 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
             // @ts-expect-error: jspdf-autotable adds this property
             const finalY = doc.lastAutoTable.finalY || 50;
             
-            doc.text(`Всього до видачі: ${totalSum.toFixed(2)} грн`, 14, finalY + 10);
-            doc.text("Підпис: _________________", 14, finalY + 20);
+            doc.text(`Total: ${totalSum.toFixed(2)} UAH`, 14, finalY + 10);
+            doc.text("Signature: _________________", 14, finalY + 20);
 
-            doc.save("issue_receipt_ua.pdf");
+            doc.save("issue_receipt.pdf");
 
         } catch (error) {
             console.error("PDF Error:", error);
-            alert(`Не вдалося згенерувати PDF (шрифт). Деталі: ${error instanceof Error ? error.message : String(error)}`);
+            alert("Помилка генерації PDF");
         } finally {
             setIsGenerating(false);
         }

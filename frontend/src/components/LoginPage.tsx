@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import api from "../api/axiosConfig";
+import axios from 'axios'; // 👈 ЗМІНА 1: Імпортуємо прямий axios, а не наш конфіг
 import { Box, Button, TextField, Typography, Paper, Alert } from '@mui/material';
 
 interface LoginPageProps {
@@ -11,13 +11,18 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  // 👇 ЗМІНА 2: Жорстко прописуємо адресу вашого бекенду
+  const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     try {
-      // 1. Відправляємо логін/пароль на сервер
-      const response = await api.post('/api/Auth/login', {
+      console.log("Відправляю запит на:", `${AZURE_API_URL}/api/Auth/login`); // Для перевірки в консолі
+
+      // 👇 ЗМІНА 3: Використовуємо axios + повну адресу
+      const response = await axios.post(`${AZURE_API_URL}/api/Auth/login`, {
         username,
         password
       });

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Dialog, DialogTitle, DialogContent, DialogActions, Button, 
-  TextField, MenuItem, Select, FormControl, InputLabel, Box, //Typography 
+  TextField, MenuItem, Select, FormControl, InputLabel, Box
 } from '@mui/material';
 import axios, { AxiosError } from 'axios';
 
@@ -29,7 +29,6 @@ interface StockOperationModalProps {
   onSuccess: () => void;
 }
 
-// 👇 НОВЕ: Інтерфейс для помилки бекенду (стандартний для ASP.NET Core)
 interface ServerErrorResponse {
   title?: string;
   status?: number;
@@ -84,9 +83,15 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
         return;
     }
 
+    // 👇 ГОЛОВНЕ ВИПРАВЛЕННЯ ТУТ:
+    // Сервер .NET чекає Enum як число (0 або 1), а не як рядок.
+    // 0 = Incoming (Прихід)
+    // 1 = Outgoing (Розхід)
+    const typeEnum = type === 'Incoming' ? 0 : 1;
+
     const payload = {
       productId: product.id,
-      type: type, 
+      type: typeEnum, // Відправляємо число!
       quantity: qtyNumber,
       reason: reason || "Ручна операція",
       supplierId: (type === 'Incoming' && selectedSupplier) ? selectedSupplier : null,
@@ -108,24 +113,18 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
     } catch (error) {
       console.error("Помилка операції:", error);
       
-      // 👇 ВИПРАВЛЕННЯ: Використовуємо типізовану помилку замість any
       const axiosError = error as AxiosError<ServerErrorResponse>;
       const data = axiosError.response?.data;
       
       let errorMessage = "Сталася помилка (400)";
       
       if (data) {
-          // Якщо є список помилок валідації (наприклад, "Quantity must be > 0")
           if (data.errors) {
               const validationErrors = Object.values(data.errors).flat().join('\n');
               errorMessage = `Помилки валідації:\n${validationErrors}`;
-          } 
-          // Якщо є просто заголовок помилки
-          else if (data.title) {
+          } else if (data.title) {
               errorMessage = data.title;
-          } 
-          // Якщо сервер повернув просто текст (рідко, але буває)
-          else if (typeof data === 'string') {
+          } else if (typeof data === 'string') {
               errorMessage = data;
           }
       }

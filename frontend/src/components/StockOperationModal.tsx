@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import axios, { AxiosError } from 'axios';
 
+// Інтерфейси
 interface Product {
   id: string;
   name: string;
@@ -21,18 +22,19 @@ interface Customer {
   name: string;
 }
 
-interface StockOperationModalProps {
-  open: boolean;
-  onClose: () => void;
-  product: Product | null;
-  onSuccess: () => void;
-}
-
+// Інтерфейс для типізації помилок сервера
 interface ServerErrorResponse {
   title?: string;
   status?: number;
   errors?: Record<string, string[]>;
   message?: string;
+}
+
+interface StockOperationModalProps {
+  open: boolean;
+  onClose: () => void;
+  product: Product | null;
+  onSuccess: () => void;
 }
 
 export default function StockOperationModal({ open, onClose, product, onSuccess }: StockOperationModalProps) {
@@ -44,6 +46,7 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
 
@@ -56,11 +59,11 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
 
       axios.get<Supplier[]>(`${AZURE_API_URL}/api/suppliers`, config)
         .then(res => setSuppliers(res.data))
-        .catch(err => console.error(err));
+        .catch(() => {});
 
       axios.get<Customer[]>(`${AZURE_API_URL}/api/customers`, config)
         .then(res => setCustomers(res.data))
-        .catch(err => console.error(err));
+        .catch(() => {});
     }
   }, [open]);
 
@@ -70,6 +73,7 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
     setSelectedSupplier('');
     setSelectedCustomer('');
     setType('Incoming');
+    setLoading(false);
     onClose();   
   };
 
@@ -82,8 +86,12 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
         return;
     }
 
-    // 0 = Incoming, 1 = Outgoing
-    const typeEnum = type === 'Incoming' ? 0 : 1;
+    setLoading(true);
+
+    // 👇 ВИПРАВЛЕНО ПІД ВАШ ENUM:
+    // 1 = In (Прихід)
+    // 2 = Out (Розхід)
+    const typeEnum = type === 'Incoming' ? 1 : 2;
 
     const payload = {
       ProductId: product.id,
@@ -94,8 +102,6 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
       CustomerId: (type === 'Outgoing' && selectedCustomer) ? selectedCustomer : null
     };
 
-    console.log("Sending payload:", payload);
-
     try {
       const token = localStorage.getItem('token');
       
@@ -105,24 +111,34 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
 
       alert("Операцію успішно виконано!");
       handleClose(); 
-      onSuccess(); // Це оновить таблицю товарів
+      onSuccess(); // Оновлюємо таблицю
       
     } catch (error) {
       console.error("Помилка операції:", error);
-      const axiosError = error as AxiosError<ServerErrorResponse>
+      
+      // Обробка помилок без any
+      const axiosError = error as AxiosError<ServerErrorResponse | string>;
       const data = axiosError.response?.data;
       
-      let errorMessage = "Сталася помилка (400)";
+      let errorMessage = "Сталася помилка";
+      
       if (data) {
-          if (data.errors) {
-              errorMessage = Object.values(data.errors).flat().join('\n');
-          } else if (data.title) {
-              errorMessage = data.title;
+          if (typeof data === 'object') {
+              if (data.errors) {
+                  errorMessage = Object.values(data.errors).flat().join('\n');
+              } else if (data.title) {
+                  errorMessage = data.title;
+              } else if (data.message) {
+                  errorMessage = data.message;
+              }
           } else if (typeof data === 'string') {
               errorMessage = data;
           }
       }
+      
       alert(errorMessage);
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -197,9 +213,9 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Скасувати</Button>
-        <Button onClick={handleSubmit} variant="contained" color={type === 'Incoming' ? 'success' : 'error'}>
-          Виконати
+        <Button onClick={handleClose} disabled={loading}>Скасувати</Button>
+        <Button onClick={handleSubmit} variant="contained" disabled={loading} color={type === 'Incoming' ? 'success' : 'error'}>
+          {loading ? "Збереження..." : "Виконати"}
         </Button>
       </DialogActions>
     </Dialog>

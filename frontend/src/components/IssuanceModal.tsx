@@ -20,7 +20,7 @@ interface Product {
     unit: string;
 }
 
-// 👇 Доданий інтерфейс для типізації помилок
+// Інтерфейс помилки
 interface ServerErrorResponse {
     title?: string;
     status?: number;
@@ -64,13 +64,14 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
         setIsGenerating(true);
 
         try {
-            // Виконуємо запити на списання для кожного товару
+            // Відправляємо запити на створення руху.
+            // Бекенд сам спише кількість, якщо контролер оновлено.
             const requests = itemsToIssue.map(p => {
                 const payload = {
                     ProductId: p.id,
-                    Type: 1, // 1 = Outgoing (Розхід)
+                    Type: 2, // 👇 ВАЖЛИВО: 2 = Out (Розхід) за вашим Enum
                     Quantity: quantities[p.id],
-                    Reason: "Видача по накладній (Bulk)",
+                    Reason: "Видача по накладній",
                     CustomerId: null 
                 };
                 return axios.post(`${AZURE_API_URL}/api/stockmovements`, payload, getAuthConfig());
@@ -85,10 +86,7 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
             onClose();     
         } catch (error) {
             console.error(error);
-            
-            // 👇 ТУТ БУЛА ПОМИЛКА ESLINT, ТЕПЕР ВИПРАВЛЕНО
             const axiosError = error as AxiosError<ServerErrorResponse | string>;
-            
             const data = axiosError.response?.data;
             let msg = "Помилка списання";
 
@@ -202,7 +200,7 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
                     startIcon={<PrintIcon />}
                     disabled={isGenerating}
                 >
-                    {isGenerating ? "Обробка..." : "Списати та Друк"}
+                    {isGenerating ? "Списати та Друк" : "Списати та Друк"}
                 </Button>
             </DialogActions>
         </Dialog>

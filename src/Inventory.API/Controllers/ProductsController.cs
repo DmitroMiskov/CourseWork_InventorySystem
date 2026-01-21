@@ -3,6 +3,8 @@ using Inventory.Application.Products.Commands.DeleteProduct;
 using Inventory.Application.Products.Commands.UpdateProduct;
 using Inventory.Application.Products.Queries.GetProducts;
 using Inventory.Application.Categories.Commands.CreateCategory;
+using Inventory.Application.Categories.Commands.DeleteCategory;
+using Inventory.Application.Categories.Commands.UpdateCategory;
 using Inventory.Application.Categories.Queries.GetCategories;
 using Inventory.Domain.Entities;
 using MediatR;
@@ -239,7 +241,6 @@ namespace Inventory.API.Controllers
 
     [ApiController]
     [Route("api/[controller]")]
-    // 👇 Те саме для категорій: клас захищений
     [Authorize]
     public class CategoriesController : ControllerBase
     {
@@ -250,7 +251,6 @@ namespace Inventory.API.Controllers
             _mediator = mediator;
         }
 
-        // 👇 Бачити категорії можуть ВСІ
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -258,13 +258,33 @@ namespace Inventory.API.Controllers
             return Ok(categories);
         }
 
-        // 👇 Створювати категорії тільки АДМІН
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(CreateCategoryCommand command)
         {
             var id = await _mediator.Send(command);
             return Ok(id);
+        }
+
+        // 👇 ДОДАНО: Редагування категорії
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Update(Guid id, UpdateCategoryCommand command)
+        {
+            if (id != command.Id) return BadRequest("ID не співпадає");
+            await _mediator.Send(command);
+            return NoContent();
+        }
+
+        // 👇 ДОДАНО: Видалення категорії
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            // Тут бажано додати перевірку, чи є товари в цій категорії, 
+            // щоб не видалити категорію, яка використовується.
+            await _mediator.Send(new DeleteCategoryCommand(id));
+            return NoContent();
         }
     }
 }

@@ -4,8 +4,8 @@ import Inventory2Icon from '@mui/icons-material/Inventory2';
 import CategoryIcon from '@mui/icons-material/Category';
 
 // Імпортуємо ваші компоненти
-import ProductList from '../src/components/ProductList';
-import CategoryList from '../src/components/CategoryList';
+import ProductList from './ProductList';
+import CategoryList from './CategoryList';
 
 interface InventoryPageProps {
     isAdmin?: boolean; // Передаємо роль, якщо є

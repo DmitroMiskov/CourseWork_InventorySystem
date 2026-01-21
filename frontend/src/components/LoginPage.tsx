@@ -52,7 +52,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     }}>
       <Paper elevation={3} sx={{ p: 4, width: 350, textAlign: 'center' }}>
         <Typography variant="h5" mb={3} fontWeight="bold" color="primary">
-          Складський Облік
+          Складський облік
         </Typography>
         
         <form onSubmit={handleLogin}>
@@ -81,7 +81,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             size="large" 
             sx={{ mt: 3 }}
           >
-            УВІЙТИ23
+            УВІЙТИ
           </Button>
         </form>
       </Paper>

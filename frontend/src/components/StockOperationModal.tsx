@@ -5,7 +5,6 @@ import {
 } from '@mui/material';
 import axios, { AxiosError } from 'axios';
 
-// --- ТИПИ ---
 interface Product {
   id: string;
   name: string;
@@ -86,17 +85,16 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
     // 0 = Incoming, 1 = Outgoing
     const typeEnum = type === 'Incoming' ? 0 : 1;
 
-    // 👇 ВАЖЛИВО: Використовуємо PascalCase (Велика літера), щоб C# зрозумів
     const payload = {
-      ProductId: product.id,      // Велика літера P
-      Type: typeEnum,             // Велика літера T
-      Quantity: qtyNumber,        // Велика літера Q
+      ProductId: product.id,
+      Type: typeEnum,
+      Quantity: qtyNumber,
       Reason: reason || "Ручна операція",
       SupplierId: (type === 'Incoming' && selectedSupplier) ? selectedSupplier : null,
       CustomerId: (type === 'Outgoing' && selectedCustomer) ? selectedCustomer : null
     };
 
-    console.log("Відправляю payload (PascalCase):", payload);
+    console.log("Sending payload:", payload);
 
     try {
       const token = localStorage.getItem('token');
@@ -106,32 +104,24 @@ export default function StockOperationModal({ open, onClose, product, onSuccess 
       });
 
       alert("Операцію успішно виконано!");
-      
-      // Закриваємо модалку
       handleClose(); 
-      
-      // Викликаємо оновлення даних на сторінці
-      onSuccess(); 
+      onSuccess(); // Це оновить таблицю товарів
       
     } catch (error) {
       console.error("Помилка операції:", error);
-      
-      const axiosError = error as AxiosError<ServerErrorResponse>;
+      const axiosError = error as AxiosError<ServerErrorResponse>
       const data = axiosError.response?.data;
       
       let errorMessage = "Сталася помилка (400)";
-      
       if (data) {
           if (data.errors) {
-              const validationErrors = Object.values(data.errors).flat().join('\n');
-              errorMessage = `Помилки валідації:\n${validationErrors}`;
+              errorMessage = Object.values(data.errors).flat().join('\n');
           } else if (data.title) {
               errorMessage = data.title;
           } else if (typeof data === 'string') {
               errorMessage = data;
           }
       }
-      
       alert(errorMessage);
     }
   };

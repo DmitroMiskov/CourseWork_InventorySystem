@@ -20,22 +20,20 @@ interface Product {
     unit: string;
 }
 
+// 👇 Доданий інтерфейс для типізації помилок
+interface ServerErrorResponse {
+    title?: string;
+    status?: number;
+    errors?: Record<string, string[]>;
+    message?: string;
+}
+
 interface IssuanceModalProps {
     open: boolean;
     onClose: () => void;
     selectedProducts: Product[];
     onSuccess: () => void;
 }
-
-// function arrayBufferToBase64(buffer: ArrayBuffer) {
-//     let binary = '';
-//     const bytes = new Uint8Array(buffer);
-//     const len = bytes.byteLength;
-//     for (let i = 0; i < len; i++) {
-//         binary += String.fromCharCode(bytes[i]);
-//     }
-//     return window.btoa(binary);
-// }
 
 export default function IssuanceModal({ open, onClose, selectedProducts, onSuccess }: IssuanceModalProps) {
     const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -56,42 +54,66 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
     };
 
     const handleIssue = async () => {
-        const payload = selectedProducts.map(p => ({
-            productId: p.id,
-            quantity: quantities[p.id] || 0
-        })).filter(i => i.quantity > 0);
+        const itemsToIssue = selectedProducts.filter(p => (quantities[p.id] || 0) > 0);
 
-        if (payload.length === 0) {
+        if (itemsToIssue.length === 0) {
             alert("Вкажіть кількість хоча б для одного товару");
             return;
         }
 
+        setIsGenerating(true);
+
         try {
-            await axios.post(`${AZURE_API_URL}/api/products/issue`, payload, getAuthConfig());
-            alert("Успішно списано!");
-            
+            // Виконуємо запити на списання для кожного товару
+            const requests = itemsToIssue.map(p => {
+                const payload = {
+                    ProductId: p.id,
+                    Type: 1, // 1 = Outgoing (Розхід)
+                    Quantity: quantities[p.id],
+                    Reason: "Видача по накладній (Bulk)",
+                    CustomerId: null 
+                };
+                return axios.post(`${AZURE_API_URL}/api/stockmovements`, payload, getAuthConfig());
+            });
+
+            await Promise.all(requests);
+
+            alert("Успішно списано! Формуємо накладну...");
             await generatePDF(); 
             
             onSuccess();   
             onClose();     
         } catch (error) {
-            const axiosError = error as AxiosError<string>;
-            alert(axiosError.response?.data || "Помилка списання");
+            console.error(error);
+            
+            // 👇 ТУТ БУЛА ПОМИЛКА ESLINT, ТЕПЕР ВИПРАВЛЕНО
+            const axiosError = error as AxiosError<ServerErrorResponse | string>;
+            
+            const data = axiosError.response?.data;
+            let msg = "Помилка списання";
+
+            if (data) {
+                if (typeof data === 'string') {
+                    msg = data;
+                } else if (typeof data === 'object') {
+                    if (data.title) msg = data.title;
+                    else if (data.message) msg = data.message;
+                }
+            }
+            
+            alert(`Помилка: ${msg}`);
+        } finally {
+            setIsGenerating(false);
         }
     };
 
     const generatePDF = () => {
-        setIsGenerating(true);
         try {
             const doc = new jsPDF();
-            
-            // 👇 ТИМЧАСОВО: Використовуємо стандартний шрифт, щоб не було помилки 404
-            // (Кирилиця може не відображатися коректно, але файл створиться)
             doc.setFont("helvetica", "normal"); 
 
-            // --- МАЛЮЄМО ЧЕК ---
             doc.setFontSize(18);
-            doc.text("Receipt (Nakladna)", 14, 22); // Англійською, щоб точно працювало
+            doc.text("Receipt (Nakladna)", 14, 22);
             
             doc.setFontSize(11);
             doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 30);
@@ -100,7 +122,7 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
                 .filter(p => (quantities[p.id] || 0) > 0)
                 .map((p, index) => [
                     index + 1,
-                    p.name, // Якщо тут кирилиця, можуть бути "кракозябри" у стандартному шрифті
+                    p.name, 
                     `${quantities[p.id]} ${p.unit}`,
                     `${p.price}`,
                     `${(p.price * quantities[p.id]).toFixed(2)}`
@@ -126,8 +148,6 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
         } catch (error) {
             console.error("PDF Error:", error);
             alert("Помилка генерації PDF");
-        } finally {
-            setIsGenerating(false);
         }
     };
 
@@ -137,7 +157,7 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
             <DialogContent>
                 {isGenerating && (
                     <Box sx={{ width: '100%', mb: 2 }}>
-                        <Typography variant="caption">Завантаження шрифтів та друк...</Typography>
+                        <Typography variant="caption">Обробка списання та друк...</Typography>
                         <LinearProgress />
                     </Box>
                 )}
@@ -182,7 +202,7 @@ export default function IssuanceModal({ open, onClose, selectedProducts, onSucce
                     startIcon={<PrintIcon />}
                     disabled={isGenerating}
                 >
-                    {isGenerating ? "Друк..." : "Підтвердити"}
+                    {isGenerating ? "Обробка..." : "Списати та Друк"}
                 </Button>
             </DialogActions>
         </Dialog>

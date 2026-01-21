@@ -10,7 +10,7 @@ import PersonIcon from '@mui/icons-material/Person';
 interface HistoryRecord {
   id: string;
   change: number;
-  stockAfter: number;
+  stockAfter: string | number; // 👇 Змінено, бо бекенд може слати "---"
   note: string;
   userName: string;
   createdAt: string;
@@ -36,11 +36,13 @@ export default function StockHistory({ open, onClose, productId, productName }: 
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        
         if (!token) return;
 
+        // 👇👇👇 ВИПРАВЛЕНО URL АДРЕСУ 👇👇👇
+        // Було: /api/products/${productId}/history
+        // Стало: /api/stockmovements/product/${productId}
         const res = await axios.get<HistoryRecord[]>(
-          `${AZURE_API_URL}/api/products/${productId}/history`,
+          `${AZURE_API_URL}/api/stockmovements/product/${productId}`,
           {
             headers: { 'Authorization': `Bearer ${token}` }
           }
@@ -111,6 +113,7 @@ export default function StockHistory({ open, onClose, productId, productName }: 
                     </TableCell>
 
                     <TableCell align="center" sx={{ color: 'text.secondary' }}>
+                      {/* Відображаємо StockAfter, навіть якщо це рядок "---" */}
                       {row.stockAfter}
                     </TableCell>
 

@@ -1,46 +1,195 @@
 import { useState } from 'react';
-import { Box, Tab, Tabs } from '@mui/material';
-import Inventory2Icon from '@mui/icons-material/Inventory2';
-import CategoryIcon from '@mui/icons-material/Category';
+import axios from 'axios';
+import { jwtDecode } from "jwt-decode";
+import { Container, CssBaseline, AppBar, Toolbar, Typography, Button, Box, IconButton, Tooltip, Chip } from '@mui/material';
 
-// Імпортуємо ваші компоненти
-import ProductList from '../src/components/ProductList';
-import CategoryList from '../src/components/CategoryList';
+// Іконки
+import InventoryIcon from '@mui/icons-material/Inventory';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
+import PeopleIcon from '@mui/icons-material/People';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import CategoryIcon from '@mui/icons-material/Category'; // 👇 1. Додано іконку
 
-interface InventoryPageProps {
-    isAdmin?: boolean; // Передаємо роль, якщо є
+// Компоненти
+import ProductList from './components/ProductList';
+import CategoryList from './components/CategoryList'; // 👇 2. Додано імпорт списку категорій
+import LoginPage from './components/LoginPage';
+import Dashboard from './components/Dashboard';
+import Partners from './components/Partners';
+import AdminPage from './components/AdminPage';
+
+// Тип для нашого Токена
+interface CustomJwtPayload {
+  unique_name: string; // Логін
+  role: string;        // Роль (Admin/User)
+  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string;
 }
 
-export default function InventoryPage({ isAdmin = true }: InventoryPageProps) {
-    const [tabIndex, setTabIndex] = useState(0);
+function App() {
+  // 👇 КРОК 1: Функція для отримання початкового стану (працює синхронно)
+  const getInitialState = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return { auth: false, role: '', name: '' };
 
-    const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-        setTabIndex(newValue);
-    };
+    try {
+      const decoded = jwtDecode<CustomJwtPayload>(token);
+      const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decoded.role || "User";
+      
+      // Налаштовуємо axios одразу, якщо токен є
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      return { 
+        auth: true, 
+        role: role, 
+        name: decoded.unique_name || "Користувач" 
+      };
+    } catch (error) {
+      console.error("Invalid token on startup", error);
+      localStorage.removeItem('token');
+      return { auth: false, role: '', name: '' };
+    }
+  };
 
-    return (
-        <Box sx={{ width: '100%' }}>
-            {/*  - conceptual visualization */}
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-                <Tabs value={tabIndex} onChange={handleTabChange} aria-label="inventory tabs">
-                    <Tab icon={<Inventory2Icon />} iconPosition="start" label="Товари" />
-                    <Tab icon={<CategoryIcon />} iconPosition="start" label="Категорії" />
-                </Tabs>
-            </Box>
+  // 👇 КРОК 2: Ініціалізуємо змінні ОДРАЗУ правильними значеннями
+  const [initialState] = useState(getInitialState);
 
-            {/* Вкладка 0: Товари */}
-            <div role="tabpanel" hidden={tabIndex !== 0}>
-                {tabIndex === 0 && (
-                    <ProductList isAdmin={isAdmin} />
-                )}
-            </div>
+  const [isAuthenticated, setIsAuthenticated] = useState(initialState.auth);
+  const [userRole, setUserRole] = useState(initialState.role);
+  const [username, setUsername] = useState(initialState.name);
+  
+  // 👇 3. Додано 'categories' у тип стану
+  const [currentView, setCurrentView] = useState<'list' | 'categories' | 'dashboard' | 'partners' | 'admin'>('list');
 
-            {/* Вкладка 1: Категорії */}
-            <div role="tabpanel" hidden={tabIndex !== 1}>
-                {tabIndex === 1 && (
-                    <CategoryList isAdmin={isAdmin} />
-                )}
-            </div>
-        </Box>
-    );
+  // Функція для оновлення стану після успішного входу
+  const handleLoginSuccess = () => {
+    const newState = getInitialState();
+    setIsAuthenticated(newState.auth);
+    setUserRole(newState.role);
+    setUsername(newState.name);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
+    setIsAuthenticated(false);
+    setUserRole('');
+    setUsername('');
+    setCurrentView('list');
+  };
+
+  // Якщо не залогінений — показуємо форму входу
+  if (!isAuthenticated) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // 👇 Перевірка: чи є користувач адміном (незалежно від регістру: Admin, admin, ADMIN)
+  const isAdmin = userRole.toLowerCase() === 'admin';
+
+  return (
+    <>
+      <CssBaseline />
+      <AppBar position="static">
+        <Toolbar>
+          <InventoryIcon sx={{ mr: 2 }} />
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
+            Складський облік
+          </Typography>
+
+          {/* МЕНЮ НАВІГАЦІЇ */}
+          <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
+            <Button 
+              color="inherit" 
+              startIcon={<TableChartIcon />}
+              variant={currentView === 'list' ? "outlined" : "text"}
+              onClick={() => setCurrentView('list')}
+              sx={{ backgroundColor: currentView === 'list' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
+            >
+              Склад
+            </Button>
+
+            {/* 👇 4. Додано кнопку "Категорії" */}
+            <Button 
+              color="inherit" 
+              startIcon={<CategoryIcon />}
+              variant={currentView === 'categories' ? "outlined" : "text"}
+              onClick={() => setCurrentView('categories')}
+              sx={{ backgroundColor: currentView === 'categories' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
+            >
+              Категорії
+            </Button>
+            
+            <Button 
+              color="inherit" 
+              startIcon={<PeopleIcon />}
+              variant={currentView === 'partners' ? "outlined" : "text"}
+              onClick={() => setCurrentView('partners')}
+              sx={{ backgroundColor: currentView === 'partners' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
+            >
+              Контрагенти
+            </Button>
+
+            <Button 
+              color="inherit" 
+              startIcon={<BarChartIcon />}
+              variant={currentView === 'dashboard' ? "outlined" : "text"}
+              onClick={() => setCurrentView('dashboard')}
+              sx={{ backgroundColor: currentView === 'dashboard' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
+            >
+              Дашборд
+            </Button>
+
+            {/* Кнопка Адмінки (Тільки для Адміна, ігноруючи регістр) */}
+            {isAdmin && (
+                <Button 
+                  color="warning" 
+                  startIcon={<SupervisorAccountIcon />}
+                  variant={currentView === 'admin' ? "outlined" : "text"}
+                  onClick={() => setCurrentView('admin')}
+                  sx={{ backgroundColor: currentView === 'admin' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
+                >
+                  Персонал
+                </Button>
+            )}
+          </Box>
+
+          {/* ІНФО ПРО ЮЗЕРА */}
+          <Chip 
+            icon={<PersonIcon />} 
+            label={`${username} (${userRole})`} 
+            color={isAdmin ? "warning" : "default"}
+            variant="outlined"
+            sx={{ mr: 2, color: 'white', borderColor: 'rgba(255,255,255,0.5)', '& .MuiChip-icon': { color: 'white' } }} 
+          />
+
+          <Box sx={{ flexGrow: 0 }}>
+            <Tooltip title="Вийти">
+                <IconButton color="inherit" onClick={handleLogout}>
+                    <LogoutIcon />
+                </IconButton>
+            </Tooltip>
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      {/* ОСНОВНИЙ КОНТЕНТ */}
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        {/* Передаємо isAdmin (true/false) у список товарів */}
+        {currentView === 'list' && <ProductList isAdmin={isAdmin} />}
+
+        {/* 👇 5. Додано відображення списку категорій */}
+        {currentView === 'categories' && <CategoryList isAdmin={isAdmin} />}
+        
+        {currentView === 'partners' && <Partners />}
+        
+        {currentView === 'dashboard' && <Dashboard />}
+        
+        {currentView === 'admin' && isAdmin && (<AdminPage onBack={() => setCurrentView('list')} />)}
+      </Container>
+    </>
+  );
 }
+
+export default App;

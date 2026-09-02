@@ -16,7 +16,6 @@ services:
   api:
     image: mcr.microsoft.com/dotnet/sdk:9.0
     container_name: inventory-api
-    # 👇 Вказуємо, де лежить .csproj, щоб команда запуску була простою
     working_dir: /app/src/Inventory.API
     depends_on:
       - db

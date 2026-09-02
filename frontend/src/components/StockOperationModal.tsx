@@ -1,33 +1,38 @@
 import { useState, useEffect } from 'react';
-import { 
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, 
-  TextField, MenuItem, Select, FormControl, InputLabel, Box
+import type { ChangeEvent } from 'react';
+import axios from 'axios';
+import api from '../api/axiosConfig';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Box,
+  Typography,
+  Alert,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  FormLabel
 } from '@mui/material';
-import axios, { AxiosError } from 'axios';
+import type { SelectChangeEvent } from '@mui/material';
 
-// Інтерфейси
 interface Product {
   id: string;
   name: string;
   quantity: number;
+  unit: string;
 }
 
-interface Supplier {
+interface Partner {
   id: string;
   name: string;
-}
-
-interface Customer {
-  id: string;
-  name: string;
-}
-
-// Інтерфейс для типізації помилок сервера
-interface ServerErrorResponse {
-  title?: string;
-  status?: number;
-  errors?: Record<string, string[]>;
-  message?: string;
 }
 
 interface StockOperationModalProps {
@@ -37,185 +42,166 @@ interface StockOperationModalProps {
   onSuccess: () => void;
 }
 
-export default function StockOperationModal({ open, onClose, product, onSuccess }: StockOperationModalProps) {
-  const [type, setType] = useState<'Incoming' | 'Outgoing'>('Incoming');
-  const [quantity, setQuantity] = useState('');
-  const [reason, setReason] = useState('');
-  
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [selectedSupplier, setSelectedSupplier] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState('');
-  const [loading, setLoading] = useState(false);
+interface ServerError {
+  title?: string;
+  status?: number;
+  message?: string;
+}
 
-  const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
+export default function StockOperationModal({
+  open,
+  onClose,
+  product,
+  onSuccess
+}: StockOperationModalProps) {
+  const [movementType, setMovementType] = useState<number>(1); // 1 = Прихід, 2 = Розхід
+  const [quantity, setQuantity] = useState<string>('');
+  const [partnerId, setPartnerId] = useState<string>('');
+  const [reason, setReason] = useState<string>('');
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (open) {
-      const token = localStorage.getItem('token');
-      if (!token) return;
+    if (!open) return;
 
-      const config = { headers: { 'Authorization': `Bearer ${token}` } };
-
-      axios.get<Supplier[]>(`${AZURE_API_URL}/api/suppliers`, config)
-        .then(res => setSuppliers(res.data))
-        .catch(() => {});
-
-      axios.get<Customer[]>(`${AZURE_API_URL}/api/customers`, config)
-        .then(res => setCustomers(res.data))
-        .catch(() => {});
-    }
-  }, [open]);
-
-  const handleClose = () => {
-    setQuantity('');
-    setReason('');
-    setSelectedSupplier('');
-    setSelectedCustomer('');
-    setType('Incoming');
-    setLoading(false);
-    onClose();   
-  };
-
-  const handleSubmit = async () => {
-    if (!product || !quantity) return;
-
-    const qtyNumber = Number(quantity);
-    if (isNaN(qtyNumber) || qtyNumber <= 0) {
-        alert("Кількість має бути числом більше 0");
-        return;
-    }
-
-    setLoading(true);
-
-    // 👇 ВИПРАВЛЕНО ПІД ВАШ ENUM:
-    // 1 = In (Прихід)
-    // 2 = Out (Розхід)
-    const typeEnum = type === 'Incoming' ? 1 : 2;
-
-    const payload = {
-      ProductId: product.id,
-      Type: typeEnum,
-      Quantity: qtyNumber,
-      Reason: reason || "Ручна операція",
-      SupplierId: (type === 'Incoming' && selectedSupplier) ? selectedSupplier : null,
-      CustomerId: (type === 'Outgoing' && selectedCustomer) ? selectedCustomer : null
+    const fetchPartners = async () => {
+      try {
+        const endpoint = movementType === 1 ? '/suppliers' : '/customers';
+        const res = await api.get<Partner[]>(endpoint);
+        setPartners(res.data);
+      } catch (err: unknown) {
+        console.error(err);
+      }
     };
 
-    try {
-      const token = localStorage.getItem('token');
-      
-      await axios.post(`${AZURE_API_URL}/api/stockmovements`, payload, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+    fetchPartners();
+  }, [open, movementType]);
 
-      alert("Операцію успішно виконано!");
-      handleClose(); 
-      onSuccess(); // Оновлюємо таблицю
-      
-    } catch (error) {
-      console.error("Помилка операції:", error);
-      
-      // Обробка помилок без any
-      const axiosError = error as AxiosError<ServerErrorResponse | string>;
-      const data = axiosError.response?.data;
-      
-      let errorMessage = "Сталася помилка";
-      
-      if (data) {
-          if (typeof data === 'object') {
-              if (data.errors) {
-                  errorMessage = Object.values(data.errors).flat().join('\n');
-              } else if (data.title) {
-                  errorMessage = data.title;
-              } else if (data.message) {
-                  errorMessage = data.message;
-              }
-          } else if (typeof data === 'string') {
-              errorMessage = data;
-          }
+  const handleSubmit = async () => {
+    if (!product) return;
+
+    const parsedQty = parseInt(quantity, 10);
+    if (!parsedQty || parsedQty <= 0) {
+      setError('Вкажіть коректну кількість товару');
+      return;
+    }
+
+    if (movementType === 2 && parsedQty > product.quantity) {
+      setError(`Недостатньо залишку на складі. Доступно: ${product.quantity} ${product.unit}`);
+      return;
+    }
+
+    const payload = {
+      productId: product.id,
+      quantity: parsedQty,
+      movementType,
+      supplierId: movementType === 1 ? partnerId || null : null,
+      customerId: movementType === 2 ? partnerId || null : null,
+      reason: reason.trim() || undefined
+    };
+
+    setLoading(true);
+    setError('');
+
+    try {
+      await api.post('/StockMovements', payload);
+      onSuccess();
+    } catch (err: unknown) {
+      console.error(err);
+      if (axios.isAxiosError<ServerError>(err)) {
+        const msg = err.response?.data?.message || err.response?.data?.title || 'Помилка виконання операції';
+        setError(`Сервер: ${msg}`);
+      } else {
+        setError('Помилка надсилання даних');
       }
-      
-      alert(errorMessage);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
-  if (!product) return null;
+  const handleClose = () => {
+    setError('');
+    setQuantity('');
+    setPartnerId('');
+    setReason('');
+    setMovementType(1);
+    onClose();
+  };
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
-      <DialogTitle>
-        {product.name} (Залишок: {product.quantity})
-      </DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-          
-          <FormControl fullWidth>
-            <InputLabel>Тип операції</InputLabel>
-            <Select
-              value={type}
-              label="Тип операції"
-              onChange={(e) => setType(e.target.value as 'Incoming' | 'Outgoing')}
-            >
-              <MenuItem value="Incoming">➕ Прихід</MenuItem>
-              <MenuItem value="Outgoing">➖ Розхід</MenuItem>
-            </Select>
-          </FormControl>
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+      <DialogTitle>Складська операція</DialogTitle>
+      <DialogContent dividers>
+        {product && (
+          <Box sx={{ mb: 2, p: 1.5, bgcolor: '#f9f9f9', borderRadius: 1 }}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              {product.name}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Поточний залишок: <strong>{product.quantity} {product.unit}</strong>
+            </Typography>
+          </Box>
+        )}
 
-          {type === 'Incoming' ? (
-             <FormControl fullWidth>
-               <InputLabel>Постачальник</InputLabel>
-               <Select
-                 value={selectedSupplier}
-                 label="Постачальник"
-                 onChange={(e) => setSelectedSupplier(e.target.value)}
-               >
-                 <MenuItem value=""><em>Не вказано</em></MenuItem>
-                 {suppliers.map(s => (
-                   <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
-                 ))}
-               </Select>
-             </FormControl>
-          ) : (
-             <FormControl fullWidth>
-               <InputLabel>Клієнт</InputLabel>
-               <Select
-                 value={selectedCustomer}
-                 label="Клієнт"
-                 onChange={(e) => setSelectedCustomer(e.target.value)}
-               >
-                 <MenuItem value=""><em>Не вказано</em></MenuItem>
-                 {customers.map(c => (
-                   <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
-                 ))}
-               </Select>
-             </FormControl>
-          )}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
-          <TextField
-            label="Кількість"
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            fullWidth
-          />
+        <FormControl component="fieldset" sx={{ mb: 2 }}>
+          <FormLabel component="legend">Тип операції</FormLabel>
+          <RadioGroup
+            row
+            value={movementType}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+              setMovementType(parseInt(e.target.value, 10));
+              setPartnerId('');
+            }}
+          >
+            <FormControlLabel value={1} control={<Radio color="success" />} label="Прихід (+)" />
+            <FormControlLabel value={2} control={<Radio color="warning" />} label="Розхід (-)" />
+          </RadioGroup>
+        </FormControl>
 
-          <TextField
-            label="Коментар"
-            multiline
-            rows={2}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            fullWidth
-          />
-        </Box>
+        <TextField
+          label="Кількість"
+          type="number"
+          fullWidth
+          margin="dense"
+          value={quantity}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setQuantity(e.target.value)}
+        />
+
+        <FormControl fullWidth margin="dense">
+          <InputLabel>{movementType === 1 ? 'Постачальник' : 'Отримувач / Клієнт'}</InputLabel>
+          <Select
+            value={partnerId}
+            label={movementType === 1 ? 'Постачальник' : 'Отримувач / Клієнт'}
+            onChange={(e: SelectChangeEvent<string>) => setPartnerId(e.target.value)}
+          >
+            <MenuItem value=""><em>Не вказано</em></MenuItem>
+            {partners.map((p) => (
+              <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <TextField
+          label="Причина / Примітка"
+          fullWidth
+          multiline
+          rows={2}
+          margin="dense"
+          value={reason}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setReason(e.target.value)}
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={loading}>Скасувати</Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={loading} color={type === 'Incoming' ? 'success' : 'error'}>
-          {loading ? "Збереження..." : "Виконати"}
+        <Button onClick={handleSubmit} variant="contained" disabled={loading}>
+          {loading ? 'Збереження...' : 'Провести'}
         </Button>
       </DialogActions>
     </Dialog>

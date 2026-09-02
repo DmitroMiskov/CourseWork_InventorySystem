@@ -1,8 +1,12 @@
-using Inventory.Domain.Entities;
 using MediatR;
+using Inventory.Application.Common.Models;
 
-namespace Inventory.Application.Products.Queries.GetProducts
+namespace Inventory.Application.Products.Queries.GetProducts;
+
+public record GetProductsQuery : IRequest<PaginatedList<ProductDto>>
 {
-    // Запит повертає список сутностей Product
-    public record GetProductsQuery : IRequest<List<Product>>;
+    public int PageNumber { get; init; } = 1;
+    public int PageSize { get; init; } = 10;
+    public string? SearchTerm { get; init; }
+    public Guid? CategoryId { get; init; }
 }

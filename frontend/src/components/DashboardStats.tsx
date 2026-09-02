@@ -1,98 +1,89 @@
-import React from 'react';
-import { Paper, Grid as Grid, Typography, Box } from '@mui/material';
-import InventoryIcon from '@mui/icons-material/Inventory';
+import type { ReactNode } from 'react';
+import { Grid, Paper, Typography, Box } from '@mui/material';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import WarningIcon from '@mui/icons-material/Warning';
-
-// --- ТИПИ ---
-interface Product {
-  id: string;
-  price: number;
-  minStock: number;
-  quantity: number;
-}
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import CategoryIcon from '@mui/icons-material/Category';
+import type { Product } from './Dashboard';
 
 interface DashboardStatsProps {
   products: Product[];
 }
 
-interface StatCardProps {
+interface StatItemProps {
   title: string;
   value: string | number;
-  icon: React.ReactNode;
+  icon: ReactNode;
   color: string;
-  bgColor: string;
 }
 
-// --- КОМПОНЕНТ StatCard (ВИНЕСЕНИЙ НАЗОВНІ) ---
-// Тепер він живе окремо і не перестворюється при кожному рендері
-const StatCard = ({ title, value, icon, color, bgColor }: StatCardProps) => (
-  <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
+const StatCard = ({ title, value, icon, color }: StatItemProps) => (
+  <Paper sx={{ p: 2.5, display: 'flex', alignItems: 'center', borderRadius: 2 }}>
+    <Box
+      sx={{
+        width: 56,
+        height: 56,
+        borderRadius: 2,
+        bgcolor: `${color}.light`,
+        color: `${color}.main`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        mr: 2,
+      }}
+    >
+      {icon}
+    </Box>
     <Box>
-      <Typography variant="subtitle2" color="text.secondary">
+      <Typography variant="body2" color="text.secondary">
         {title}
       </Typography>
-      <Typography variant="h4" sx={{ fontWeight: 'bold', color: color }}>
+      <Typography variant="h5" fontWeight="bold">
         {value}
       </Typography>
-    </Box>
-    <Box sx={{ 
-      bgcolor: bgColor, 
-      p: 1.5, 
-      borderRadius: '50%', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center' 
-    }}>
-      {icon}
     </Box>
   </Paper>
 );
 
-// --- ГОЛОВНИЙ КОМПОНЕНТ ---
 export default function DashboardStats({ products }: DashboardStatsProps) {
-  
-  // Логіка підрахунків
-  const totalProducts = products.length;
-
-  const totalValue = products.reduce((sum, product) => {
-    return sum + (product.price * product.quantity);
-  }, 0);
-
-  const lowStockCount = products.filter(p => p.quantity <= p.minStock).length;
+  const totalCost = products.reduce((acc, p) => acc + p.price * p.quantity, 0);
+  const lowStockCount = products.filter((p) => p.quantity <= p.minStock).length;
+  const uniqueCategoriesCount = new Set(
+    products.map((p) => p.categoryId).filter(Boolean)
+  ).size;
 
   return (
-    <Grid container spacing={3} sx={{ mb: 4 }}>
-      {/* Картка 1: Всього товарів */}
-      <Grid size={{ xs: 12, sm: 4 }}>
-        <StatCard 
-          title="Всього позицій" 
-          value={totalProducts} 
-          icon={<InventoryIcon sx={{ color: '#1976d2' }} />} 
-          color="#1976d2"
-          bgColor="#e3f2fd"
+    <Grid container spacing={2} sx={{ mb: 3 }}>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <StatCard
+          title="Всього товарів"
+          value={products.length}
+          icon={<Inventory2Icon fontSize="large" />}
+          color="primary"
         />
       </Grid>
-
-      {/* Картка 2: Загальна вартість */}
-      <Grid size={{ xs: 12, sm: 4 }}>
-        <StatCard 
-          title="Вартість складу" 
-          value={`${totalValue.toLocaleString()} грн`} 
-          icon={<AttachMoneyIcon sx={{ color: '#2e7d32' }} />} 
-          color="#2e7d32"
-          bgColor="#e8f5e9"
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <StatCard
+          title="Загальна вартість"
+          value={`${totalCost.toLocaleString('uk-UA')} ₴`}
+          icon={<AttachMoneyIcon fontSize="large" />}
+          color="success"
         />
       </Grid>
-
-      {/* Картка 3: Проблемні товари */}
-      <Grid size={{ xs: 12, sm: 4 }}>
-        <StatCard 
-          title="Закінчуються" 
-          value={lowStockCount} 
-          icon={<WarningIcon sx={{ color: '#d32f2f' }} />} 
-          color="#d32f2f"
-          bgColor="#ffebee"
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <StatCard
+          title="Критичний залишок"
+          value={lowStockCount}
+          icon={<WarningAmberIcon fontSize="large" />}
+          color="error"
+        />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <StatCard
+          title="Категорій з товарами"
+          value={uniqueCategoriesCount}
+          icon={<CategoryIcon fontSize="large" />}
+          color="info"
         />
       </Grid>
     </Grid>

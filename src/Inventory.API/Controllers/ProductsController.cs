@@ -67,7 +67,7 @@ namespace Inventory.API.Controllers
         // PUT: api/products/{id}
         // 👇 Тільки АДМІН може редагувати
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, admin")]
         public async Task<IActionResult> Update(Guid id, UpdateProductCommand command)
         {
             if (id != command.Id)
@@ -82,7 +82,7 @@ namespace Inventory.API.Controllers
         // POST: api/products/import
         // 👇 Тільки АДМІН може імпортувати
         [HttpPost("import")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, admin")]
         public async Task<IActionResult> Import(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -157,7 +157,7 @@ namespace Inventory.API.Controllers
         // POST: api/products/upload-image
         // 👇 Тільки АДМІН може завантажувати фото
         [HttpPost("upload-image")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, admin")]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
             try 

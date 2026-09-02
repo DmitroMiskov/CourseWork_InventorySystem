@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import axios, { AxiosError } from 'axios';
+import type { ChangeEvent } from 'react';
+import axios from 'axios';
+import type { SelectChangeEvent } from '@mui/material';
+import api from '../api/axiosConfig';
 import { 
     Box, Button, TextField, Typography, Paper, Alert, 
     FormControl, InputLabel, Select, MenuItem,
@@ -11,8 +14,6 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PersonIcon from '@mui/icons-material/Person';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
-
-const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
 
 interface AdminPageProps {
     onBack: () => void;
@@ -26,35 +27,32 @@ interface User {
 
 interface ErrorResponse {
     message?: string;
+    title?: string;
 }
 
-const AdminPage = ({ onBack }: AdminPageProps) => {
-    const [users, setUsers] = useState<User[]>([]);
-    const [refreshKey, setRefreshKey] = useState(0);
-    
-    const [openDialog, setOpenDialog] = useState(false);
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [role, setRole] = useState('User');
-    
-    const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+interface AlertMessage {
+    type: 'success' | 'error';
+    text: string;
+}
 
-    const getAuthConfig = () => {
-        const token = localStorage.getItem('token');
-        return {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        };
-    };
+export default function AdminPage({ onBack }: AdminPageProps) {
+    const [users, setUsers] = useState<User[]>([]);
+    const [refreshKey, setRefreshKey] = useState<number>(0);
+    
+    const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const [userName, setUserName] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [role, setRole] = useState<string>('User');
+    
+    const [message, setMessage] = useState<AlertMessage | null>(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const res = await axios.get(`${AZURE_API_URL}/api/Auth/users`, getAuthConfig());
+                const res = await api.get<User[]>('/Auth/users');
                 setUsers(res.data);
-            } catch (error) {
-                console.error("Не вдалося завантажити користувачів", error);
+            } catch (err: unknown) {
+                console.error("Не вдалося завантажити користувачів", err);
             }
         };
 
@@ -62,24 +60,32 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
     }, [refreshKey]);
 
     const handleCreateUser = async () => {
-        if (!username || !password) {
+        if (!userName || !password) {
             setMessage({ type: 'error', text: 'Заповніть логін та пароль' });
             return;
         }
 
         try {
-            await axios.post(`${AZURE_API_URL}/api/Auth/register`, { username, password, role }); 
+            await api.post('/Auth/register', { 
+                userName, 
+                password, 
+                role 
+            }); 
             
-            setMessage({ type: 'success', text: `Співробітника ${username} додано!` });
+            setMessage({ type: 'success', text: `Співробітника ${userName} додано!` });
             
-            setUsername('');
+            setUserName('');
             setPassword('');
             setOpenDialog(false);
             
             setRefreshKey(prev => prev + 1); 
-        } catch (error) {
-            const axiosError = error as AxiosError<ErrorResponse>;
-            const errorText = axiosError.response?.data?.message || 'Помилка створення';
+        } catch (err: unknown) {
+            let errorText = 'Помилка створення';
+
+            if (axios.isAxiosError<ErrorResponse>(err)) {
+                errorText = err.response?.data?.message || err.response?.data?.title || errorText;
+            }
+
             setMessage({ type: 'error', text: errorText });
         }
     };
@@ -88,12 +94,12 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
         if (!window.confirm(`Ви точно хочете звільнити ${name}?`)) return;
 
         try {
-            await axios.delete(`${AZURE_API_URL}/api/Auth/users/${id}`, getAuthConfig());
+            await api.delete(`/Auth/users/${id}`);
             
             setMessage({ type: 'success', text: `Користувача ${name} видалено` });
             setRefreshKey(prev => prev + 1);
-        } catch (error) {
-            console.error(error);
+        } catch (err: unknown) {
+            console.error(err);
             setMessage({ type: 'error', text: 'Не вдалося видалити користувача' });
         }
     };
@@ -162,22 +168,22 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
                         <TextField 
                             label="Логін" 
                             fullWidth 
-                            value={username} 
-                            onChange={(e) => setUsername(e.target.value)} 
+                            value={userName} 
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setUserName(e.target.value)} 
                         />
                         <TextField 
                             label="Пароль" 
                             type="password" 
                             fullWidth 
                             value={password} 
-                            onChange={(e) => setPassword(e.target.value)} 
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} 
                         />
                         <FormControl fullWidth>
                             <InputLabel>Роль</InputLabel>
                             <Select
                                 value={role}
                                 label="Роль"
-                                onChange={(e) => setRole(e.target.value)}
+                                onChange={(e: SelectChangeEvent<string>) => setRole(e.target.value)}
                             >
                                 <MenuItem value="User">User (Комірник)</MenuItem>
                                 <MenuItem value="Admin">Admin (Керівник)</MenuItem>
@@ -192,6 +198,4 @@ const AdminPage = ({ onBack }: AdminPageProps) => {
             </Dialog>
         </Paper>
     );
-};
-
-export default AdminPage;
+}

@@ -1,223 +1,268 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import type { ChangeEvent, SyntheticEvent } from 'react';
 import axios from 'axios';
-import {
-  Box, Paper, Tabs, Tab, Typography, Button, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, IconButton, Dialog, DialogTitle,
-  DialogContent, DialogActions, TextField, LinearProgress, Alert, Snackbar
+import api from '../api/axiosConfig';
+import { Box, Button, TextField, Typography,
+  Paper,
+  Alert,
+  Snackbar,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Tooltip,
+  LinearProgress,
+  Tabs,
+  Tab
 } from '@mui/material';
-
+import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import PersonIcon from '@mui/icons-material/Person';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-
-const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
 
 interface Partner {
   id: string;
   name: string;
-  phone?: string;
-  email?: string;
-  address?: string; 
-  contactPerson?: string;
+  contactInfo?: string;
+}
+
+interface PartnerFormData {
+  name: string;
+  contactInfo: string;
+}
+
+interface ServerError {
+  title?: string;
+  status?: number;
+  errors?: Record<string, string[]>;
 }
 
 export default function Partners() {
-  const [tabIndex, setTabIndex] = useState(0);
-  const [data, setData] = useState<Partner[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [tabIndex, setTabIndex] = useState<number>(0); // 0 = Постачальники (Suppliers), 1 = Клієнти (Customers)
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [successMsg, setSuccessMsg] = useState<string>('');
 
-  const [open, setOpen] = useState(false);
-  const [currentId, setCurrentId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    name: '', phone: '', email: '', address: '', contactPerson: ''
-  });
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [currentPartner, setCurrentPartner] = useState<Partner | null>(null);
+  const [formData, setFormData] = useState<PartnerFormData>({ name: '', contactInfo: '' });
 
-  const endpoint = tabIndex === 0 ? '/api/suppliers' : '/api/customers';
-  const entityName = tabIndex === 0 ? 'Постачальник' : 'Клієнт';
+  const currentEndpoint = tabIndex === 0 ? '/suppliers' : '/customers';
+  const partnerTypeLabel = tabIndex === 0 ? 'постачальника' : 'клієнта';
 
-  const getAuthConfig = () => {
-    const token = localStorage.getItem('token');
-    return {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    };
-  };
-
-  const fetchData = useCallback(async () => {
+  const fetchPartners = async () => {
     setLoading(true);
     try {
-      const res = await axios.get<Partner[]>(`${AZURE_API_URL}${endpoint}`, getAuthConfig());
-      setData(res.data);
-    } catch (err) {
+      const res = await api.get<Partner[]>(currentEndpoint);
+      setPartners(res.data);
+    } catch (err: unknown) {
       console.error(err);
-      setError('Не вдалося завантажити дані');
+      setError(`Не вдалося завантажити список ${tabIndex === 0 ? 'постачальників' : 'клієнтів'}`);
     } finally {
       setLoading(false);
     }
-  }, [endpoint]);
+  };
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchPartners();
+  }, [tabIndex]);
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm(`Видалити ${entityName}а?`)) return;
-    try {
-      await axios.delete(`${AZURE_API_URL}${endpoint}/${id}`, getAuthConfig());
-      fetchData();
-    } catch (err) {
-      console.error(err);
-      alert('Помилка видалення (можливо, є записи в історії, пов’язані з ним)');
-    }
+  const handleTabChange = (_: SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+    setPartners([]);
   };
 
   const handleOpen = (partner?: Partner) => {
     if (partner) {
-      setCurrentId(partner.id);
+      setCurrentPartner(partner);
       setFormData({
         name: partner.name,
-        phone: partner.phone || '',
-        email: partner.email || '',
-        address: partner.address || '',
-        contactPerson: partner.contactPerson || ''
+        contactInfo: partner.contactInfo || ''
       });
     } else {
-      setCurrentId(null);
-      setFormData({ name: '', phone: '', email: '', address: '', contactPerson: '' });
+      setCurrentPartner(null);
+      setFormData({ name: '', contactInfo: '' });
     }
-    setOpen(true);
+    setOpenDialog(true);
+  };
+
+  const handleClose = () => {
+    setOpenDialog(false);
+    setCurrentPartner(null);
+    setFormData({ name: '', contactInfo: '' });
   };
 
   const handleSave = async () => {
-    if (!formData.name) return alert("Введіть назву!");
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) {
+      setError("Назва або ПІБ є обов'язковими");
+      return;
+    }
+
+    const payload = {
+      id: currentPartner?.id,
+      name: trimmedName,
+      contactInfo: formData.contactInfo.trim()
+    };
 
     try {
-      if (currentId) {
-        await axios.put(`${AZURE_API_URL}${endpoint}/${currentId}`, formData, getAuthConfig());
+      if (currentPartner) {
+        await api.put(`${currentEndpoint}/${currentPartner.id}`, payload);
+        setSuccessMsg(`Дані ${partnerTypeLabel} успішно оновлено`);
       } else {
-        await axios.post(`${AZURE_API_URL}${endpoint}`, formData, getAuthConfig());
+        await api.post(currentEndpoint, payload);
+        setSuccessMsg(`Нового ${partnerTypeLabel} успішно створено`);
       }
-      setOpen(false);
-      fetchData();
-    } catch (err) {
+      handleClose();
+      await fetchPartners();
+    } catch (err: unknown) {
       console.error(err);
-      setError('Помилка збереження');
+      if (axios.isAxiosError<ServerError>(err)) {
+        const msg = err.response?.data?.title || 'Помилка збереження';
+        setError(`Сервер: ${msg}`);
+      } else {
+        setError('Непередбачена помилка збереження');
+      }
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`Ви дійсно бажаєте видалити ${partnerTypeLabel} "${name}"?`)) return;
+
+    try {
+      await api.delete(`${currentEndpoint}/${id}`);
+      setSuccessMsg(`Успішно видалено: "${name}"`);
+      await fetchPartners();
+    } catch (err: unknown) {
+      console.error(err);
+      if (axios.isAxiosError<ServerError>(err)) {
+        const msg = err.response?.data?.title || 'Не вдалося видалити запис';
+        setError(`Помилка: ${msg}`);
+      } else {
+        setError('Помилка при видаленні');
+      }
     }
   };
 
   return (
-    <Paper sx={{ width: '100%', mb: 2, p: 2 }}>
+    <Paper sx={{ p: 3, borderRadius: 2 }}>
       <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
-         <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
+        <Alert severity="error" onClose={() => setError('')}>
+          {error}
+        </Alert>
       </Snackbar>
 
-      <Tabs
-        value={tabIndex}
-        onChange={(_, val) => setTabIndex(val)}
-        indicatorColor="primary"
-        textColor="primary"
-        centered
-        sx={{ mb: 2 }}
-      >
-        <Tab icon={<LocalShippingIcon />} label="Постачальники" />
-        <Tab icon={<PersonIcon />} label="Клієнти" />
-      </Tabs>
+      <Snackbar open={!!successMsg} autoHideDuration={4000} onClose={() => setSuccessMsg('')}>
+        <Alert severity="success" onClose={() => setSuccessMsg('')}>
+          {successMsg}
+        </Alert>
+      </Snackbar>
 
-      <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#f9f9f9', borderRadius: 1 }}>
-        <Typography variant="h6">{entityName}и</Typography>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs value={tabIndex} onChange={handleTabChange} aria-label="контрагенти">
+          <Tab label="Постачальники" />
+          <Tab label="Клієнти / Отримувачі" />
+        </Tabs>
+      </Box>
+
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Typography variant="h5" fontWeight="bold">
+          {tabIndex === 0 ? 'Постачальники' : 'Клієнти'}
+        </Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
-          Додати {entityName}а
+          Додати {tabIndex === 0 ? 'постачальника' : 'клієнта'}
         </Button>
       </Box>
 
-      {loading && <LinearProgress sx={{ mt: 2 }} />}
+      {loading && <LinearProgress sx={{ mb: 2 }} />}
 
-      <TableContainer sx={{ mt: 2 }}>
+      <TableContainer component={Paper} elevation={1}>
         <Table>
-          <TableHead>
-            <TableRow sx={{ bgcolor: '#eee' }}>
-              <TableCell><b>Назва / ПІБ</b></TableCell>
-              <TableCell><b>Телефон</b></TableCell>
-              <TableCell><b>Email</b></TableCell>
-              {tabIndex === 0 && <TableCell><b>Контактна особа</b></TableCell>}
-              {tabIndex === 1 && <TableCell><b>Адреса</b></TableCell>}
-              <TableCell align="right"><b>Дії</b></TableCell>
+          <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 'bold' }}>Назва / ПІБ</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Контактна інформація</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 'bold' }}>Дії</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((row) => (
-              <TableRow key={row.id} hover>
-                <TableCell sx={{ fontWeight: 'bold' }}>{row.name}</TableCell>
-                <TableCell>{row.phone || '-'}</TableCell>
-                <TableCell>{row.email || '-'}</TableCell>
-                
-                {tabIndex === 0 && <TableCell>{row.contactPerson || '-'}</TableCell>}
-                {tabIndex === 1 && <TableCell>{row.address || '-'}</TableCell>}
-                
-                <TableCell align="right">
-                  <IconButton color="primary" onClick={() => handleOpen(row)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton color="error" onClick={() => handleDelete(row.id)}>
-                    <DeleteIcon />
-                  </IconButton>
+            {partners.length === 0 && !loading ? (
+              <TableRow>
+                <TableCell colSpan={3} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                  Записів не знайдено
                 </TableCell>
               </TableRow>
-            ))}
-            {data.length === 0 && !loading && (
-               <TableRow><TableCell colSpan={6} align="center">Список порожній</TableCell></TableRow>
+            ) : (
+              partners.map((partner) => (
+                <TableRow key={partner.id} hover>
+                  <TableCell>
+                    <Typography variant="body1" fontWeight="500">
+                      {partner.name}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" color="text.secondary">
+                      {partner.contactInfo || '—'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Tooltip title="Редагувати">
+                      <IconButton color="primary" onClick={() => handleOpen(partner)}>
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Видалити">
+                      <IconButton color="error" onClick={() => handleDelete(partner.id, partner.name)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>
       </TableContainer>
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{currentId ? 'Редагувати' : 'Додати'} {entityName}а</DialogTitle>
-        <DialogContent dividers>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <TextField 
-                label={tabIndex === 0 ? "Назва компанії" : "ПІБ Клієнта"} 
-                fullWidth 
-                value={formData.name} 
-                onChange={e => setFormData({...formData, name: e.target.value})} 
+      <Dialog open={openDialog} onClose={handleClose} fullWidth maxWidth="xs">
+        <DialogTitle>
+          {currentPartner ? `Редагувати ${partnerTypeLabel}` : `Створити ${partnerTypeLabel}`}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            <TextField
+              autoFocus
+              label="Назва / ПІБ"
+              fullWidth
+              value={formData.name}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
             />
-            <TextField 
-                label="Телефон" 
-                fullWidth 
-                value={formData.phone} 
-                onChange={e => setFormData({...formData, phone: e.target.value})} 
+            <TextField
+              label="Контактна інформація (телефон, email, адреса)"
+              fullWidth
+              multiline
+              rows={3}
+              value={formData.contactInfo}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setFormData((prev) => ({ ...prev, contactInfo: e.target.value }))
+              }
             />
-            <TextField 
-                label="Email" 
-                fullWidth 
-                value={formData.email} 
-                onChange={e => setFormData({...formData, email: e.target.value})} 
-            />
-            
-            {tabIndex === 0 ? (
-                <TextField 
-                    label="Контактна особа (Менеджер)" 
-                    fullWidth 
-                    value={formData.contactPerson} 
-                    onChange={e => setFormData({...formData, contactPerson: e.target.value})} 
-                />
-            ) : (
-                <TextField 
-                    label="Адреса доставки" 
-                    fullWidth 
-                    value={formData.address} 
-                    onChange={e => setFormData({...formData, address: e.target.value})} 
-                />
-            )}
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Скасувати</Button>
-          <Button onClick={handleSave} variant="contained">Зберегти</Button>
+          <Button onClick={handleClose}>Скасувати</Button>
+          <Button variant="contained" onClick={handleSave}>
+            Зберегти
+          </Button>
         </DialogActions>
       </Dialog>
     </Paper>

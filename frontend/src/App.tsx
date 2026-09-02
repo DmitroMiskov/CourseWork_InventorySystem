@@ -52,15 +52,13 @@ function App() {
       return { auth: false, role: '', name: '' };
     }
   };
-
-  // 👇 КРОК 2: Ініціалізуємо змінні ОДРАЗУ правильними значеннями
+  
   const [initialState] = useState(getInitialState);
 
   const [isAuthenticated, setIsAuthenticated] = useState(initialState.auth);
   const [userRole, setUserRole] = useState(initialState.role);
   const [username, setUsername] = useState(initialState.name);
   
-  // 👇 3. Додано 'categories' у тип стану
   const [currentView, setCurrentView] = useState<'list' | 'categories' | 'dashboard' | 'partners' | 'admin'>('list');
 
   // Функція для оновлення стану після успішного входу
@@ -80,12 +78,9 @@ function App() {
     setCurrentView('list');
   };
 
-  // Якщо не залогінений — показуємо форму входу
   if (!isAuthenticated) {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
-
-  // 👇 Перевірка: чи є користувач адміном (незалежно від регістру: Admin, admin, ADMIN)
   const isAdmin = userRole.toLowerCase() === 'admin';
 
   return (
@@ -109,8 +104,6 @@ function App() {
             >
               Склад
             </Button>
-
-            {/* 👇 4. Додано кнопку "Категорії" */}
             <Button 
               color="inherit" 
               startIcon={<CategoryIcon />}
@@ -140,8 +133,6 @@ function App() {
             >
               Дашборд
             </Button>
-
-            {/* Кнопка Адмінки (Тільки для Адміна, ігноруючи регістр) */}
             {isAdmin && (
                 <Button 
                   color="warning" 
@@ -176,10 +167,8 @@ function App() {
 
       {/* ОСНОВНИЙ КОНТЕНТ */}
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        {/* Передаємо isAdmin (true/false) у список товарів */}
         {currentView === 'list' && <ProductList isAdmin={isAdmin} />}
 
-        {/* 👇 5. Додано відображення списку категорій */}
         {currentView === 'categories' && <CategoryList isAdmin={isAdmin} />}
         
         {currentView === 'partners' && <Partners />}

@@ -1,112 +1,69 @@
-import { 
-  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid 
-} from 'recharts';
-import { Paper, Grid as Grid, Typography } from '@mui/material';
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category?: { name: string };
-  categoryId?: string;
-  quantity: number;
-}
+import { useMemo } from 'react';
+import { Paper, Typography, Box, LinearProgress, Divider } from '@mui/material';
+import type { Product } from './Dashboard';
 
 interface AnalyticsChartsProps {
   products: Product[];
 }
 
-// 1. Інтерфейс даних для Recharts (дозволяємо динамічні ключі певних типів)
-interface CategoryData {
+interface CategorySummary {
   name: string;
-  value: number;
-  [key: string]: string | number | undefined; 
+  totalQuantity: number;
+  percentage: number;
 }
 
-// 👇 2. ВИПРАВЛЕНИЙ ТИП: Додаємо "| undefined", щоб задовольнити TypeScript
-type RechartsValue = number | string | Array<number | string> | undefined;
-
 export default function AnalyticsCharts({ products }: AnalyticsChartsProps) {
-  
-  const categoryData = products.reduce<CategoryData[]>((acc, product) => {
-    const catName = product.category?.name || 'Інше';
-    const existing = acc.find(item => item.name === catName);
-    
-    if (existing) {
-      existing.value += 1;
-    } else {
-      acc.push({ name: catName, value: 1 });
-    }
-    return acc;
-  }, []);
+  const data = useMemo<CategorySummary[]>(() => {
+    const totalItems = products.reduce((acc, p) => acc + p.quantity, 0);
+    if (totalItems === 0) return [];
 
-  const expensiveData = [...products]
-    .sort((a, b) => b.price - a.price)
-    .slice(0, 5)
-    .map(p => ({
-      name: p.name.length > 10 ? p.name.substring(0, 10) + '...' : p.name,
-      price: p.price
+    const categoryMap = new Map<string, number>();
+
+    products.forEach((p) => {
+      const catName = p.category?.name || 'Без категорії';
+      const current = categoryMap.get(catName) || 0;
+      categoryMap.set(catName, current + p.quantity);
+    });
+
+    return Array.from(categoryMap.entries()).map(([name, totalQuantity]) => ({
+      name,
+      totalQuantity,
+      percentage: Math.round((totalQuantity / totalItems) * 100),
     }));
-
-  if (products.length === 0) return null;
+  }, [products]);
 
   return (
-    <Grid container spacing={3} sx={{ mb: 3 }}>
-      <Grid size={{ xs: 12, md: 6 }}>
-        <Paper sx={{ p: 2, height: 300, display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h6" align="center" gutterBottom>Структура складу</Typography>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={categoryData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ percent }: { percent?: number }) => `${((percent || 0) * 100).toFixed(0)}%`}
-              >
-                {categoryData.map((_entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </Paper>
-      </Grid>
+    <Paper sx={{ p: 3, borderRadius: 2, mb: 3 }}>
+      <Typography variant="h6" fontWeight="bold" gutterBottom>
+        Розподіл товарів за категоріями
+      </Typography>
+      <Divider sx={{ mb: 2 }} />
 
-      <Grid size={{ xs: 12, md: 6 }}>
-        <Paper sx={{ p: 2, height: 300, display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h6" align="center" gutterBottom>Топ-5 найдорожчих</Typography>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={expensiveData} layout="vertical" margin={{ left: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" unit=" грн" />
-              <YAxis dataKey="name" type="category" width={100} />
-              
-              {/* 👇 3. БЕЗПЕЧНИЙ FORMATTER */}
-              <Tooltip 
-                formatter={(value: RechartsValue) => {
-                  // Перевіряємо: якщо це число і воно існує -> форматуємо
-                  if (value !== undefined && typeof value === 'number') {
-                    return [`${value} грн`, 'Ціна'];
-                  }
-                  // В усіх інших випадках повертаємо як є (приводимо до рядка, якщо це масив)
-                  return [String(value), 'Ціна'];
-                }} 
+      {data.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">
+          Дані для графіків відсутні
+        </Typography>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {data.map((item) => (
+            <Box key={item.name}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                <Typography variant="body2" fontWeight="500">
+                  {item.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {item.totalQuantity} од. ({item.percentage}%)
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={item.percentage}
+                sx={{ height: 8, borderRadius: 4 }}
               />
-              
-              <Bar dataKey="price" fill="#1976d2" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Paper>
-      </Grid>
-    </Grid>
+            </Box>
+          ))}
+        </Box>
+      )}
+    </Paper>
   );
 }

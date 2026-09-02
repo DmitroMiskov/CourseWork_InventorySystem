@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { AxiosError } from 'axios';
+import { useEffect, useState, useMemo } from 'react';
+import type { ChangeEvent } from 'react';
 import axios from 'axios';
+import api from '../api/axiosConfig';
 import { 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
   Button, TextField, IconButton, Dialog, DialogActions, DialogContent, 
@@ -9,7 +10,6 @@ import {
   Alert, Snackbar, Box, Checkbox, Badge, Fab 
 } from '@mui/material';
 
-// Іконки
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
@@ -21,18 +21,18 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
-// Бібліотеки для Excel та навігації
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
-// Наші компоненти
 import StockHistory from './StockHistory';
 import StockOperationModal from './StockOperationModal';
 import IssuanceModal from './IssuanceModal';
 
-const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
+// Базовий URL для медіа-файлів з бекенду
+const API_BASE_URL = import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL.replace('/api', '') 
+  : 'http://localhost:8080';
 
-// --- ТИПИ ---
 interface Category {
   id: string;
   name: string;
@@ -61,11 +61,33 @@ interface ServerError {
   errors?: Record<string, string[]>;
 }
 
-// --- НАДІЙНИЙ КОМПОНЕНТ ДЛЯ КАРТИНОК ---
-const ProductImage = ({ imageName, alt, size = 50, radius = 4 }: { imageName?: string; alt?: string; size?: number; radius?: number }) => {
+interface UploadImageResponse {
+  url: string;
+}
+
+interface ProductFormData {
+  name: string;
+  description: string;
+  price: string;
+  quantity: string;
+  unit: string;
+  categoryId: string;
+  minStock: string;
+  imageUrl: string;
+}
+
+const ProductImage = ({ 
+  imageName, 
+  alt, 
+  size = 50, 
+  radius = 4 
+}: { 
+  imageName?: string; 
+  alt?: string; 
+  size?: number; 
+  radius?: number;
+}) => {
   const [hasError, setHasError] = useState(false);
-  
-  const SERVER_URL = AZURE_API_URL; 
 
   if (!imageName || hasError) {
     return (
@@ -81,87 +103,73 @@ const ProductImage = ({ imageName, alt, size = 50, radius = 4 }: { imageName?: s
   }
 
   let src = '';
-  
   if (imageName.startsWith('http')) {
-      src = imageName;
+    src = imageName;
   } else {
-      let cleanName = imageName.startsWith('/') ? imageName.slice(1) : imageName;
-      if (cleanName.startsWith('images/')) {
-          cleanName = cleanName.replace('images/', '');
-      }
-      src = `${SERVER_URL}/images/${cleanName}`;
+    let cleanName = imageName.startsWith('/') ? imageName.slice(1) : imageName;
+    if (cleanName.startsWith('images/')) {
+      cleanName = cleanName.replace('images/', '');
+    }
+    src = `${API_BASE_URL}/images/${cleanName}`;
   }
 
   return (
     <Box 
-        component="img"
-        src={src}
-        alt={alt || 'Product'}
-        sx={{ 
-            width: size, height: size, objectFit: 'cover', 
-            borderRadius: radius, border: '1px solid #ddd', flexShrink: 0 
-        }}
-        onError={() => {
-            setHasError(true); 
-        }}
+      component="img"
+      src={src}
+      alt={alt || 'Product'}
+      sx={{ 
+        width: size, height: size, objectFit: 'cover', 
+        borderRadius: radius, border: '1px solid #ddd', flexShrink: 0 
+      }}
+      onError={() => {
+        setHasError(true); 
+      }}
     />
   );
 };
 
 export default function ProductList({ isAdmin = false }: ProductListProps) {
-  // --- СТАНИ (STATE) ---
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
-  // Пагінація та Пошук
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('');
+  const [page, setPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filterCategory, setFilterCategory] = useState<string>('');
   
-  // Сортування
   const [sortConfig, setSortConfig] = useState<{ key: keyof Product; direction: 'asc' | 'desc' } | null>(null);
 
-  // Модальні вікна
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProductFormData>({
     name: '', description: '', price: '', quantity: '', unit: '', categoryId: '', minStock: '', imageUrl: ''
   });
 
-  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false);
   const [historyProduct, setHistoryProduct] = useState<Product | null>(null);
 
-  const [opModalOpen, setOpModalOpen] = useState(false);
+  const [opModalOpen, setOpModalOpen] = useState<boolean>(false);
   const [opProduct, setOpProduct] = useState<Product | null>(null);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [issueModalOpen, setIssueModalOpen] = useState(false);
+  const [issueModalOpen, setIssueModalOpen] = useState<boolean>(false);
 
-  const getAuthConfig = () => {
-    const token = localStorage.getItem('token');
-    return {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    };
-  };
-
-  // --- ЗАВАНТАЖЕННЯ ДАНИХ ---
   const fetchProducts = async () => {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.get<Product[]>(`${AZURE_API_URL}/api/products`, getAuthConfig());
+      const [res, catRes] = await Promise.all([
+        api.get<Product[]>('/products'),
+        api.get<Category[]>('/categories')
+      ]);
       setProducts(res.data);
-      
-      const catRes = await axios.get<Category[]>(`${AZURE_API_URL}/api/categories`, getAuthConfig());
       setCategories(catRes.data);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       setError("Не вдалося завантажити дані. Перевірте з'єднання.");
     } finally {
@@ -173,7 +181,6 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
     fetchProducts();
   }, []);
 
-  // --- ЛОГІКА СОРТУВАННЯ ---
   const handleSort = (key: keyof Product) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -197,14 +204,12 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
     return sortableItems;
   }, [products, sortConfig]);
 
-  // --- ФІЛЬТРАЦІЯ ---
   const filteredProducts = sortedProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory ? product.categoryId === filterCategory : true;
     return matchesSearch && matchesCategory;
   });
 
-  // --- CRUD ОПЕРАЦІЇ ---
   const handleOpen = (product?: Product) => {
     if (product) {
       setCurrentProduct(product);
@@ -225,7 +230,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
     setOpen(true);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     
     const file = e.target.files[0];
@@ -234,15 +239,13 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const res = await axios.post<{ url: string }>(`${AZURE_API_URL}/api/products/upload-image`, uploadData, {
-          headers: { 
-              'Content-Type': 'multipart/form-data',
-              'Authorization': `Bearer ${token}`
-          }
+      const res = await api.post<UploadImageResponse>('/products/upload-image', uploadData, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+        }
       });
       setFormData(prev => ({ ...prev, imageUrl: res.data.url }));
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       setError("Не вдалося завантажити фото");
     } finally {
@@ -253,10 +256,10 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
   const handleDelete = async (id: string) => {
     if (window.confirm('Ви впевнені, що хочете видалити цей товар?')) {
       try {
-        await axios.delete(`${AZURE_API_URL}/api/products/${id}`, getAuthConfig());
-        fetchProducts();
-      } catch (error) {
-        console.error(error);
+        await api.delete(`/products/${id}`);
+        await fetchProducts();
+      } catch (err: unknown) {
+        console.error(err);
         setError("Помилка при видаленні товару");
       }
     }
@@ -276,23 +279,26 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
       categoryId: formData.categoryId,
       imageUrl: formData.imageUrl,
       price: parseFloat(formData.price) || 0,
-      quantity: parseInt(formData.quantity) || 0,
-      minStock: parseInt(formData.minStock) || 0
+      quantity: parseInt(formData.quantity, 10) || 0,
+      minStock: parseInt(formData.minStock, 10) || 0
     };
 
     try {
       if (currentProduct) {
-        await axios.put(`${AZURE_API_URL}/api/products/${currentProduct.id}`, payload, getAuthConfig());
+        await api.put(`/products/${currentProduct.id}`, payload);
       } else {
-        await axios.post(`${AZURE_API_URL}/api/products`, payload, getAuthConfig());
+        await api.post('/products', payload);
       }
       setOpen(false);
-      fetchProducts();
-    } catch (error) {
-      console.error(error);
-      const axiosError = error as AxiosError<ServerError>;
-      const msg = axiosError.response?.data?.title || "Помилка збереження";
-      setError(`Сервер: ${JSON.stringify(msg)}`);
+      await fetchProducts();
+    } catch (err: unknown) {
+      console.error(err);
+      if (axios.isAxiosError<ServerError>(err)) {
+        const msg = err.response?.data?.title || "Помилка збереження";
+        setError(`Сервер: ${msg}`);
+      } else {
+        setError("Помилка збереження даних");
+      }
     }
   };
 
@@ -307,32 +313,33 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
     })));
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Товари");
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    const excelBuffer: unknown = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
     saveAs(data, 'inventory_export.xlsx');
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0) return;
     const uploadData = new FormData();
     uploadData.append("file", event.target.files[0]);
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${AZURE_API_URL}/api/products/import`, uploadData, {
+      await api.post('/products/import', uploadData, {
         headers: { 
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${token}`
+          'Content-Type': 'multipart/form-data',
         }
       });
       alert("Імпорт успішний!");
-      fetchProducts();
-    } catch (error) {
-      console.error(error);
-      const axiosError = error as AxiosError<string>;
-      const msg = axiosError.response?.data || "Помилка імпорту";
-      setError(typeof msg === 'string' ? msg : "Сталася помилка імпорту");
+      await fetchProducts();
+    } catch (err: unknown) {
+      console.error(err);
+      if (axios.isAxiosError<string>(err)) {
+        const msg = err.response?.data || "Помилка імпорту";
+        setError(typeof msg === 'string' ? msg : "Сталася помилка імпорту");
+      } else {
+        setError("Сталася неочікувана помилка імпорту");
+      }
     } finally {
       setLoading(false);
       event.target.value = '';
@@ -351,19 +358,18 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
 
   const handleSelect = (id: string) => {
     setSelectedIds(prev => 
-        prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   };
 
-  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSelectAll = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-        const idsOnPage = filteredProducts
-            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-            .map(p => p.id);
-        // Додаємо тільки унікальні
-        setSelectedIds(prev => Array.from(new Set([...prev, ...idsOnPage])));
+      const idsOnPage = filteredProducts
+        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+        .map(p => p.id);
+      setSelectedIds(prev => Array.from(new Set([...prev, ...idsOnPage])));
     } else {
-        setSelectedIds([]);
+      setSelectedIds([]);
     }
   };
 
@@ -373,7 +379,6 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
       </Snackbar>
 
-      {/* ВЕРХНЯ ПАНЕЛЬ */}
       <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 }, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h6" component="div" sx={{ flex: '1 1 100%' }}>
           Список товарів
@@ -384,7 +389,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
           variant="outlined"
           size="small"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
           InputProps={{
             startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
           }}
@@ -395,7 +400,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
           <Select
             value={filterCategory}
             label="Категорія"
-            onChange={(e) => setFilterCategory(e.target.value)}
+            onChange={(e) => setFilterCategory(e.target.value as string)}
           >
             <MenuItem value=""><em>Всі</em></MenuItem>
             {categories.map(cat => (
@@ -422,18 +427,16 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
 
       {loading && <LinearProgress sx={{ mb: 2 }} />}
 
-      {/* ТАБЛИЦЯ */}
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-              {/* ЧЕКБОКС "ВИБРАТИ ВСЕ" */}
               <TableCell padding="checkbox">
-                  <Checkbox 
-                      onChange={handleSelectAll} 
-                      checked={selectedIds.length > 0 && selectedIds.length === filteredProducts.length}
-                      indeterminate={selectedIds.length > 0 && selectedIds.length < filteredProducts.length}
-                  />
+                <Checkbox 
+                  onChange={handleSelectAll} 
+                  checked={selectedIds.length > 0 && selectedIds.length === filteredProducts.length}
+                  indeterminate={selectedIds.length > 0 && selectedIds.length < filteredProducts.length}
+                />
               </TableCell>
               <TableCell onClick={() => handleSort('name')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Назва ↕</TableCell>
               <TableCell onClick={() => handleSort('categoryId')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Категорія ↕</TableCell>
@@ -447,25 +450,24 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((product) => (
                 <TableRow 
-                    key={product.id}
-                    sx={{ backgroundColor: product.quantity <= product.minStock ? '#fff0f0' : 'inherit' }}
+                  key={product.id}
+                  sx={{ backgroundColor: product.quantity <= product.minStock ? '#fff0f0' : 'inherit' }}
                 >
-                  {/* ЧЕКБОКС РЯДКА */}
                   <TableCell padding="checkbox">
                     <Checkbox 
-                        checked={selectedIds.includes(product.id)}
-                        onChange={() => handleSelect(product.id)}
+                      checked={selectedIds.includes(product.id)}
+                      onChange={() => handleSelect(product.id)}
                     />
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <ProductImage 
-                            key={product.imageUrl || 'no-img'}
-                            imageName={product.imageUrl} 
-                            alt={product.name} 
-                            size={40} 
-                        />
-                        <Typography variant="body2">{product.name}</Typography>
+                      <ProductImage 
+                        key={product.imageUrl || 'no-img'}
+                        imageName={product.imageUrl} 
+                        alt={product.name} 
+                        size={40} 
+                      />
+                      <Typography variant="body2">{product.name}</Typography>
                     </Box>
                   </TableCell>
                   <TableCell>
@@ -473,21 +475,21 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
                   </TableCell>
                   <TableCell>{product.price} грн</TableCell>
                   <TableCell>
-                      {product.quantity} {product.unit}
-                      {product.quantity <= product.minStock && (
-                        <Typography variant="caption" color="error" display="block">(Закінчується!)</Typography>
-                      )}
+                    {product.quantity} {product.unit}
+                    {product.quantity <= product.minStock && (
+                      <Typography variant="caption" color="error" display="block">(Закінчується!)</Typography>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Tooltip title="Прихід / Розхід">
-                        <IconButton color="warning" onClick={() => handleOpenOperation(product)}>
-                            <SyncAltIcon />
-                        </IconButton>
+                      <IconButton color="warning" onClick={() => handleOpenOperation(product)}>
+                        <SyncAltIcon />
+                      </IconButton>
                     </Tooltip>
                     <Tooltip title="Історія руху">
-                        <IconButton color="info" onClick={() => handleOpenHistory(product)}>
-                            <HistoryIcon />
-                        </IconButton>
+                      <IconButton color="info" onClick={() => handleOpenHistory(product)}>
+                        <HistoryIcon />
+                      </IconButton>
                     </Tooltip>
                     <Tooltip title="Редагувати">
                       <IconButton color="primary" onClick={() => handleOpen(product)}>
@@ -495,11 +497,11 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
                       </IconButton>
                     </Tooltip>
                     {isAdmin && (
-                        <Tooltip title="Видалити">
+                      <Tooltip title="Видалити">
                         <IconButton color="error" onClick={() => handleDelete(product.id)}>
-                            <DeleteIcon />
+                          <DeleteIcon />
                         </IconButton>
-                        </Tooltip>
+                      </Tooltip>
                     )}
                   </TableCell>
                 </TableRow>
@@ -514,54 +516,52 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         count={filteredProducts.length}
         rowsPerPage={rowsPerPage}
         page={page}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
+        onPageChange={(_, newPage: number) => setPage(newPage)}
+        onRowsPerPageChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+          setRowsPerPage(parseInt(e.target.value, 10));
+          setPage(0);
         }}
       />
 
-      {/* МОДАЛКА РЕДАГУВАННЯ */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{currentProduct ? 'Редагувати товар' : 'Новий товар'}</DialogTitle>
         <DialogContent dividers>
-          
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-             <ProductImage 
-                key={formData.imageUrl || 'preview'}
-                imageName={formData.imageUrl} 
-                alt="Preview" 
-                size={100} 
-                radius={8} 
-             />
-             
-             <Box>
-                <Button variant="outlined" component="label" startIcon={<PhotoCamera />}>
-                    Завантажити фото
-                    <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-                </Button>
-                <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
-                    Формати: JPG, PNG, WEBP
-                </Typography>
-             </Box>
+            <ProductImage 
+              key={formData.imageUrl || 'preview'}
+              imageName={formData.imageUrl} 
+              alt="Preview" 
+              size={100} 
+              radius={8} 
+            />
+            
+            <Box>
+              <Button variant="outlined" component="label" startIcon={<PhotoCamera />}>
+                Завантажити фото
+                <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+              </Button>
+              <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
+                Формати: JPG, PNG, WEBP
+              </Typography>
+            </Box>
           </Box>
 
-          <TextField margin="dense" label="Назва" fullWidth value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-          <TextField margin="dense" label="Опис" fullWidth multiline rows={2} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+          <TextField margin="dense" label="Назва" fullWidth value={formData.name} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })} />
+          <TextField margin="dense" label="Опис" fullWidth multiline rows={2} value={formData.description} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, description: e.target.value })} />
           
           <Box sx={{ display: 'flex', gap: 2 }}>
-             <TextField margin="dense" label="Ціна" type="number" fullWidth value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
-             <TextField margin="dense" label="Кількість" type="number" fullWidth value={formData.quantity} onChange={(e) => setFormData({ ...formData, quantity: e.target.value })} />
+            <TextField margin="dense" label="Ціна" type="number" fullWidth value={formData.price} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, price: e.target.value })} />
+            <TextField margin="dense" label="Кількість" type="number" fullWidth value={formData.quantity} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, quantity: e.target.value })} />
           </Box>
           
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <TextField margin="dense" label="Одиниця виміру" fullWidth value={formData.unit} onChange={(e) => setFormData({ ...formData, unit: e.target.value })} />
-            <TextField margin="dense" label="Мін. залишок" type="number" fullWidth value={formData.minStock} onChange={(e) => setFormData({ ...formData, minStock: e.target.value })} />
+            <TextField margin="dense" label="Одиниця виміру" fullWidth value={formData.unit} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, unit: e.target.value })} />
+            <TextField margin="dense" label="Мін. залишок" type="number" fullWidth value={formData.minStock} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, minStock: e.target.value })} />
           </Box>
 
           <FormControl fullWidth margin="dense" sx={{ mt: 2 }}>
             <InputLabel>Категорія</InputLabel>
-            <Select value={formData.categoryId} label="Категорія" onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}>
+            <Select value={formData.categoryId} label="Категорія" onChange={(e) => setFormData({ ...formData, categoryId: e.target.value as string })}>
               {categories.map(cat => <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>)}
             </Select>
           </FormControl>
@@ -572,7 +572,6 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         </DialogActions>
       </Dialog>
 
-      {/* МОДАЛКА ІСТОРІЇ */}
       <StockHistory 
         key={historyModalOpen ? "hist-open" : "hist-closed"}
         open={historyModalOpen}
@@ -581,8 +580,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         productName={historyProduct?.name}
       />
 
-      {/* МОДАЛКА ОПЕРАЦІЙ */}
-      <StockOperationModal
+      <StockOperationModal 
         key={opModalOpen ? "open" : "closed"} 
         open={opModalOpen}
         onClose={() => setOpModalOpen(false)}
@@ -593,26 +591,24 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         }}
       />
 
-      {/* ПЛАВАЮЧА КНОПКА КОШИКА (З'являється, коли щось вибрано) */}
       {selectedIds.length > 0 && (
         <Box sx={{ position: 'fixed', bottom: 30, right: 30, zIndex: 1000 }}>
-            <Badge badgeContent={selectedIds.length} color="error">
-                <Fab color="primary" variant="extended" onClick={() => setIssueModalOpen(true)}>
-                    <ShoppingCartIcon sx={{ mr: 1 }} />
-                    Оформити видачу
-                </Fab>
-            </Badge>
+          <Badge badgeContent={selectedIds.length} color="error">
+            <Fab color="primary" variant="extended" onClick={() => setIssueModalOpen(true)}>
+              <ShoppingCartIcon sx={{ mr: 1 }} />
+              Оформити видачу
+            </Fab>
+          </Badge>
         </Box>
       )}
 
-      {/* МОДАЛКА ВИДАЧІ */}
       <IssuanceModal 
         open={issueModalOpen}
         onClose={() => setIssueModalOpen(false)}
         selectedProducts={products.filter(p => selectedIds.includes(p.id))}
         onSuccess={() => {
-            fetchProducts();
-            setSelectedIds([]); // Очистити вибір після успіху
+          fetchProducts();
+          setSelectedIds([]);
         }}
       />
     </Paper>

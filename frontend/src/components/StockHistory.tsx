@@ -1,20 +1,25 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { 
-  Dialog, DialogTitle, DialogContent, Table, TableBody, 
-  TableCell, TableContainer, TableHead, TableRow, 
-  CircularProgress, Chip, Typography, Button, DialogActions, Box 
+import { useState, useEffect } from 'react';
+import type { ChangeEvent } from 'react';
+import api from '../api/axiosConfig';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  Chip,
+  Box,
+  LinearProgress,
+  TablePagination
 } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-
-interface HistoryRecord {
-  id: string;
-  change: number;
-  stockAfter: string | number; // 👇 Змінено, бо бекенд може слати "---"
-  note: string;
-  userName: string;
-  createdAt: string;
-}
 
 interface StockHistoryProps {
   open: boolean;
@@ -23,110 +28,148 @@ interface StockHistoryProps {
   productName?: string;
 }
 
-export default function StockHistory({ open, onClose, productId, productName }: StockHistoryProps) {
-  const [history, setHistory] = useState<HistoryRecord[]>([]);
-  const [loading, setLoading] = useState(false);
+// movementType: 1 = Вхід/Прихід (In), 2 = Вихід/Розхід (Out)
+interface StockMovement {
+  id: string;
+  productId: string;
+  quantity: number;
+  movementType: number | string;
+  createdAt: string;
+  reason?: string;
+  comment?: string;
+  supplierName?: string;
+  customerName?: string;
+}
 
-  const AZURE_API_URL = "https://inventory-api-miskov-dtcyece6dme4hme8.polandcentral-01.azurewebsites.net";
+export default function StockHistory({
+  open,
+  onClose,
+  productId,
+  productName
+}: StockHistoryProps) {
+  const [movements, setMovements] = useState<StockMovement[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  const [page, setPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
 
   useEffect(() => {
-    if (!productId || !open) return;
+    if (!open || !productId) return;
 
     const fetchHistory = async () => {
       setLoading(true);
+      setError('');
       try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        // 👇👇👇 ВИПРАВЛЕНО URL АДРЕСУ 👇👇👇
-        // Було: /api/products/${productId}/history
-        // Стало: /api/stockmovements/product/${productId}
-        const res = await axios.get<HistoryRecord[]>(
-          `${AZURE_API_URL}/api/stockmovements/product/${productId}`,
-          {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }
-        );
-        
-        setHistory(res.data);
-      } catch (err) {
-        console.error("Помилка завантаження історії:", err);
+        const res = await api.get<StockMovement[]>(`/StockMovements/by-product/${productId}`);
+        setMovements(res.data);
+      } catch (err: unknown) {
+        console.error(err);
+        setError('Не вдалося завантажити історію операцій для цього товару');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchHistory(); 
+    fetchHistory();
+  }, [open, productId]);
 
-  }, [productId, open]);
+  const isIncoming = (type: number | string): boolean => {
+    return type === 1 || type === '1' || type === 'Incoming' || type === 'In';
+  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        📜 Історія руху: <b>{productName || 'Товар'}</b>
-      </DialogTitle>
-      
-      <DialogContent dividers>
-        {loading ? (
-          <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2 }} />
-        ) : history.length === 0 ? (
-          <Typography align="center" color="text.secondary" sx={{ py: 3 }}>
-            Історія операцій порожня
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" fontWeight="bold">
+            Історія руху: {productName || 'Товар'}
           </Typography>
-        ) : (
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                  <TableCell><b>Дата / Час</b></TableCell>
-                  <TableCell><b>Користувач</b></TableCell>
-                  <TableCell align="center"><b>Зміна</b></TableCell>
-                  <TableCell align="center"><b>Залишок</b></TableCell>
-                  <TableCell><b>Примітка</b></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {history.map((row) => (
-                  <TableRow key={row.id} hover>
-                    <TableCell>
-                      {new Date(row.createdAt).toLocaleString('uk-UA', { 
-                        day: '2-digit', month: '2-digit', year: 'numeric', 
-                        hour: '2-digit', minute: '2-digit' 
-                      })}
-                    </TableCell>
-                    
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <PersonIcon fontSize="small" color="action" />
-                        <Typography variant="body2">{row.userName || 'Система'}</Typography>
-                      </Box>
-                    </TableCell>
+        </Box>
+      </DialogTitle>
 
-                    <TableCell align="center">
-                      <Chip 
-                        label={row.change > 0 ? `+${row.change}` : row.change} 
-                        color={row.change > 0 ? "success" : "error"} 
-                        size="small" 
-                        variant="filled"
-                        sx={{ fontWeight: 'bold', minWidth: 50 }}
-                      />
-                    </TableCell>
+      <DialogContent dividers>
+        {loading && <LinearProgress sx={{ mb: 2 }} />}
 
-                    <TableCell align="center" sx={{ color: 'text.secondary' }}>
-                      {/* Відображаємо StockAfter, навіть якщо це рядок "---" */}
-                      {row.stockAfter}
-                    </TableCell>
-
-                    <TableCell>{row.note || '-'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+        {error && (
+          <Typography color="error" sx={{ mb: 2 }}>
+            {error}
+          </Typography>
         )}
+
+        <TableContainer component={Paper} elevation={1}>
+          <Table size="small">
+            <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold' }}>Дата</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Тип операції</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Кількість</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Контрагент</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Причина / Коментар</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {movements.length === 0 && !loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                    Записів про рух товару не знайдено
+                  </TableCell>
+                </TableRow>
+              ) : (
+                movements
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((item) => {
+                    const incoming = isIncoming(item.movementType);
+                    return (
+                      <TableRow key={item.id} hover>
+                        <TableCell>
+                          {new Date(item.createdAt).toLocaleString('uk-UA', {
+                            dateStyle: 'short',
+                            timeStyle: 'short'
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={incoming ? 'Прихід' : 'Розхід / Списання'}
+                            color={incoming ? 'success' : 'warning'}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: incoming ? 'green' : 'error.main' }}>
+                          {incoming ? `+${item.quantity}` : `-${item.quantity}`}
+                        </TableCell>
+                        <TableCell>
+                          {item.supplierName || item.customerName || '—'}
+                        </TableCell>
+                        <TableCell>
+                          {item.reason || item.comment || '—'}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 20]}
+          component="div"
+          count={movements.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(_, newPage: number) => setPage(newPage)}
+          onRowsPerPageChange={(e: ChangeEvent<HTMLInputElement>) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+        />
       </DialogContent>
+
       <DialogActions>
-        <Button onClick={onClose}>Закрити</Button>
+        <Button onClick={onClose} variant="outlined">
+          Закрити
+        </Button>
       </DialogActions>
     </Dialog>
   );

@@ -32,7 +32,7 @@ builder.Services.AddCors(options =>
 // 👇 ВИПРАВЛЕННЯ: Змінили Npgsql на SqlServer для Azure
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddScoped<IApplicationDbContext>(provider =>
     provider.GetRequiredService<ApplicationDbContext>());

@@ -3,10 +3,10 @@ import axios from 'axios';
 // Базовий URL сервера (без /api)
 export const API_BASE_URL = import.meta.env.VITE_API_URL
   ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
-  : 'http://localhost:8080';
+  : (import.meta.env.PROD ? '' : 'http://localhost:8080');
 
 // Повний URL до REST API
-export const API_URL = import.meta.env.VITE_API_URL || `${API_BASE_URL}/api`;
+export const API_URL = import.meta.env.VITE_API_URL || (API_BASE_URL ? `${API_BASE_URL}/api` : '/api');
 
 const api = axios.create({
   baseURL: API_URL,

@@ -1,0 +1,68 @@
+services:
+  # 1. База даних (PostgreSQL 15 Alpine)
+  db:
+    image: postgres:15-alpine
+    container_name: inventory-db-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-inventory_db}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-inventory_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - inventory-network
+
+  # 2. Backend API (.NET 9 Release на базі Alpine)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: inventory-api:prod
+    container_name: inventory-api-prod
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=${POSTGRES_DB:-inventory_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-password}
+      - Superuser__Username=${SUPERUSER_USERNAME:-admin}
+      - Superuser__Password=${SUPERUSER_PASSWORD:-Admin123!}
+      - Superuser__Role=Admin
+      - Jwt__Key=${JWT_KEY:-TUT_DUZHE_SECRETNY_KEY_DLYA_KURSOVOI_ROBOTY_12345}
+    volumes:
+      - product_images_prod:/app/wwwroot/images
+    ports:
+      - "8080:8080"
+    networks:
+      - inventory-network
+
+  # 3. Frontend (React SPA, зібраний у static bundle, роздача через Nginx Alpine)
+  client:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: inventory-client:prod
+    container_name: inventory-client-prod
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    networks:
+      - inventory-network
+
+volumes:
+  postgres_data_prod:
+  product_images_prod:
+
+networks:
+  inventory-network:
+    driver: bridge

@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { jwtDecode } from "jwt-decode";
-import { Container, CssBaseline, AppBar, Toolbar, Typography, Button, Box, IconButton, Tooltip, Chip } from '@mui/material';
+import { 
+  Container, CssBaseline, AppBar, Toolbar, Typography, Button, Box, 
+  IconButton, Tooltip, Chip, Drawer, List, ListItem, ListItemButton, 
+  ListItemIcon, ListItemText, Divider 
+} from '@mui/material';
 
 // Іконки
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -11,6 +15,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import PeopleIcon from '@mui/icons-material/People';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import CategoryIcon from '@mui/icons-material/Category';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 
 // Компоненти
 import ProductList from './components/ProductList';
@@ -19,6 +25,9 @@ import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import Partners from './components/Partners';
 import AdminPage from './components/AdminPage';
+import SignalRStatusBadge from './components/SignalRStatusBadge';
+import ThemeToggle from './components/ThemeToggle';
+import { SignalRProvider } from './context/SignalRContext';
 import type { CustomJwtPayload } from './types/inventory';
 
 function App() {
@@ -50,6 +59,7 @@ function App() {
   const [username, setUsername] = useState(initialState.name);
   
   const [currentView, setCurrentView] = useState<'list' | 'categories' | 'dashboard' | 'partners' | 'admin'>('list');
+  const [mobileOpen, setMobileOpen] = useState<boolean>(false);
 
   // Функція для оновлення стану після успішного входу
   const handleLoginSuccess = () => {
@@ -65,6 +75,7 @@ function App() {
     setUserRole('');
     setUsername('');
     setCurrentView('list');
+    setMobileOpen(false);
   };
 
   if (!isAuthenticated) {
@@ -72,90 +83,196 @@ function App() {
   }
   const isAdmin = userRole.toLowerCase() === 'admin';
 
+  const navItems = [
+    { id: 'list' as const, label: 'Склад', icon: <TableChartIcon /> },
+    { id: 'categories' as const, label: 'Категорії', icon: <CategoryIcon /> },
+    { id: 'partners' as const, label: 'Контрагенти', icon: <PeopleIcon /> },
+    { id: 'dashboard' as const, label: 'Дашборд', icon: <BarChartIcon /> },
+    ...(isAdmin ? [{ id: 'admin' as const, label: 'Персонал', icon: <SupervisorAccountIcon /> }] : [])
+  ];
+
+  const handleNavClick = (view: 'list' | 'categories' | 'dashboard' | 'partners' | 'admin') => {
+    setCurrentView(view);
+    setMobileOpen(false);
+  };
+
   return (
-    <>
+    <SignalRProvider isAuthenticated={isAuthenticated}>
       <CssBaseline />
       <AppBar position="static">
-        <Toolbar>
-          <InventoryIcon sx={{ mr: 2 }} />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
+        <Toolbar sx={{ px: { xs: 1.5, sm: 2 } }}>
+          {/* Гамбургер-меню для смартфонів та планшетів (до md) */}
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={() => setMobileOpen(true)}
+            sx={{ mr: 1, display: { xs: 'inline-flex', md: 'none' } }}
+            aria-label="відкрити меню"
+          >
+            <MenuIcon />
+          </IconButton>
+
+          <InventoryIcon sx={{ mr: 1.5, display: { xs: 'none', sm: 'inline-flex' } }} />
+          <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ 
+              flexGrow: 1, 
+              fontWeight: 'bold',
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
             Складський облік
           </Typography>
 
-          {/* МЕНЮ НАВІГАЦІЇ */}
-          <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
-            <Button 
-              color="inherit" 
-              startIcon={<TableChartIcon />}
-              variant={currentView === 'list' ? "outlined" : "text"}
-              onClick={() => setCurrentView('list')}
-              sx={{ backgroundColor: currentView === 'list' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
-            >
-              Склад
-            </Button>
-            <Button 
-              color="inherit" 
-              startIcon={<CategoryIcon />}
-              variant={currentView === 'categories' ? "outlined" : "text"}
-              onClick={() => setCurrentView('categories')}
-              sx={{ backgroundColor: currentView === 'categories' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
-            >
-              Категорії
-            </Button>
-            
-            <Button 
-              color="inherit" 
-              startIcon={<PeopleIcon />}
-              variant={currentView === 'partners' ? "outlined" : "text"}
-              onClick={() => setCurrentView('partners')}
-              sx={{ backgroundColor: currentView === 'partners' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
-            >
-              Контрагенти
-            </Button>
-
-            <Button 
-              color="inherit" 
-              startIcon={<BarChartIcon />}
-              variant={currentView === 'dashboard' ? "outlined" : "text"}
-              onClick={() => setCurrentView('dashboard')}
-              sx={{ backgroundColor: currentView === 'dashboard' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
-            >
-              Дашборд
-            </Button>
-            {isAdmin && (
-                <Button 
-                  color="warning" 
-                  startIcon={<SupervisorAccountIcon />}
-                  variant={currentView === 'admin' ? "outlined" : "text"}
-                  onClick={() => setCurrentView('admin')}
-                  sx={{ backgroundColor: currentView === 'admin' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
-                >
-                  Персонал
-                </Button>
-            )}
+          {/* МЕНЮ НАВІГАЦІЇ ДЛЯ ДЕСКТОПУ (md+) */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, mr: 2 }}>
+            {navItems.map((item) => (
+              <Button
+                key={item.id}
+                color={item.id === 'admin' ? 'warning' : 'inherit'}
+                startIcon={item.icon}
+                variant={currentView === item.id ? 'outlined' : 'text'}
+                onClick={() => setCurrentView(item.id)}
+                sx={{
+                  backgroundColor: currentView === item.id ? 'rgba(255,255,255,0.2)' : 'transparent',
+                  fontWeight: currentView === item.id ? 700 : 500,
+                  borderRadius: 1.5
+                }}
+              >
+                {item.label}
+              </Button>
+            ))}
           </Box>
 
-          {/* ІНФО ПРО ЮЗЕРА */}
+          {/* ІНДИКАТОР РЕАЛЬНОГО ЧАСУ (SIGNALR) */}
+          <SignalRStatusBadge />
+
+          {/* ПЕРЕМИКАЧ ТЕМИ */}
+          <ThemeToggle />
+
+          {/* ІНФО ПРО ЮЗЕРА (Сховано на маленьких екранах xs) */}
           <Chip 
             icon={<PersonIcon />} 
             label={`${username} (${userRole})`} 
             color={isAdmin ? "warning" : "default"}
             variant="outlined"
-            sx={{ mr: 2, color: 'white', borderColor: 'rgba(255,255,255,0.5)', '& .MuiChip-icon': { color: 'white' } }} 
+            size="small"
+            sx={{ 
+              mr: 1, 
+              color: 'white', 
+              borderColor: 'rgba(255,255,255,0.5)', 
+              '& .MuiChip-icon': { color: 'white' },
+              display: { xs: 'none', sm: 'inline-flex' }
+            }} 
           />
 
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Вийти">
-                <IconButton color="inherit" onClick={handleLogout}>
-                    <LogoutIcon />
-                </IconButton>
+              <IconButton color="inherit" onClick={handleLogout} size="small">
+                <LogoutIcon />
+              </IconButton>
             </Tooltip>
           </Box>
         </Toolbar>
       </AppBar>
 
+      {/* БОКОВЕ МЕНЮ (DRAWER) ДЛЯ МОБІЛЬНИХ ПРИСТРОЇВ */}
+      <Drawer
+        anchor="left"
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        PaperProps={{
+          sx: {
+            width: 280,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
+          }
+        }}
+      >
+        <Box>
+          <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <InventoryIcon color="primary" />
+              <Typography variant="h6" fontWeight="bold">
+                Складський облік
+              </Typography>
+            </Box>
+            <IconButton onClick={() => setMobileOpen(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          <Divider />
+
+          {/* Профіль користувача в Drawer */}
+          <Box sx={{ p: 2, bgcolor: 'action.hover' }}>
+            <Typography variant="caption" color="text.secondary">
+              Авторизований користувач:
+            </Typography>
+            <Typography variant="body1" fontWeight="bold" sx={{ mt: 0.5 }}>
+              {username}
+            </Typography>
+            <Chip 
+              size="small" 
+              label={userRole} 
+              color={isAdmin ? "warning" : "primary"} 
+              sx={{ mt: 0.8 }} 
+            />
+          </Box>
+
+          <Divider />
+
+          <List sx={{ px: 1, py: 1.5 }}>
+            {navItems.map((item) => (
+              <ListItem key={item.id} disablePadding sx={{ mb: 0.5 }}>
+                <ListItemButton
+                  selected={currentView === item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  sx={{
+                    borderRadius: 1.5,
+                    '&.Mui-selected': {
+                      bgcolor: 'primary.main',
+                      color: 'primary.contrastText',
+                      '& .MuiListItemIcon-root': {
+                        color: 'primary.contrastText'
+                      },
+                      '&:hover': {
+                        bgcolor: 'primary.dark'
+                      }
+                    }
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 40, color: currentView === item.id ? 'inherit' : 'text.secondary' }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: 500 }} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+
+        {/* Футер Drawer: Кнопка виходу */}
+        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Button
+            fullWidth
+            variant="outlined"
+            color="error"
+            startIcon={<LogoutIcon />}
+            onClick={handleLogout}
+          >
+            Вийти з акаунту
+          </Button>
+        </Box>
+      </Drawer>
+
       {/* ОСНОВНИЙ КОНТЕНТ */}
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 3, md: 4 }, mb: 4, px: { xs: 1, sm: 2, md: 3 } }}>
         {currentView === 'list' && <ProductList isAdmin={isAdmin} />}
 
         {currentView === 'categories' && <CategoryList isAdmin={isAdmin} />}
@@ -166,7 +283,7 @@ function App() {
         
         {currentView === 'admin' && isAdmin && (<AdminPage onBack={() => setCurrentView('list')} />)}
       </Container>
-    </>
+    </SignalRProvider>
   );
 }
 

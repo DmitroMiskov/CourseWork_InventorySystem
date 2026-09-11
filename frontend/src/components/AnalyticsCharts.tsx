@@ -3,6 +3,7 @@ import {
   Paper, Typography, Box, Grid, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Chip
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import {
   ResponsiveContainer,
   BarChart,
@@ -34,6 +35,19 @@ const PALETTE = [
 ];
 
 export default function AnalyticsCharts({ products, categories, movements }: AnalyticsChartsProps) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
+  const chartTooltipStyle = {
+    backgroundColor: isDark ? '#1e293b' : '#ffffff',
+    borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : '#e2e8f0',
+    color: isDark ? '#f8fafc' : '#0f172a',
+    borderRadius: 8,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+  };
+  const axisStroke = isDark ? '#94a3b8' : '#64748b';
+  const gridStroke = isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0';
+
   const safeProducts = useMemo(() => Array.isArray(products) ? products : [], [products]);
   const safeCategories = useMemo(() => Array.isArray(categories) ? categories : [], [categories]);
   const safeMovements = useMemo(() => Array.isArray(movements) ? movements : [], [movements]);
@@ -172,6 +186,7 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
                       ))}
                     </Pie>
                     <Tooltip
+                      contentStyle={chartTooltipStyle}
                       formatter={(val: number | string | undefined) =>
                         typeof val === 'number'
                           ? [`${val.toLocaleString('uk-UA')} ₴`, 'Вартість']
@@ -219,6 +234,7 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
                       ))}
                     </Pie>
                     <Tooltip
+                      contentStyle={chartTooltipStyle}
                       formatter={(val: number | string | undefined) =>
                         typeof val === 'number'
                           ? [`${val} позицій`, 'Кількість']
@@ -254,17 +270,18 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
               <Box sx={{ width: '100%', height: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={topValuedProducts} margin={{ top: 10, right: 10, left: 10, bottom: 25 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" angle={-15} textAnchor="end" interval={0} fontSize={12} />
-                    <YAxis />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                    <XAxis dataKey="name" angle={-15} textAnchor="end" interval={0} fontSize={12} stroke={axisStroke} />
+                    <YAxis stroke={axisStroke} />
                     <Tooltip
+                      contentStyle={chartTooltipStyle}
                       formatter={(val: number | string | undefined) =>
                         typeof val === 'number'
                           ? [`${val.toLocaleString('uk-UA')} ₴`, 'Сума активу']
                           : [val ?? '', 'Сума активу']
                       }
                     />
-                    <Bar dataKey="totalValue" fill="#1976d2" radius={[4, 4, 0, 0]} name="Вартість (₴)" />
+                    <Bar dataKey="totalValue" fill={isDark ? "#38bdf8" : "#1976d2"} radius={[4, 4, 0, 0]} name="Вартість (₴)" />
                   </BarChart>
                 </ResponsiveContainer>
               </Box>
@@ -290,13 +307,13 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
               <Box sx={{ width: '100%', height: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={movementTrendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" fontSize={12} />
-                    <YAxis />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                    <XAxis dataKey="date" fontSize={12} stroke={axisStroke} />
+                    <YAxis stroke={axisStroke} />
+                    <Tooltip contentStyle={chartTooltipStyle} />
                     <Legend />
-                    <Area type="monotone" dataKey="incoming" stroke="#2e7d32" fill="#a5d6a7" name="Прихід (од.)" />
-                    <Area type="monotone" dataKey="outgoing" stroke="#d32f2f" fill="#ffcdd2" name="Розхід (од.)" />
+                    <Area type="monotone" dataKey="incoming" stroke="#2e7d32" fill={isDark ? "rgba(46, 125, 50, 0.4)" : "#a5d6a7"} name="Прихід (од.)" />
+                    <Area type="monotone" dataKey="outgoing" stroke="#d32f2f" fill={isDark ? "rgba(211, 47, 47, 0.4)" : "#ffcdd2"} name="Розхід (од.)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </Box>
@@ -315,16 +332,16 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
         </Box>
 
         {alertProducts.length === 0 ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2, bgcolor: '#f1f8e9', borderRadius: 1, color: '#2e7d32' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2, bgcolor: isDark ? 'rgba(46, 125, 50, 0.15)' : '#f1f8e9', borderRadius: 1, color: isDark ? '#81c784' : '#2e7d32' }}>
             <CheckCircleOutlineIcon />
             <Typography variant="body2" fontWeight="500">
               Всі складські запаси знаходяться в межах встановлених норм!
             </Typography>
           </Box>
         ) : (
-          <TableContainer>
-            <Table size="small">
-              <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+          <TableContainer sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <Table size="small" sx={{ minWidth: 480 }}>
+              <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 'bold' }}>Назва товару</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Артикул</TableCell>

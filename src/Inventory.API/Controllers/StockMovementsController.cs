@@ -1,5 +1,7 @@
 using Inventory.Application.Common.Interfaces;
 using Inventory.API.Dtos;
+using Inventory.API.Hubs;
+using Inventory.API.Services;
 using Inventory.Domain.Entities;
 using Inventory.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -14,10 +16,12 @@ namespace Inventory.API.Controllers
     public class StockMovementsController : ControllerBase
     {
         private readonly IApplicationDbContext _context;
+        private readonly IInventoryNotifier _notifier;
 
-        public StockMovementsController(IApplicationDbContext context)
+        public StockMovementsController(IApplicationDbContext context, IInventoryNotifier notifier)
         {
             _context = context;
+            _notifier = notifier;
         }
 
         [HttpGet]
@@ -135,6 +139,47 @@ namespace Inventory.API.Controllers
             });
 
             await _context.SaveChangesAsync();
+
+            string? supplierName = null;
+            if (dto.SupplierId.HasValue)
+            {
+                var supplier = await _context.Suppliers.FindAsync(dto.SupplierId.Value);
+                supplierName = supplier?.Name;
+            }
+
+            string? customerName = null;
+            if (dto.CustomerId.HasValue)
+            {
+                var customer = await _context.Customers.FindAsync(dto.CustomerId.Value);
+                customerName = customer?.Name;
+            }
+
+            await _notifier.NotifyStockMovementAsync(new StockMovementEvent
+            {
+                Id = movement.Id,
+                ProductId = product.Id,
+                ProductName = product.Name,
+                Type = effectiveType == MovementType.In ? "In" : "Out",
+                Quantity = dto.Quantity,
+                NewStock = product.Quantity,
+                Reason = dto.Reason,
+                SupplierName = supplierName,
+                CustomerName = customerName,
+                UserName = User.Identity?.Name ?? "Система",
+                Timestamp = movement.MovementDate
+            });
+
+            if (product.Quantity <= product.MinStock)
+            {
+                await _notifier.NotifyLowStockAsync(new LowStockAlertEvent
+                {
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    CurrentStock = product.Quantity,
+                    MinStock = product.MinStock,
+                    Timestamp = DateTime.UtcNow
+                });
+            }
 
             return Ok(new { movement.Id, Message = "Успішно" });
         }

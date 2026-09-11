@@ -20,9 +20,12 @@ import {
   LinearProgress,
   TablePagination,
   IconButton,
-  Tooltip
+  Tooltip,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import CloseIcon from '@mui/icons-material/Close';
 import { downloadWaybillPdf, type WaybillData } from '../utils/pdfWaybillGenerator';
 
 interface StockHistoryProps {
@@ -54,6 +57,9 @@ export default function StockHistory({
   productId,
   productName
 }: StockHistoryProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [movements, setMovements] = useState<StockMovement[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -124,12 +130,21 @@ export default function StockHistory({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth fullScreen={isMobile}>
+      <DialogTitle sx={{ m: 0, p: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
             Історія руху: {productName || 'Товар'}
           </Typography>
+          {isMobile && (
+            <IconButton
+              aria-label="close"
+              onClick={onClose}
+              sx={{ color: (theme) => theme.palette.grey[500] }}
+            >
+              <CloseIcon />
+            </IconButton>
+          )}
         </Box>
       </DialogTitle>
 
@@ -142,9 +157,9 @@ export default function StockHistory({
           </Typography>
         )}
 
-        <TableContainer component={Paper} elevation={1}>
-          <Table size="small">
-            <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+        <TableContainer component={Paper} elevation={1} sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <Table size="small" sx={{ minWidth: 600 }}>
+            <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 'bold' }}>Дата</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Тип операції</TableCell>

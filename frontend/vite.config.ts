@@ -19,6 +19,12 @@ export default defineConfig({
          target: 'http://inventory-api:8080',
          changeOrigin: true,
          secure: false,
+      },
+      '/hubs': {
+         target: 'http://inventory-api:8080',
+         changeOrigin: true,
+         secure: false,
+         ws: true,
       }
     }
   }

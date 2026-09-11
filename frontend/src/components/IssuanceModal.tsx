@@ -27,8 +27,11 @@ import {
   Checkbox,
   FormControlLabel,
   Chip,
-  LinearProgress
+  LinearProgress,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import type { SelectChangeEvent } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -279,20 +282,30 @@ export default function IssuanceModal({
     onClose();
   };
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth fullScreen={isMobile}>
       <DialogTitle sx={{ pb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="h6" fontWeight="bold">
-            {completedWaybill ? 'Видачу оформлено' : 'Оформлення видачі товарів'}
+            {completedWaybill ? 'Видачу оформлено' : 'Оформлення видачі'}
           </Typography>
-          <Chip
-            label={completedWaybill ? completedWaybill.documentNumber : documentNumber}
-            color="primary"
-            variant="outlined"
-            size="small"
-            sx={{ fontWeight: 'bold' }}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip
+              label={completedWaybill ? completedWaybill.documentNumber : documentNumber}
+              color="primary"
+              variant="outlined"
+              size="small"
+              sx={{ fontWeight: 'bold' }}
+            />
+            {isMobile && (
+              <IconButton onClick={handleClose} size="small" edge="end">
+                <CloseIcon />
+              </IconButton>
+            )}
+          </Box>
         </Box>
       </DialogTitle>
 
@@ -320,7 +333,7 @@ export default function IssuanceModal({
 
             <Paper
               variant="outlined"
-              sx={{ p: 2.5, mb: 3, maxWidth: 500, mx: 'auto', textAlign: 'left', bgcolor: '#fafafa' }}
+              sx={{ p: 2.5, mb: 3, maxWidth: 500, mx: 'auto', textAlign: 'left', bgcolor: 'action.hover' }}
             >
               <Typography variant="body2" sx={{ mb: 1 }}>
                 <strong>Одержувач:</strong> {completedWaybill.customer?.name || 'Не вказано'}
@@ -402,9 +415,9 @@ export default function IssuanceModal({
               Товари для включення у накладну ({items.length}):
             </Typography>
 
-            <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 280, mb: 2 }}>
-              <Table size="small">
-                <TableHead sx={{ bgcolor: '#f8fafc' }}>
+            <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 280, mb: 2, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <Table size="small" sx={{ minWidth: 520 }}>
+                <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 'bold' }}>Товар / Артикул</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 'bold' }}>Ціна</TableCell>
@@ -485,7 +498,9 @@ export default function IssuanceModal({
             <Box
               sx={{
                 p: 1.5,
-                bgcolor: '#f1f5f9',
+                bgcolor: 'action.hover',
+                border: '1px solid',
+                borderColor: 'divider',
                 borderRadius: 1.5,
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -529,7 +544,7 @@ export default function IssuanceModal({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 2 }}>
+      <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: 2, flexWrap: 'wrap', gap: 1, justifyContent: 'flex-end' }}>
         {completedWaybill ? (
           <Button onClick={handleClose} variant="contained">
             Закрити

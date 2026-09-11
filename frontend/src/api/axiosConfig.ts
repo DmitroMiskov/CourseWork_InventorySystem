@@ -8,6 +8,9 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL
 // Повний URL до REST API
 export const API_URL = import.meta.env.VITE_API_URL || (API_BASE_URL ? `${API_BASE_URL}/api` : '/api');
 
+// URL до SignalR Hub
+export const HUB_URL = API_BASE_URL ? `${API_BASE_URL}/hubs/inventory` : '/hubs/inventory';
+
 const api = axios.create({
   baseURL: API_URL,
   headers: {

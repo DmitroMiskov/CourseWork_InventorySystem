@@ -171,7 +171,7 @@ export default function StockOperationModal({
       <DialogTitle>Складська операція</DialogTitle>
       <DialogContent dividers>
         {product && (
-          <Box sx={{ mb: 2, p: 1.5, bgcolor: '#f9f9f9', borderRadius: 1 }}>
+          <Box sx={{ mb: 2, p: 1.5, bgcolor: 'action.hover', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
             <Typography variant="subtitle1" fontWeight="bold">
               {product.name}
             </Typography>
@@ -235,7 +235,7 @@ export default function StockOperationModal({
           onChange={(e: ChangeEvent<HTMLInputElement>) => setReason(e.target.value)}
         />
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ p: 2, flexWrap: 'wrap', gap: 1, justifyContent: 'flex-end' }}>
         <Button onClick={handleClose} disabled={loading}>Скасувати</Button>
         {movementType === 2 && (
           <Button

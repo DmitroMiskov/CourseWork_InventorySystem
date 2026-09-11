@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using CsvHelper;
 using System.Globalization;
 using Inventory.API.Dtos;
+using Inventory.API.Hubs;
+using Inventory.API.Services;
 using Microsoft.EntityFrameworkCore; 
 using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Authorization;
@@ -22,11 +24,13 @@ namespace Inventory.API.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IApplicationDbContext _context;
+        private readonly IInventoryNotifier _notifier;
 
-        public ProductsController(IMediator mediator, IApplicationDbContext context)
+        public ProductsController(IMediator mediator, IApplicationDbContext context, IInventoryNotifier notifier)
         {
             _mediator = mediator;
             _context = context;
+            _notifier = notifier;
         }
 
         // GET: api/products
@@ -67,6 +71,16 @@ namespace Inventory.API.Controllers
         public async Task<IActionResult> Create(CreateProductCommand command)
         {
             var productId = await _mediator.Send(command);
+
+            await _notifier.NotifyProductChangeAsync(new ProductChangeEvent
+            {
+                Action = "Created",
+                ProductId = productId,
+                ProductName = command.Name,
+                NewQuantity = command.Quantity,
+                Message = $"Створено новий товар '{command.Name}' (кількість: {command.Quantity} {command.Unit})"
+            });
+
             return Ok(productId);
         }
 
@@ -76,7 +90,19 @@ namespace Inventory.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
+            var prod = await _context.Products.FindAsync(id);
+            var prodName = prod?.Name ?? "Товар";
+
             await _mediator.Send(new DeleteProductCommand(id));
+
+            await _notifier.NotifyProductChangeAsync(new ProductChangeEvent
+            {
+                Action = "Deleted",
+                ProductId = id,
+                ProductName = prodName,
+                Message = $"Товар '{prodName}' видалено зі складу"
+            });
+
             return NoContent();
         }
 
@@ -92,6 +118,16 @@ namespace Inventory.API.Controllers
             }
 
             await _mediator.Send(command);
+
+            await _notifier.NotifyProductChangeAsync(new ProductChangeEvent
+            {
+                Action = "Updated",
+                ProductId = id,
+                ProductName = command.Name,
+                NewQuantity = command.Quantity,
+                Message = $"Оновлено дані товару '{command.Name}'"
+            });
+
             return NoContent();
         }
 
@@ -165,6 +201,12 @@ namespace Inventory.API.Controllers
                     {
                         await _context.Products.AddRangeAsync(productsToAdd);
                         await _context.SaveChangesAsync();
+
+                        await _notifier.NotifyProductChangeAsync(new ProductChangeEvent
+                        {
+                            Action = "Imported",
+                            Message = $"Успішно імпортовано {productsToAdd.Count} товарів"
+                        });
                     }
 
                     return Ok($"Успішно імпортовано {productsToAdd.Count} товарів.");
@@ -233,6 +275,34 @@ namespace Inventory.API.Controllers
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync(); // Зберігаємо все разом
+
+                foreach (var item in items)
+                {
+                    var product = await _context.Products.FindAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        await _notifier.NotifyProductChangeAsync(new ProductChangeEvent
+                        {
+                            Action = "StockUpdated",
+                            ProductId = product.Id,
+                            ProductName = product.Name,
+                            NewQuantity = product.Quantity,
+                            Message = $"Видано {item.Quantity} шт. '{product.Name}'. Новий залишок: {product.Quantity}"
+                        });
+
+                        if (product.Quantity <= product.MinStock)
+                        {
+                            await _notifier.NotifyLowStockAsync(new LowStockAlertEvent
+                            {
+                                ProductId = product.Id,
+                                ProductName = product.Name,
+                                CurrentStock = product.Quantity,
+                                MinStock = product.MinStock,
+                                Timestamp = DateTime.UtcNow
+                            });
+                        }
+                    }
+                }
 
                 return Ok(new { message = "Товари успішно видано" });
             }

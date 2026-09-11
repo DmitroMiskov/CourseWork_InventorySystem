@@ -45,7 +45,7 @@ const StatCard = ({ title, value, subtitle, icon, color, bgColor }: StatItemProp
         width: 52,
         height: 52,
         borderRadius: 2,
-        bgcolor: bgColor,
+        bgcolor: (theme) => theme.palette.mode === 'dark' ? `${color}25` : bgColor,
         color: color,
         display: 'flex',
         alignItems: 'center',

@@ -6,10 +6,12 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import DashboardStats from './DashboardStats';
 import AnalyticsCharts from './AnalyticsCharts';
 import type { Product, Category, StockMovement } from '../types/inventory';
+import { useSignalR } from '../context/SignalRContext';
 
 export type { Product };
 
 export default function Dashboard() {
+  const { subscribeStockMovement, subscribeProductChange } = useSignalR();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [movements, setMovements] = useState<StockMovement[]>([]);
@@ -63,6 +65,21 @@ export default function Dashboard() {
     fetchData();
   }, [fetchData]);
 
+  // Оновлюємо статистику в реальному часі при складських операціях
+  useEffect(() => {
+    const unsubMove = subscribeStockMovement(() => {
+      fetchData();
+    });
+    const unsubProd = subscribeProductChange(() => {
+      fetchData();
+    });
+
+    return () => {
+      unsubMove();
+      unsubProd();
+    };
+  }, [fetchData, subscribeStockMovement, subscribeProductChange]);
+
   if (loading && products.length === 0) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 12 }}>
@@ -78,7 +95,7 @@ export default function Dashboard() {
     <Box sx={{ pb: 6 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h4" fontWeight="bold">
+          <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2.125rem' } }}>
             Аналітика та статистика складу
           </Typography>
           <Typography variant="body2" color="text.secondary">

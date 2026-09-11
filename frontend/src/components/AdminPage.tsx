@@ -105,12 +105,12 @@ export default function AdminPage({ onBack }: AdminPageProps) {
     };
 
     return (
-        <Paper sx={{ p: 3, borderRadius: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 1.5 }}>
                 <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
                     Назад
                 </Button>
-                <Typography variant="h5">
+                <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                     Управління персоналом
                 </Typography>
                 <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenDialog(true)}>
@@ -124,9 +124,9 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                 </Alert>
             )}
 
-            <TableContainer component={Paper} elevation={2}>
-                <Table>
-                    <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+            <TableContainer component={Paper} elevation={2} sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <Table sx={{ minWidth: 400 }}>
+                    <TableHead>
                         <TableRow>
                             <TableCell>Login</TableCell>
                             <TableCell>Role</TableCell>

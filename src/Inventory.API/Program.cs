@@ -1,5 +1,7 @@
 using System.Text;
 using Inventory.API.Data;
+using Inventory.API.Hubs;
+using Inventory.API.Services;
 using Inventory.Application;
 using Inventory.Infrastructure;
 using Inventory.Infrastructure.Persistence;
@@ -51,10 +53,15 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin()
+        policy.SetIsOriginAllowed(_ => true)
               .AllowAnyMethod()
-              .AllowAnyHeader());
+              .AllowAnyHeader()
+              .AllowCredentials());
 });
+
+// Реєстрація SignalR та сповіщувача
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IInventoryNotifier, InventoryNotifier>();
 
 // Реєстрація шарів Clean Architecture
 builder.Services.AddApplicationServices();
@@ -83,6 +90,19 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ValidateIssuer = false,
         ValidateAudience = false
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -119,5 +139,6 @@ app.UseAuthorization();
 app.UseStaticFiles();
 
 app.MapControllers();
+app.MapHub<InventoryHub>("/hubs/inventory");
 
 app.Run();

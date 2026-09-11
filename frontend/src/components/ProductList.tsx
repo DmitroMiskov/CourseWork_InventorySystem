@@ -7,7 +7,7 @@ import {
   Button, TextField, IconButton, Dialog, DialogActions, DialogContent, 
   DialogTitle, MenuItem, Select, InputLabel, FormControl, Typography, 
   Toolbar, Tooltip, TablePagination, InputAdornment, Chip, LinearProgress, 
-  Alert, Snackbar, Box, Checkbox, Badge, Fab 
+  Alert, Snackbar, Box, Checkbox, Badge, Fab, useTheme, useMediaQuery 
 } from '@mui/material';
 
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -28,6 +28,7 @@ import StockHistory from './StockHistory';
 import StockOperationModal from './StockOperationModal';
 import IssuanceModal from './IssuanceModal';
 import type { Product, Category, ServerError } from '../types/inventory';
+import { useSignalR } from '../context/SignalRContext';
 
 interface ProductListProps {
   isAdmin?: boolean;
@@ -65,9 +66,9 @@ const ProductImage = ({
     return (
       <Box sx={{ 
         width: size, height: size, 
-        bgcolor: '#f5f5f5', borderRadius: radius, border: '1px dashed #ccc',
+        bgcolor: 'action.hover', borderRadius: radius, border: '1px dashed', borderColor: 'divider',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#999', flexShrink: 0 
+        color: 'text.secondary', flexShrink: 0 
       }}>
         <PhotoCamera sx={{ fontSize: size * 0.5 }} />
       </Box>
@@ -131,6 +132,8 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [issueModalOpen, setIssueModalOpen] = useState<boolean>(false);
 
+  const { subscribeStockMovement, subscribeProductChange } = useSignalR();
+
   const fetchProducts = async () => {
     setLoading(true);
     setError('');
@@ -155,9 +158,52 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
     }
   };
 
+  const refreshProductsSilent = async () => {
+    try {
+      const [res, catRes] = await Promise.all([
+        api.get<Product[] | { items: Product[] }>('/products'),
+        api.get<Category[] | { items: Category[] }>('/categories')
+      ]);
+      const productList = Array.isArray(res.data)
+        ? res.data
+        : (Array.isArray(res.data?.items) ? res.data.items : []);
+      const categoryList = Array.isArray(catRes.data)
+        ? catRes.data
+        : (Array.isArray(catRes.data?.items) ? catRes.data.items : []);
+      setProducts(productList);
+      setCategories(categoryList);
+    } catch (err) {
+      console.error('Silent refresh failed', err);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // Підписка на події SignalR для оновлення залишків та товарів у реальному часі
+  useEffect(() => {
+    const unsubMove = subscribeStockMovement((movement) => {
+      setProducts(prev => prev.map(p => 
+        p.id === movement.productId ? { ...p, quantity: movement.newStock } : p
+      ));
+    });
+
+    const unsubProd = subscribeProductChange((change) => {
+      if (change.action === 'StockUpdated' && change.productId && change.newQuantity !== undefined) {
+        setProducts(prev => prev.map(p => 
+          p.id === change.productId ? { ...p, quantity: change.newQuantity! } : p
+        ));
+      } else {
+        refreshProductsSilent();
+      }
+    });
+
+    return () => {
+      unsubMove();
+      unsubProd();
+    };
+  }, [subscribeStockMovement, subscribeProductChange]);
 
   const handleSort = (key: keyof Product) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -352,64 +398,101 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
     }
   };
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
-    <Paper sx={{ p: 2, borderRadius: 2 }}>
+    <Paper sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: 2 }}>
       <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
         <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
       </Snackbar>
 
-      <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 }, flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h6" component="div" sx={{ flex: '1 1 100%' }}>
-          Список товарів
-        </Typography>
+      <Toolbar sx={{ 
+        px: { xs: 0.5, sm: 1 }, 
+        py: { xs: 1, sm: 1.5 },
+        display: 'flex', 
+        flexDirection: { xs: 'column', md: 'row' }, 
+        alignItems: { xs: 'stretch', md: 'center' }, 
+        gap: 1.5,
+        flexWrap: 'wrap'
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h6" component="div" fontWeight="bold">
+            Список товарів
+          </Typography>
+        </Box>
 
-        <TextField
-          label="Пошук"
-          variant="outlined"
-          size="small"
-          value={searchTerm}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
-          }}
-        />
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' }, 
+          alignItems: { xs: 'stretch', sm: 'center' }, 
+          gap: 1.5,
+          flexGrow: 1
+        }}>
+          <TextField
+            label="Пошук"
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
+            }}
+            sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 200 } }}
+          />
 
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Категорія</InputLabel>
-          <Select
-            value={filterCategory}
-            label="Категорія"
-            onChange={(e) => setFilterCategory(e.target.value as string)}
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 160 } }}>
+            <InputLabel>Категорія</InputLabel>
+            <Select
+              value={filterCategory}
+              label="Категорія"
+              onChange={(e) => setFilterCategory(e.target.value as string)}
+            >
+              <MenuItem value=""><em>Всі</em></MenuItem>
+              {categories.map(cat => (
+                <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1, 
+          justifyContent: { xs: 'space-between', sm: 'flex-end' } 
+        }}>
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title="Експорт в Excel">
+              <IconButton onClick={exportToExcel} color="success" size="small"><SaveAltIcon /></IconButton>
+            </Tooltip>
+
+            <Tooltip title="Імпорт з CSV">
+              <IconButton component="label" color="primary" size="small">
+                <UploadFileIcon />
+                <input type="file" hidden accept=".csv" onChange={handleFileUpload} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+
+          <Button 
+            variant="contained" 
+            startIcon={<AddIcon />} 
+            onClick={() => handleOpen()}
+            size="medium"
+            sx={{ whiteSpace: 'nowrap' }}
           >
-            <MenuItem value=""><em>Всі</em></MenuItem>
-            {categories.map(cat => (
-              <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Tooltip title="Експорт в Excel">
-          <IconButton onClick={exportToExcel} color="success"><SaveAltIcon /></IconButton>
-        </Tooltip>
-
-        <Tooltip title="Імпорт з CSV">
-          <IconButton component="label" color="primary">
-            <UploadFileIcon />
-            <input type="file" hidden accept=".csv" onChange={handleFileUpload} />
-          </IconButton>
-        </Tooltip>
-
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
-          Додати товар
-        </Button>
+            Додати товар
+          </Button>
+        </Box>
       </Toolbar>
 
       {loading && <LinearProgress sx={{ mb: 2 }} />}
 
-      <TableContainer>
-        <Table>
+      <TableContainer sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <Table sx={{ minWidth: 650 }}>
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+            <TableRow>
               <TableCell padding="checkbox">
                 <Checkbox 
                   onChange={handleSelectAll} 
@@ -430,7 +513,11 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
               .map((product) => (
                 <TableRow 
                   key={product.id}
-                  sx={{ backgroundColor: product.quantity <= product.minStock ? '#fff0f0' : 'inherit' }}
+                  sx={{ 
+                    backgroundColor: product.quantity <= product.minStock 
+                      ? (theme) => theme.palette.mode === 'dark' ? 'rgba(239, 68, 68, 0.16)' : '#fff0f0' 
+                      : 'inherit' 
+                  }}
                 >
                   <TableCell padding="checkbox">
                     <Checkbox 
@@ -502,7 +589,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
         }}
       />
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth fullScreen={isMobile}>
         <DialogTitle>{currentProduct ? 'Редагувати товар' : 'Новий товар'}</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>

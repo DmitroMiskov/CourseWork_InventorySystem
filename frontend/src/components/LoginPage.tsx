@@ -3,6 +3,7 @@ import type { FormEvent, ChangeEvent } from 'react';
 import axios from 'axios';
 import api from '../api/axiosConfig';
 import { Box, Button, TextField, Typography, Paper, Alert } from '@mui/material';
+import ThemeToggle from './ThemeToggle';
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
@@ -47,14 +48,17 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   return (
     <Box
       sx={{
+        position: 'relative',
         height: '100vh',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: 'background.default',
       }}
     >
-      <Paper elevation={3} sx={{ p: 4, width: 350, textAlign: 'center' }}>
+      <ThemeToggle sx={{ position: 'absolute', top: 20, right: 20, bgcolor: 'background.paper', boxShadow: 1 }} />
+
+      <Paper elevation={3} sx={{ p: 4, width: 350, textAlign: 'center', borderRadius: 2 }}>
         <Typography variant="h5" mb={3} fontWeight="bold" color="primary">
           Складський облік
         </Typography>

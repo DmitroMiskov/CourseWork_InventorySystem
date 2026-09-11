@@ -142,12 +142,12 @@ export default function CategoryList({ isAdmin = false }: CategoryListProps) {
         </Alert>
       </Snackbar>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h5" fontWeight="bold">
           Категорії товарів
         </Typography>
         {isAdmin && (
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()} size="medium">
             Додати категорію
           </Button>
         )}
@@ -155,9 +155,9 @@ export default function CategoryList({ isAdmin = false }: CategoryListProps) {
 
       {loading && <LinearProgress sx={{ mb: 2 }} />}
 
-      <TableContainer component={Paper} elevation={1}>
-        <Table>
-          <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+      <TableContainer component={Paper} elevation={1} sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <Table sx={{ minWidth: 350 }}>
+          <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Назва категорії</TableCell>
               {isAdmin && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Дії</TableCell>}

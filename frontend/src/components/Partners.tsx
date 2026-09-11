@@ -161,20 +161,20 @@ export default function Partners() {
         </Tabs>
       </Box>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h5" fontWeight="bold">
           {tabIndex === 0 ? 'Постачальники' : 'Клієнти'}
         </Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()} size="medium">
           Додати {tabIndex === 0 ? 'постачальника' : 'клієнта'}
         </Button>
       </Box>
 
       {loading && <LinearProgress sx={{ mb: 2 }} />}
 
-      <TableContainer component={Paper} elevation={1}>
-        <Table>
-          <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+      <TableContainer component={Paper} elevation={1} sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <Table sx={{ minWidth: 450 }}>
+          <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Назва / ПІБ</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Контактна інформація</TableCell>

@@ -18,8 +18,12 @@ import {
   Chip,
   Box,
   LinearProgress,
-  TablePagination
+  TablePagination,
+  IconButton,
+  Tooltip
 } from '@mui/material';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import { downloadWaybillPdf, type WaybillData } from '../utils/pdfWaybillGenerator';
 
 interface StockHistoryProps {
   open: boolean;
@@ -41,6 +45,7 @@ interface StockMovement {
   comment?: string;
   supplierName?: string;
   customerName?: string;
+  userName?: string;
 }
 
 export default function StockHistory({
@@ -81,6 +86,43 @@ export default function StockHistory({
     return val === 1 || val === '1' || val === 'Incoming' || val === 'In';
   };
 
+  const handleDownloadHistoryPdf = async (item: StockMovement) => {
+    const isInc = isIncoming(item);
+    const dateStr = item.createdAt
+      ? new Date(item.createdAt).toISOString().slice(0, 10).replace(/-/g, '')
+      : '2026';
+    const idShort = item.id ? item.id.replace(/-/g, '').slice(0, 4).toUpperCase() : '0001';
+    const docPrefix = isInc ? 'ПН' : 'ВН';
+    const data: WaybillData = {
+      documentNumber: `${docPrefix}-${dateStr}-${idShort}`,
+      date: item.createdAt || new Date(),
+      customer: item.customerName
+        ? { name: item.customerName }
+        : item.supplierName
+        ? { name: item.supplierName }
+        : null,
+      reason:
+        item.reason ||
+        item.note ||
+        (isInc ? 'Оприбуткування товару на склад' : 'Видача матеріальних цінностей зі складу'),
+      storekeeperName: item.userName || 'Адміністратор складу',
+      items: [
+        {
+          name: productName || 'Товар',
+          unit: 'шт',
+          quantity: item.quantity,
+          price: 0
+        }
+      ]
+    };
+    try {
+      await downloadWaybillPdf(data);
+    } catch (err) {
+      console.error(err);
+      setError('Не вдалося сформувати PDF накладну');
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
@@ -109,12 +151,13 @@ export default function StockHistory({
                 <TableCell sx={{ fontWeight: 'bold' }}>Кількість</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Контрагент</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Причина / Коментар</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold' }}>PDF</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {movements.length === 0 && !loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                  <TableCell colSpan={6} align="center" sx={{ py: 3, color: 'text.secondary' }}>
                     Записів про рух товару не знайдено
                   </TableCell>
                 </TableRow>
@@ -146,6 +189,17 @@ export default function StockHistory({
                         </TableCell>
                         <TableCell>
                           {item.reason || item.note || item.comment || '—'}
+                        </TableCell>
+                        <TableCell align="center">
+                          <Tooltip title="Завантажити накладну (PDF)">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => handleDownloadHistoryPdf(item)}
+                            >
+                              <PictureAsPdfIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
                         </TableCell>
                       </TableRow>
                     );

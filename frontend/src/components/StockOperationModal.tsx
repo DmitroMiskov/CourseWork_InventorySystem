@@ -23,9 +23,14 @@ import {
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import { downloadWaybillPdf, type WaybillData } from '../utils/pdfWaybillGenerator';
+
 interface Product {
   id: string;
+  sku?: string;
   name: string;
+  price?: number;
   quantity: number;
   unit: string;
 }
@@ -124,6 +129,34 @@ export default function StockOperationModal({
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (!product) return;
+    const parsedQty = parseInt(quantity, 10) || 1;
+    const selectedPartner = partners.find((p) => p.id === partnerId);
+    const data: WaybillData = {
+      documentNumber: `ВН-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`,
+      date: new Date(),
+      customer: selectedPartner ? { name: selectedPartner.name } : null,
+      reason: reason.trim() || 'Списання товару зі складу',
+      storekeeperName: localStorage.getItem('username') || 'Адміністратор складу',
+      items: [
+        {
+          sku: product.sku || '',
+          name: product.name,
+          unit: product.unit || 'шт',
+          quantity: parsedQty,
+          price: product.price || 0
+        }
+      ]
+    };
+    try {
+      await downloadWaybillPdf(data);
+    } catch (err) {
+      console.error(err);
+      setError('Не вдалося сформувати PDF накладну');
+    }
+  };
+
   const handleClose = () => {
     setError('');
     setQuantity('');
@@ -204,6 +237,17 @@ export default function StockOperationModal({
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={loading}>Скасувати</Button>
+        {movementType === 2 && (
+          <Button
+            onClick={handleDownloadPdf}
+            disabled={loading}
+            startIcon={<PictureAsPdfIcon />}
+            variant="outlined"
+            color="secondary"
+          >
+            Накладна (PDF)
+          </Button>
+        )}
         <Button onClick={handleSubmit} variant="contained" disabled={loading}>
           {loading ? 'Збереження...' : 'Провести'}
         </Button>

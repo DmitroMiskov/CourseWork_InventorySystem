@@ -1,0 +1,21 @@
+Name,Description,Price,Quantity,Unit,Category,MinStock,SKU
+Ноутбук Lenovo ThinkPad E14,14" FHD IPS Core i5-1335U 16GB 512GB SSD,32999.00,12,шт,Ноутбуки,3,SKU-TP-E14
+Ноутбук Apple MacBook Air 13" M2,13.6" Liquid Retina 8-core CPU 8GB 256GB SSD Midnight,43499.00,7,шт,Ноутбуки,2,SKU-MBA-M2
+Ноутбук ASUS TUF Gaming A15,15.6" 144Hz Ryzen 7 7735HS RTX 4060 16GB 512GB,45999.00,4,шт,Ноутбуки,3,SKU-TUF-A15
+Смартфон Samsung Galaxy S24,6.2" Dynamic AMOLED 2X 8GB 256GB Onyx Black,34999.00,15,шт,Смартфони,4,SKU-S24-256
+Смартфон Apple iPhone 15 Pro,6.1" Super Retina XDR 128GB Natural Titanium,47999.00,5,шт,Смартфони,3,SKU-IP15P-128
+Смартфон Xiaomi Redmi Note 13 Pro,6.67" AMOLED 200MP 8GB 256GB Midnight Black,10499.00,22,шт,Смартфони,5,SKU-RN13P-256
+Монітор Dell UltraSharp U2724D,27" IPS QHD 120Hz 100% sRGB HDMI DP Type-C,16899.00,8,шт,Монітори,2,SKU-DELL-U27
+Монітор Samsung Odyssey G5,27" VA WQHD 165Hz Curved 1000R 1ms HDR10,9999.00,2,шт,Монітори,3,SKU-SAM-G5
+Бездротова миша Logitech MX Master 3S,Лазерний сенсор 8000 DPI MagSpeed Bluetooth USB-C,4199.00,18,шт,Периферія,5,SKU-LOG-MX3S
+Механічна клавіатура Keychron K2 V2,RGB Hot-Swap Wireless Gateron Brown 75%,3899.00,9,шт,Периферія,3,SKU-KEY-K2
+Гарнітура HyperX Cloud III Wireless,Бездротова ігрова гарнітура 2.4GHz до 120 год роботи,5999.00,6,шт,Периферія,2,SKU-HYP-C3W
+SSD накопичувач Samsung 990 PRO 1TB,M.2 NVMe PCIe 4.0 швидкість до 7450 МБ/с,4499.00,25,шт,Комплектуючі,5,SKU-SSD-990P
+Оперативна пам'ять Kingston Fury Beast 32GB,DDR5-6000 MHz CL36 (2x16GB) Expo/XMP,4999.00,14,комплект,Комплектуючі,4,SKU-RAM-KF5
+Відеокарта ASUS Dual GeForce RTX 4070,12GB GDDR6X DLSS 3 192-bit OC Edition,26999.00,3,шт,Комплектуючі,2,SKU-ASUS-4070
+Wi-Fi роутер MikroTik hAP ax3,Дводіапазонний Wi-Fi 6 2.5GbE PoE RouterOS L6,5399.00,11,шт,Мережеве обладнання,3,SKU-MT-AX3
+Комутатор TP-Link TL-SG108E,8-портовий гігабітний Easy Smart комутатор металевий,1299.00,16,шт,Мережеве обладнання,4,SKU-TPL-SG108
+БФП лазерний Canon i-SENSYS MF3010,Чорно-білий лазерний принтер/сканер/копір,9499.00,1,шт,Офісна техніка,2,SKU-CAN-MF3010
+Джерело безперебійного живлення APC Back-UPS 650VA,Резервне живлення для ПК та роутера 4 розетки,3799.00,0,шт,Офісна техніка,2,SKU-APC-650
+Патч-корд Cat 6 UTP 1.5м,Мережевий кабель литий мідний сірий,65.00,45,шт,Мережеве обладнання,10,SKU-PC-C6-15
+Термопаста Arctic MX-4 4g,Високоефективна теплопровідна паста для процесорів,249.00,0,шт,Комплектуючі,5,SKU-ARC-MX4

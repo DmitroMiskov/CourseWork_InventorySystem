@@ -69,7 +69,8 @@ namespace Inventory.API.Controllers
                     authClaims.Add(new Claim(ClaimTypes.Role, userRole));
                 }
 
-                var key = Encoding.ASCII.GetBytes("TUT_DUZHE_SECRETNY_KEY_DLYA_KURSOVOI_ROBOTY_12345"); // Той самий ключ!
+                var jwtKey = _configuration["Jwt:Key"] ?? "TUT_DUZHE_SECRETNY_KEY_DLYA_KURSOVOI_ROBOTY_12345";
+                var key = Encoding.ASCII.GetBytes(jwtKey);
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(authClaims),
@@ -120,7 +121,8 @@ namespace Inventory.API.Controllers
             if (user == null) return NotFound("Користувача не знайдено");
 
             // Захист: не можна видалити самого себе або головного адміна (опціонально)
-            if (user.UserName.ToLower() == "admin" || user.UserName.ToLower() == "boss")
+            if (string.Equals(user.UserName, "admin", StringComparison.OrdinalIgnoreCase) || 
+                string.Equals(user.UserName, "boss", StringComparison.OrdinalIgnoreCase))
             {
                 return BadRequest("Цього користувача не можна видалити");
             }

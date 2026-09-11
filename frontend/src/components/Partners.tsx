@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { ChangeEvent, SyntheticEvent } from 'react';
 import axios from 'axios';
 import api from '../api/axiosConfig';
@@ -25,22 +25,11 @@ import { Box, Button, TextField, Typography,
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-
-interface Partner {
-  id: string;
-  name: string;
-  contactInfo?: string;
-}
+import type { Partner, ServerError } from '../types/inventory';
 
 interface PartnerFormData {
   name: string;
   contactInfo: string;
-}
-
-interface ServerError {
-  title?: string;
-  status?: number;
-  errors?: Record<string, string[]>;
 }
 
 export default function Partners() {
@@ -57,7 +46,7 @@ export default function Partners() {
   const currentEndpoint = tabIndex === 0 ? '/suppliers' : '/customers';
   const partnerTypeLabel = tabIndex === 0 ? 'постачальника' : 'клієнта';
 
-  const fetchPartners = async () => {
+  const fetchPartners = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<Partner[]>(currentEndpoint);
@@ -68,11 +57,11 @@ export default function Partners() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentEndpoint, tabIndex]);
 
   useEffect(() => {
     fetchPartners();
-  }, [tabIndex]);
+  }, [fetchPartners]);
 
   const handleTabChange = (_: SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);

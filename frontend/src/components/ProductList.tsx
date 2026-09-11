@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import type { ChangeEvent } from 'react';
 import axios from 'axios';
-import api from '../api/axiosConfig';
+import api, { API_BASE_URL } from '../api/axiosConfig';
 import { 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
   Button, TextField, IconButton, Dialog, DialogActions, DialogContent, 
@@ -27,38 +27,10 @@ import { saveAs } from 'file-saver';
 import StockHistory from './StockHistory';
 import StockOperationModal from './StockOperationModal';
 import IssuanceModal from './IssuanceModal';
-
-// Базовий URL для медіа-файлів з бекенду
-const API_BASE_URL = import.meta.env.VITE_API_URL 
-  ? import.meta.env.VITE_API_URL.replace('/api', '') 
-  : 'http://localhost:8080';
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  quantity: number;
-  unit: string;
-  categoryId: string;
-  category?: Category;
-  minStock: number;
-  imageUrl?: string;
-}
+import type { Product, Category, ServerError } from '../types/inventory';
 
 interface ProductListProps {
   isAdmin?: boolean;
-}
-
-interface ServerError {
-  title?: string;
-  status?: number;
-  errors?: Record<string, string[]>;
 }
 
 interface UploadImageResponse {
@@ -164,11 +136,17 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
     setError('');
     try {
       const [res, catRes] = await Promise.all([
-        api.get<Product[]>('/products'),
-        api.get<Category[]>('/categories')
+        api.get<Product[] | { items: Product[] }>('/products'),
+        api.get<Category[] | { items: Category[] }>('/categories')
       ]);
-      setProducts(res.data);
-      setCategories(catRes.data);
+      const productList = Array.isArray(res.data)
+        ? res.data
+        : (Array.isArray(res.data?.items) ? res.data.items : []);
+      const categoryList = Array.isArray(catRes.data)
+        ? catRes.data
+        : (Array.isArray(catRes.data?.items) ? catRes.data.items : []);
+      setProducts(productList);
+      setCategories(categoryList);
     } catch (err: unknown) {
       console.error(err);
       setError("Не вдалося завантажити дані. Перевірте з'єднання.");
@@ -190,7 +168,8 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
   };
 
   const sortedProducts = useMemo(() => {
-    const sortableItems = [...products]; 
+    const safeProducts = Array.isArray(products) ? products : [];
+    const sortableItems = [...safeProducts]; 
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
         const aValue = a[sortConfig.key];
@@ -215,7 +194,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
       setCurrentProduct(product);
       setFormData({
         name: product.name,
-        description: product.description,
+        description: product.description || '',
         price: product.price.toString(),
         quantity: product.quantity.toString(),
         unit: product.unit,
@@ -605,7 +584,7 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
       <IssuanceModal 
         open={issueModalOpen}
         onClose={() => setIssueModalOpen(false)}
-        selectedProducts={products.filter(p => selectedIds.includes(p.id))}
+        selectedProducts={(Array.isArray(products) ? products : []).filter(p => selectedIds.includes(p.id))}
         onSuccess={() => {
           fetchProducts();
           setSelectedIds([]);

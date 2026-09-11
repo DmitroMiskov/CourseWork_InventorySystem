@@ -1,10 +1,12 @@
-using Inventory.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Inventory.Application.Common.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Inventory.API.Data;
+using Inventory.Application;
+using Inventory.Infrastructure;
+using Inventory.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,32 +21,53 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Inventory API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header. Format: 'Bearer {token}'",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        builder => builder.AllowAnyOrigin()
-                          .AllowAnyMethod()
-                          .AllowAnyHeader());
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader());
 });
 
-// 👇 ВИПРАВЛЕННЯ: Змінили Npgsql на SqlServer для Azure
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
-
-builder.Services.AddScoped<IApplicationDbContext>(provider =>
-    provider.GetRequiredService<ApplicationDbContext>());
-
-builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssembly(typeof(Inventory.Application.Products.Commands.CreateProduct.CreateProductCommand).Assembly));
+// Реєстрація шарів Clean Architecture
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-var key = Encoding.ASCII.GetBytes("TUT_DUZHE_SECRETNY_KEY_DLYA_KURSOVOI_ROBOTY_12345");
+// Автентифікація JWT
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "TUT_DUZHE_SECRETNY_KEY_DLYA_KURSOVOI_ROBOTY_12345";
+var key = Encoding.ASCII.GetBytes(jwtKey);
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -69,37 +92,29 @@ builder.Services.AddAuthentication(options =>
 var app = builder.Build();
 
 // ==========================================
-// 3. МІГРАЦІЇ ТА PIPELINE
+// 3. ІНІЦІАЛІЗАЦІЯ БД ТА PIPELINE
 // ==========================================
 
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        // context.Database.EnsureDeleted(); // Обережно з цим на проді!
-        context.Database.EnsureCreated(); 
-        Console.WriteLine("✅ База даних успішно ініціалізована.");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Помилка при ініціалізації БД: {ex.Message}");
-    }
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    await DbInitializer.InitializeAsync(context, userManager, roleManager, app.Configuration, app.Logger);
 }
 
-// 👇 SWAGGER ВКЛЮЧЕНИЙ ЗАВЖДИ (без if IsDevelopment)
 app.UseSwagger();
-app.UseSwaggerUI(c => 
+app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Inventory API V1");
-    c.RoutePrefix = "swagger"; // Це стандартно, але про всяк випадок
+    c.RoutePrefix = "swagger";
 });
 
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
-app.UseAuthorization(); 
+app.UseAuthorization();
 
 app.UseStaticFiles();
 

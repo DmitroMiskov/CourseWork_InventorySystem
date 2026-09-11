@@ -1,11 +1,8 @@
+using Inventory.Application.Common.Interfaces;
 using Inventory.Application.Products.Commands.CreateProduct;
 using Inventory.Application.Products.Commands.DeleteProduct;
 using Inventory.Application.Products.Commands.UpdateProduct;
 using Inventory.Application.Products.Queries.GetProducts;
-using Inventory.Application.Categories.Commands.CreateCategory;
-using Inventory.Application.Categories.Commands.DeleteCategory;
-using Inventory.Application.Categories.Commands.UpdateCategory;
-using Inventory.Application.Categories.Queries.GetCategories;
 using Inventory.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +10,6 @@ using CsvHelper;
 using System.Globalization;
 using Inventory.API.Dtos;
 using Microsoft.EntityFrameworkCore; 
-using Inventory.Infrastructure.Persistence;
 using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Authorization;
 
@@ -21,15 +17,13 @@ namespace Inventory.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    // 👇 1. Базовий рівень захисту: Пускаємо тільки тих, хто увійшов (має токен)
     [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly ApplicationDbContext _context;
-        public DbSet<ProductHistory> ProductHistories { get; set; }
+        private readonly IApplicationDbContext _context;
 
-        public ProductsController(IMediator mediator, ApplicationDbContext context)
+        public ProductsController(IMediator mediator, IApplicationDbContext context)
         {
             _mediator = mediator;
             _context = context;
@@ -38,10 +32,32 @@ namespace Inventory.API.Controllers
         // GET: api/products
         // 👇 Доступно ВСІМ (User + Admin), бо тут немає уточнення Roles
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int? pageNumber, 
+            [FromQuery] int? pageSize,
+            [FromQuery] string? searchTerm,
+            [FromQuery] Guid? categoryId)
         {
-            var products = await _mediator.Send(new GetProductsQuery());
-            return Ok(products);
+            if (pageNumber.HasValue || pageSize.HasValue)
+            {
+                var paginated = await _mediator.Send(new GetProductsQuery
+                {
+                    PageNumber = pageNumber ?? 1,
+                    PageSize = pageSize ?? 10,
+                    SearchTerm = searchTerm,
+                    CategoryId = categoryId
+                });
+                return Ok(paginated);
+            }
+
+            var result = await _mediator.Send(new GetProductsQuery
+            {
+                PageNumber = 1,
+                PageSize = 10000,
+                SearchTerm = searchTerm,
+                CategoryId = categoryId
+            });
+            return Ok(result.Items);
         }
 
         // POST: api/products
@@ -107,7 +123,8 @@ namespace Inventory.API.Controllers
                         if (_context.Products.Any(p => p.Name == name)) continue;
 
                         var description = values.Length > 1 ? values[1].Trim() : "";
-                        decimal.TryParse(values[2].Replace('.', ','), out decimal price);
+                        var priceStr = values[2].Trim().Replace(',', '.');
+                        decimal.TryParse(priceStr, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal price);
                         int.TryParse(values[3], out int quantity);
                         var unit = values.Length > 4 ? values[4].Trim() : "шт";
                         
@@ -122,9 +139,14 @@ namespace Inventory.API.Controllers
                         }
                         
                         int.TryParse(values.Length > 6 ? values[6] : "0", out int minStock);
+                        var sku = values.Length > 7 && !string.IsNullOrWhiteSpace(values[7]) 
+                            ? values[7].Trim() 
+                            : $"SKU-{Guid.NewGuid().ToString()[..8].ToUpper()}";
 
                         var product = new Product
                         {
+                            Id = Guid.NewGuid(),
+                            SKU = sku,
                             Name = name,
                             Description = description,
                             Price = price,
@@ -132,7 +154,8 @@ namespace Inventory.API.Controllers
                             Unit = unit,
                             CategoryId = category.Id,
                             MinStock = minStock,
-                            ImageUrl = ""
+                            ImageUrl = "",
+                            CreatedAt = DateTime.UtcNow
                         };
 
                         productsToAdd.Add(product);
@@ -230,61 +253,6 @@ namespace Inventory.API.Controllers
                 .ToListAsync();
 
             return Ok(history);
-        }
-    }
-
-    public class CheckoutItemDto
-    {
-        public Guid ProductId { get; set; }
-        public int Quantity { get; set; }
-    }
-
-    [ApiController]
-    [Route("api/[controller]")]
-    [Authorize]
-    public class CategoriesController : ControllerBase
-    {
-        private readonly IMediator _mediator;
-
-        public CategoriesController(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var categories = await _mediator.Send(new GetCategoriesQuery());
-            return Ok(categories);
-        }
-
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(CreateCategoryCommand command)
-        {
-            var id = await _mediator.Send(command);
-            return Ok(id);
-        }
-
-        // 👇 ДОДАНО: Редагування категорії
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Update(Guid id, UpdateCategoryCommand command)
-        {
-            if (id != command.Id) return BadRequest("ID не співпадає");
-            await _mediator.Send(command);
-            return NoContent();
-        }
-
-        // 👇 ДОДАНО: Видалення категорії
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            // Тут бажано додати перевірку, чи є товари в цій категорії, 
-            // щоб не видалити категорію, яка використовується.
-            await _mediator.Send(new DeleteCategoryCommand(id));
-            return NoContent();
         }
     }
 }

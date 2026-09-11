@@ -23,6 +23,9 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=inventory_db;Username=postgres;Password=password
+      - Superuser__Username=admin
+      - Superuser__Password=Admin123!
+      - Superuser__Role=Admin
     ports:
       - "8080:8080"
     volumes:

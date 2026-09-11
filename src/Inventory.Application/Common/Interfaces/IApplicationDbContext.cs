@@ -1,6 +1,6 @@
 using Inventory.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Threading;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Inventory.Application.Common.Interfaces
 {
@@ -8,7 +8,13 @@ namespace Inventory.Application.Common.Interfaces
     {
         DbSet<Product> Products { get; }
         DbSet<Category> Categories { get; }
+        DbSet<StockMovement> StockMovements { get; }
+        DbSet<Supplier> Suppliers { get; }
+        DbSet<Customer> Customers { get; }
+        DbSet<ProductHistory> ProductHistories { get; }
 
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+        DatabaseFacade Database { get; }
+
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

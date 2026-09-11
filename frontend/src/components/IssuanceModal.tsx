@@ -139,6 +139,7 @@ export default function IssuanceModal({
           api.post('/StockMovements', {
             productId: item.productId,
             quantity: item.issueQuantity,
+            type: 2,
             movementType: 2, // 2 = Розхід / Видача
             customerId: customerId || null,
             reason: reason.trim() || 'Масова видача зі складу'
@@ -149,11 +150,11 @@ export default function IssuanceModal({
       onSuccess();
     } catch (err: unknown) {
       console.error(err);
-      if (axios.isAxiosError<ServerError>(err)) {
-        const msg =
-          err.response?.data?.message ||
-          err.response?.data?.title ||
-          'Помилка оформлення видачі';
+      if (axios.isAxiosError<ServerError | string>(err)) {
+        const data = err.response?.data;
+        const msg = typeof data === 'string'
+          ? data
+          : (data?.message || data?.title || 'Помилка оформлення видачі');
         setError(`Сервер: ${msg}`);
       } else {
         setError('Непередбачена помилка під час видачі товарів');

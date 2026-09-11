@@ -27,19 +27,13 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import type { Category, ServerError } from '../types/inventory';
 
-interface Category {
-  id: string;
-  name: string;
+interface CategoryListProps {
+  isAdmin?: boolean;
 }
 
-interface ServerError {
-  title?: string;
-  status?: number;
-  errors?: Record<string, string[]>;
-}
-
-export default function CategoryList() {
+export default function CategoryList({ isAdmin = false }: CategoryListProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -152,9 +146,11 @@ export default function CategoryList() {
         <Typography variant="h5" fontWeight="bold">
           Категорії товарів
         </Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
-          Додати категорію
-        </Button>
+        {isAdmin && (
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
+            Додати категорію
+          </Button>
+        )}
       </Box>
 
       {loading && <LinearProgress sx={{ mb: 2 }} />}
@@ -164,13 +160,13 @@ export default function CategoryList() {
           <TableHead sx={{ bgcolor: '#f5f5f5' }}>
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Назва категорії</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 'bold' }}>Дії</TableCell>
+              {isAdmin && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Дії</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
             {categories.length === 0 && !loading ? (
               <TableRow>
-                <TableCell colSpan={2} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                <TableCell colSpan={isAdmin ? 2 : 1} align="center" sx={{ py: 3, color: 'text.secondary' }}>
                   Категорій не знайдено
                 </TableCell>
               </TableRow>
@@ -180,18 +176,20 @@ export default function CategoryList() {
                   <TableCell>
                     <Typography variant="body1">{cat.name}</Typography>
                   </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Редагувати">
-                      <IconButton color="primary" onClick={() => handleOpen(cat)}>
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Видалити">
-                      <IconButton color="error" onClick={() => handleDelete(cat.id, cat.name)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
+                  {isAdmin && (
+                    <TableCell align="right">
+                      <Tooltip title="Редагувати">
+                        <IconButton color="primary" onClick={() => handleOpen(cat)}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Видалити">
+                        <IconButton color="error" onClick={() => handleDelete(cat.id, cat.name)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}

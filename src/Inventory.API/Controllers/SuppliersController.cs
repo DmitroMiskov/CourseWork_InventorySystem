@@ -1,5 +1,6 @@
+using Inventory.API.Dtos;
+using Inventory.Application.Common.Interfaces;
 using Inventory.Domain.Entities;
-using Inventory.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,25 +12,70 @@ namespace Inventory.API.Controllers
     [Authorize]
     public class SuppliersController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IApplicationDbContext _context;
 
-        public SuppliersController(ApplicationDbContext context)
+        public SuppliersController(IApplicationDbContext context)
         {
             _context = context;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Supplier>>> GetSuppliers()
+        public async Task<IActionResult> GetSuppliers()
         {
-            return await _context.Suppliers.ToListAsync();
+            var suppliers = await _context.Suppliers.ToListAsync();
+            var result = suppliers.Select(s => new
+            {
+                s.Id,
+                s.Name,
+                ContactInfo = !string.IsNullOrEmpty(s.ContactPerson) ? s.ContactPerson : (!string.IsNullOrEmpty(s.Phone) ? s.Phone : s.Email),
+                s.ContactPerson,
+                s.Phone,
+                s.Email
+            });
+            return Ok(result);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Supplier>> CreateSupplier(Supplier supplier)
+        public async Task<IActionResult> CreateSupplier([FromBody] PartnerDto dto)
         {
+            var supplier = new Supplier
+            {
+                Id = Guid.NewGuid(),
+                Name = dto.Name,
+                ContactPerson = dto.ContactInfo ?? string.Empty
+            };
+
             _context.Suppliers.Add(supplier);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetSuppliers), new { id = supplier.Id }, supplier);
+
+            return Ok(new { id = supplier.Id, name = supplier.Name, contactInfo = supplier.ContactPerson });
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateSupplier(Guid id, [FromBody] PartnerDto dto)
+        {
+            var supplier = await _context.Suppliers.FindAsync(id);
+            if (supplier == null) return NotFound("Постачальника не знайдено");
+
+            supplier.Name = dto.Name;
+            if (dto.ContactInfo != null)
+            {
+                supplier.ContactPerson = dto.ContactInfo;
+            }
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteSupplier(Guid id)
+        {
+            var supplier = await _context.Suppliers.FindAsync(id);
+            if (supplier == null) return NotFound("Постачальника не знайдено");
+
+            _context.Suppliers.Remove(supplier);
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
     }
 }

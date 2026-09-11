@@ -1,7 +1,12 @@
 import axios from 'axios';
 
-// Пріоритет: змінна оточення Vite, або дефолтний локальний бекенд у Docker
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// Базовий URL сервера (без /api)
+export const API_BASE_URL = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
+  : 'http://localhost:8080';
+
+// Повний URL до REST API
+export const API_URL = import.meta.env.VITE_API_URL || `${API_BASE_URL}/api`;
 
 const api = axios.create({
   baseURL: API_URL,

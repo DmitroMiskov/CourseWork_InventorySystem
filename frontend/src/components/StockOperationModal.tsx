@@ -95,6 +95,7 @@ export default function StockOperationModal({
     const payload = {
       productId: product.id,
       quantity: parsedQty,
+      type: movementType,
       movementType,
       supplierId: movementType === 1 ? partnerId || null : null,
       customerId: movementType === 2 ? partnerId || null : null,
@@ -109,8 +110,11 @@ export default function StockOperationModal({
       onSuccess();
     } catch (err: unknown) {
       console.error(err);
-      if (axios.isAxiosError<ServerError>(err)) {
-        const msg = err.response?.data?.message || err.response?.data?.title || 'Помилка виконання операції';
+      if (axios.isAxiosError<ServerError | string>(err)) {
+        const data = err.response?.data;
+        const msg = typeof data === 'string' 
+          ? data 
+          : (data?.message || data?.title || 'Помилка виконання операції');
         setError(`Сервер: ${msg}`);
       } else {
         setError('Помилка надсилання даних');

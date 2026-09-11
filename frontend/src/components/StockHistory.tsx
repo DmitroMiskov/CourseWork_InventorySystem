@@ -33,9 +33,11 @@ interface StockMovement {
   id: string;
   productId: string;
   quantity: number;
-  movementType: number | string;
+  type?: number | string;
+  movementType?: number | string;
   createdAt: string;
   reason?: string;
+  note?: string;
   comment?: string;
   supplierName?: string;
   customerName?: string;
@@ -74,8 +76,9 @@ export default function StockHistory({
     fetchHistory();
   }, [open, productId]);
 
-  const isIncoming = (type: number | string): boolean => {
-    return type === 1 || type === '1' || type === 'Incoming' || type === 'In';
+  const isIncoming = (item: StockMovement): boolean => {
+    const val = item.movementType ?? item.type;
+    return val === 1 || val === '1' || val === 'Incoming' || val === 'In';
   };
 
   return (
@@ -119,7 +122,7 @@ export default function StockHistory({
                 movements
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((item) => {
-                    const incoming = isIncoming(item.movementType);
+                    const incoming = isIncoming(item);
                     return (
                       <TableRow key={item.id} hover>
                         <TableCell>
@@ -142,7 +145,7 @@ export default function StockHistory({
                           {item.supplierName || item.customerName || '—'}
                         </TableCell>
                         <TableCell>
-                          {item.reason || item.comment || '—'}
+                          {item.reason || item.note || item.comment || '—'}
                         </TableCell>
                       </TableRow>
                     );

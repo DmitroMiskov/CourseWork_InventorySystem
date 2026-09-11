@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
 import { Container, CssBaseline, AppBar, Toolbar, Typography, Button, Box, IconButton, Tooltip, Chip } from '@mui/material';
 
@@ -11,22 +10,16 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import PeopleIcon from '@mui/icons-material/People';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
-import CategoryIcon from '@mui/icons-material/Category'; // 👇 1. Додано іконку
+import CategoryIcon from '@mui/icons-material/Category';
 
 // Компоненти
 import ProductList from './components/ProductList';
-import CategoryList from './components/CategoryList'; // 👇 2. Додано імпорт списку категорій
+import CategoryList from './components/CategoryList';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import Partners from './components/Partners';
 import AdminPage from './components/AdminPage';
-
-// Тип для нашого Токена
-interface CustomJwtPayload {
-  unique_name: string; // Логін
-  role: string;        // Роль (Admin/User)
-  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string;
-}
+import type { CustomJwtPayload } from './types/inventory';
 
 function App() {
   // 👇 КРОК 1: Функція для отримання початкового стану (працює синхронно)
@@ -37,9 +30,6 @@ function App() {
     try {
       const decoded = jwtDecode<CustomJwtPayload>(token);
       const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decoded.role || "User";
-      
-      // Налаштовуємо axios одразу, якщо токен є
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       return { 
         auth: true, 
@@ -71,7 +61,6 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
     setIsAuthenticated(false);
     setUserRole('');
     setUsername('');

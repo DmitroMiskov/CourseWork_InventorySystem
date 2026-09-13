@@ -12,17 +12,35 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # 2. Backend API (Режим розробки)
+  # 2. ML Inference Engine (Python 3.11 + FastAPI)
+  ml:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    image: inventory-ml:dev
+    container_name: inventory-ml
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8000:8000"
+    volumes:
+      # Монтуємо код сервісу для Hot Reload
+      - ./ml-service:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # 3. Backend API (Режим розробки)
   api:
     image: mcr.microsoft.com/dotnet/sdk:9.0
     container_name: inventory-api
     working_dir: /app/src/Inventory.API
     depends_on:
       - db
+      - ml
     environment:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=inventory_db;Username=postgres;Password=password
+      - MlService__BaseUrl=http://ml:8000
       - Superuser__Username=admin
       - Superuser__Password=Admin123!
       - Superuser__Role=Admin
@@ -36,7 +54,7 @@ services:
     # 👇 Команда запуску (автоматично перезавантажує сервер при змінах)
     command: dotnet watch run --no-launch-profile
 
-  # 3. Frontend (React + Vite Hot Reload)
+  # 4. Frontend (React + Vite Hot Reload)
   client:
     image: node:20-alpine
     container_name: inventory-client
@@ -49,7 +67,6 @@ services:
     ports:
       - "80:5173" # Зовні порт 80 -> Всередині порт 5173 (стандарт Vite)
     volumes:
-      # 👇 ВИПРАВЛЕНО: Ваша папка називається 'frontend', а не 'client'
       - ./frontend:/app
       # Це щоб node_modules не затиралися при монтуванні
       - /app/node_modules

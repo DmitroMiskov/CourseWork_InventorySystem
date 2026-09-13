@@ -18,7 +18,22 @@ services:
     networks:
       - inventory-network
 
-  # 2. Backend API (.NET 9 Release на базі Alpine)
+  # 2. ML Inference Engine (Python 3.11 FastAPI Production)
+  ml:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    image: inventory-ml:prod
+    container_name: inventory-ml-prod
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8000:8000"
+    networks:
+      - inventory-network
+
+  # 3. Backend API (.NET 9 Release на базі Alpine)
   api:
     build:
       context: .
@@ -29,10 +44,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      ml:
+        condition: service_started
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=${POSTGRES_DB:-inventory_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-password}
+      - MlService__BaseUrl=http://ml:8000
       - Superuser__Username=${SUPERUSER_USERNAME:-admin}
       - Superuser__Password=${SUPERUSER_PASSWORD:-Admin123!}
       - Superuser__Role=Admin
@@ -44,7 +62,7 @@ services:
     networks:
       - inventory-network
 
-  # 3. Frontend (React SPA, зібраний у static bundle, роздача через Nginx Alpine)
+  # 4. Frontend (React SPA, зібраний у static bundle, роздача через Nginx Alpine)
   client:
     build:
       context: ./frontend

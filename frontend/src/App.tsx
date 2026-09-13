@@ -17,6 +17,7 @@ import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import CategoryIcon from '@mui/icons-material/Category';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import PsychologyIcon from '@mui/icons-material/Psychology';
 
 // Компоненти
 import ProductList from './components/ProductList';
@@ -25,6 +26,7 @@ import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import Partners from './components/Partners';
 import AdminPage from './components/AdminPage';
+import ProcurementIntelligence from './components/ProcurementIntelligence';
 import SignalRStatusBadge from './components/SignalRStatusBadge';
 import ThemeToggle from './components/ThemeToggle';
 import { SignalRProvider } from './context/SignalRContext';
@@ -58,7 +60,7 @@ function App() {
   const [userRole, setUserRole] = useState(initialState.role);
   const [username, setUsername] = useState(initialState.name);
   
-  const [currentView, setCurrentView] = useState<'list' | 'categories' | 'dashboard' | 'partners' | 'admin'>('list');
+  const [currentView, setCurrentView] = useState<'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin'>('list');
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
 
   // Функція для оновлення стану після успішного входу
@@ -88,10 +90,11 @@ function App() {
     { id: 'categories' as const, label: 'Категорії', icon: <CategoryIcon /> },
     { id: 'partners' as const, label: 'Контрагенти', icon: <PeopleIcon /> },
     { id: 'dashboard' as const, label: 'Дашборд', icon: <BarChartIcon /> },
+    { id: 'intelligence' as const, label: 'ML Планування', icon: <PsychologyIcon /> },
     ...(isAdmin ? [{ id: 'admin' as const, label: 'Персонал', icon: <SupervisorAccountIcon /> }] : [])
   ];
 
-  const handleNavClick = (view: 'list' | 'categories' | 'dashboard' | 'partners' | 'admin') => {
+  const handleNavClick = (view: 'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin') => {
     setCurrentView(view);
     setMobileOpen(false);
   };
@@ -280,6 +283,8 @@ function App() {
         {currentView === 'partners' && <Partners />}
         
         {currentView === 'dashboard' && <Dashboard />}
+
+        {currentView === 'intelligence' && <ProcurementIntelligence />}
         
         {currentView === 'admin' && isAdmin && (<AdminPage onBack={() => setCurrentView('list')} />)}
       </Container>

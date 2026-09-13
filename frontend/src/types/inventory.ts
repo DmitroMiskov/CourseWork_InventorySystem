@@ -63,3 +63,96 @@ export interface ServerError {
   errors?: Record<string, string[]>;
   message?: string;
 }
+
+export interface HistoricalPoint {
+  date: string;
+  actual_quantity: number;
+}
+
+export interface ForecastPoint {
+  date: string;
+  day_index: number;
+  predicted_demand: number;
+  lower_bound_95: number;
+  upper_bound_95: number;
+}
+
+export interface ModelMetrics {
+  mae: number;
+  rmse: number;
+  mape: number;
+  r2?: number;
+  model_name: string;
+}
+
+export interface ForecastResponse {
+  product_id: string | number;
+  sku?: string;
+  name?: string;
+  horizon_days: number;
+  model_used: string;
+  historical_points: HistoricalPoint[];
+  forecast_points: ForecastPoint[];
+  metrics: ModelMetrics;
+  trend: string;
+  summary_forecast_qty: number;
+  avg_daily_demand: number;
+}
+
+export interface ProcurementRadarItem {
+  product_id: string | number;
+  sku: string;
+  name: string;
+  category: string;
+  unit_price: number;
+  current_stock: number;
+  daily_demand: number;
+  daily_demand_std: number;
+  lead_time_days: number;
+  lead_time_std: number;
+  safety_stock: number;
+  reorder_point: number;
+  eoq: number;
+  days_to_depletion: number;
+  status: string;
+  status_code: 'norm' | 'warning' | 'critical' | 'urgent';
+  recommended_order_qty: number;
+  estimated_order_cost: number;
+  supplier_name: string;
+}
+
+export interface ProcurementRadarResponse {
+  generated_at: string;
+  service_level_z: number;
+  total_items_count: number;
+  urgent_count: number;
+  critical_count: number;
+  warning_count: number;
+  norm_count: number;
+  total_recommended_procurement_cost: number;
+  items: ProcurementRadarItem[];
+}
+
+export interface AbcXyzItem {
+  product_id: string | number;
+  sku: string;
+  name: string;
+  category: string;
+  revenue: number;
+  share_percent: number;
+  cumulative_share_percent: number;
+  abc_class: 'A' | 'B' | 'C';
+  cv_percent: number;
+  xyz_class: 'X' | 'Y' | 'Z';
+  matrix_cell: string;
+  strategy_recommendation: string;
+}
+
+export interface AbcXyzResponse {
+  generated_at: string;
+  total_products: number;
+  total_revenue: number;
+  matrix_counts: Record<string, number>;
+  items: AbcXyzItem[];
+}
+

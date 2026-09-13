@@ -1,5 +1,6 @@
 using Inventory.Application.Common.Interfaces;
 using Inventory.Infrastructure.Persistence;
+using Inventory.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +17,9 @@ namespace Inventory.Infrastructure
 
             services.AddScoped<IApplicationDbContext>(provider =>
                 provider.GetRequiredService<ApplicationDbContext>());
+
+            // Реєстрація типізованого HTTP-клієнта для зв'язку з Python ML-сервісом
+            services.AddHttpClient<IMLForecastService, MLForecastService>();
 
             return services;
         }

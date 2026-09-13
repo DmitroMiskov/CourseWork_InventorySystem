@@ -23,10 +23,11 @@
 ВАРІАНТ 1: ЗАПУСК ЧЕРЕЗ DOCKER COMPOSE (ШВИДКИЙ ТА ПОВНИЙ)
 ================================================================================
 
-Цей варіант автоматично збирає та запускає всі 3 сервіси:
+Цей варіант автоматично збирає та запускає всі 4 сервіси:
   1. Базу даних PostgreSQL 15
-  2. Backend (.NET 9 Web API з Hot Reload)
-  3. Frontend (React + TypeScript + Vite)
+  2. Обчислювальний ML-мікросервіс (Python 3.11 + FastAPI + scikit-learn)
+  3. Backend (.NET 9 Web API з Hot Reload)
+  4. Frontend (React + TypeScript + Vite)
 
 КРОК 1. Відкрийте термінал (PowerShell або командний рядок) у корені проєкту:
    cd E:\Coursework\InventorySystem
@@ -39,7 +40,8 @@
 
 КРОК 3. Доступ до працюючих сервісів:
    - Веб-інтерфейс (Frontend):  http://localhost
-   - Swagger API документація:  http://localhost:8080/swagger
+   - Swagger API (.NET бекенд): http://localhost:8080/swagger
+   - Swagger ML (Python сервіс):http://localhost:8000/docs
    - База даних PostgreSQL:     localhost:5432 (User: postgres, Password: password, DB: inventory_db)
 
 КРОК 4. Зупинка контейнерів:

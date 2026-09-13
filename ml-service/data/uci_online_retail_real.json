@@ -1,0 +1,8870 @@
+[
+  {
+    "id": 1,
+    "sku": "22197",
+    "name": "Small Popcorn Holder",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 125.1,
+    "current_stock": 2050.0,
+    "daily_demand": 207.0,
+    "daily_demand_std": 407.3,
+    "lead_time_days": 5,
+    "lead_time_std": 0.8,
+    "dynamic_ss": 1527.0,
+    "rop": 2562.0,
+    "eoq": 1738.0,
+    "supplier": "ТОВ \"Global Logistics Hub\"",
+    "days_to_depletion": 9.9,
+    "history": [
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 33.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 127.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 128.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 82.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 54.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 59.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 110.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 126.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 264.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 57.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 227.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 259.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 20.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 35.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 70.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 74.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 168.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 100.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 134.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 31.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 25.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 86.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 204.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 21.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 45.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 15.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 2036.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 61.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 257.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 600.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 691.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 160.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 100.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 33.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 194.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 38.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 98.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 55.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 76.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 34.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 613.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 124.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 101.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 667.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 105.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 79.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 67.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 136.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 102.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 209.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 102.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 35.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 134.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 222.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 181.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 143.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 25.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 99.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 85.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 143.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 296.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 1085.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 39.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 76.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 147.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 389.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 47.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 126.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 159.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 124.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 210.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 133.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 252.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 534.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 294.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 247.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 15.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 62.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 232.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 251.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 43.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 47.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 2065.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 137.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 210.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 286.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 172.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 20.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 174.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 294.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 2012.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 172.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 1079.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 339.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 184.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 114.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 1767.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 224.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 352.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 135.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 449.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 218.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 349.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 1162.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 497.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 558.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 342.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 47.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 248.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 796.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 470.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 279.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 1369.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 113.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 410.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 337.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 368.0
+      },
+      {
+        "date": "2011-12-08",
+        "actual_quantity": 3111.0
+      },
+      {
+        "date": "2011-12-09",
+        "actual_quantity": 230.0
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "sku": "84077",
+    "name": "World War 2 Gliders Asstd Designs",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 38.48,
+    "current_stock": 1185.0,
+    "daily_demand": 139.1,
+    "daily_demand_std": 375.1,
+    "lead_time_days": 7,
+    "lead_time_std": 1.2,
+    "dynamic_ss": 1660.0,
+    "rop": 2634.0,
+    "eoq": 2568.0,
+    "supplier": "ТОВ \"EuroSupply Direct\"",
+    "days_to_depletion": 8.5,
+    "history": [
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 384.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 625.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 235.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 672.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 192.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 102.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 290.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 100.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 288.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 336.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 576.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 384.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 624.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 192.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 101.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 184.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 339.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 151.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 118.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 384.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 196.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 145.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 101.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 63.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 192.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 192.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 432.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 4848.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 62.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 288.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 288.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 384.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 245.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 250.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 340.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 101.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 293.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 192.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 148.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 348.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 257.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 19.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 98.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 58.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 241.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 198.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 205.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 243.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-12-08",
+        "actual_quantity": 336.0
+      },
+      {
+        "date": "2011-12-09",
+        "actual_quantity": 49.0
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "sku": "85099B",
+    "name": "Jumbo Bag Red Retrospot",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 104.39,
+    "current_stock": 1443.0,
+    "daily_demand": 155.6,
+    "daily_demand_std": 205.5,
+    "lead_time_days": 4,
+    "lead_time_std": 0.5,
+    "dynamic_ss": 690.0,
+    "rop": 1312.0,
+    "eoq": 1649.0,
+    "supplier": "ТОВ \"Retail Goods Trade\"",
+    "days_to_depletion": 9.3,
+    "history": [
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 35.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 234.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 313.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 134.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 120.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 123.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 356.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 162.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 120.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 142.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 31.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 30.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 237.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 222.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 235.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 57.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 296.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 200.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 376.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 434.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 7.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 22.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 31.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 76.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 123.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 44.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 135.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 71.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 273.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 279.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 45.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 25.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 59.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 148.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 162.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 111.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 348.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 54.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 38.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 453.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 134.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 23.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 358.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 263.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 557.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 147.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 22.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 62.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 45.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 281.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 390.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 100.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 478.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 130.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 151.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 1068.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 108.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 38.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 167.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 301.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 153.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 58.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 54.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 84.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 265.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 47.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 53.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 53.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 83.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 167.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 119.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 227.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 493.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 150.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 419.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 268.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 276.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 61.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 220.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 174.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 91.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 372.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 66.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 43.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 77.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 361.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 1583.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 623.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 22.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 62.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 368.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 78.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 274.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 147.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 409.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 112.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 54.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 341.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 122.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 7.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 287.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 161.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 41.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 105.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 84.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 244.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 452.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 58.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 120.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 146.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 159.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 725.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 1074.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 660.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 380.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 316.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 62.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 87.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 147.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 132.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 146.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 245.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 55.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 42.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 165.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 189.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 149.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 493.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 66.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 175.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 89.0
+      },
+      {
+        "date": "2011-12-08",
+        "actual_quantity": 106.0
+      },
+      {
+        "date": "2011-12-09",
+        "actual_quantity": 15.0
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "sku": "85123A",
+    "name": "White Hanging Heart T-Light Holder",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 130.91,
+    "current_stock": 380.0,
+    "daily_demand": 87.8,
+    "daily_demand_std": 133.8,
+    "lead_time_days": 6,
+    "lead_time_std": 1.0,
+    "dynamic_ss": 560.0,
+    "rop": 1087.0,
+    "eoq": 1106.0,
+    "supplier": "ПП \"Вест-Дистрибуція\"",
+    "days_to_depletion": 4.3,
+    "history": [
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 17.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 118.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 42.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 15.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 147.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 106.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 38.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 32.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 66.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 77.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 46.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 39.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 134.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 59.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 32.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 20.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 81.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 786.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 58.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 224.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 23.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 23.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 114.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 157.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 104.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 52.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 132.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 160.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 43.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 58.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 490.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 74.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 107.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 61.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 32.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 91.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 130.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 38.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 89.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 73.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 121.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 132.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 52.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 104.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 87.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 69.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 15.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 15.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 420.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 122.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 58.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 106.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 42.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 63.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 37.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 112.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 166.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 95.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 184.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 89.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 117.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 131.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 85.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 100.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 81.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 42.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 398.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 58.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 127.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 69.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 17.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 125.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 80.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 111.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 21.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 23.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 20.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 34.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 123.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 46.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 25.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 243.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 187.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 55.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 69.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 21.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 39.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 63.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 76.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 17.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 117.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 90.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 128.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 149.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 39.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 80.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 1265.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 85.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 86.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 95.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 113.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 71.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 134.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 65.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 380.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 457.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 157.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 102.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 125.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 101.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 253.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 248.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 131.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 222.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 133.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 116.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 311.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 41.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 117.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 298.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 39.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 200.0
+      },
+      {
+        "date": "2011-12-08",
+        "actual_quantity": 108.0
+      },
+      {
+        "date": "2011-12-09",
+        "actual_quantity": 4.0
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "sku": "84879",
+    "name": "Assorted Colour Bird Ornament",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 72.34,
+    "current_stock": 1992.0,
+    "daily_demand": 121.1,
+    "daily_demand_std": 283.4,
+    "lead_time_days": 5,
+    "lead_time_std": 0.7,
+    "dynamic_ss": 1055.0,
+    "rop": 1660.0,
+    "eoq": 1748.0,
+    "supplier": "ТОВ \"ОптІмпорт Компані\"",
+    "days_to_depletion": 16.4,
+    "history": [
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 52.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 57.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 233.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 82.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 76.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 104.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 32.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 92.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 136.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 120.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 64.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 119.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 82.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 64.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 83.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 82.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 134.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 160.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 69.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 104.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 86.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 152.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 64.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 88.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 82.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 3359.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 86.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 161.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 128.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 1008.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 32.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 64.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 32.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 95.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 224.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 81.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 206.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 400.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 80.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 88.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 136.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 104.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 296.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 400.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 68.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 104.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 64.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 348.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 32.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 245.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 74.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 224.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 184.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 84.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 91.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 285.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 9.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 76.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 116.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 392.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 158.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 156.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 59.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 128.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 80.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 217.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 264.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 120.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 294.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 128.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 210.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 80.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 136.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 1312.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 200.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 100.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 303.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 107.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 297.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 94.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 368.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 157.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 190.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 132.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 80.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 355.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 272.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 127.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 112.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 88.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 504.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 66.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 133.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 256.0
+      },
+      {
+        "date": "2011-12-08",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-12-09",
+        "actual_quantity": 32.0
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "sku": "21212",
+    "name": "Pack Of 72 Retrospot Cake Cases",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 91.01,
+    "current_stock": 351.0,
+    "daily_demand": 86.4,
+    "daily_demand_std": 145.7,
+    "lead_time_days": 8,
+    "lead_time_std": 1.5,
+    "dynamic_ss": 713.0,
+    "rop": 1404.0,
+    "eoq": 1316.0,
+    "supplier": "ТОВ \"Континент Логістик\"",
+    "days_to_depletion": 4.1,
+    "history": [
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 38.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 409.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 122.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 139.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 147.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 57.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 59.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 53.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 7.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 378.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 32.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 564.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 35.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 73.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 73.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 66.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 112.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 95.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 33.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 195.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 184.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 534.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 127.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 198.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 30.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 74.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 78.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 1369.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 132.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 78.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 197.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 39.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 37.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 75.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 229.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 79.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 156.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 37.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 122.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 179.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 168.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 810.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 65.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 41.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 362.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 94.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 230.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 248.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 83.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 89.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 34.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 148.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 83.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 146.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 186.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 105.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 83.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 73.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 169.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 45.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 278.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 80.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 61.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 61.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 244.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 81.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 64.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 219.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 529.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 146.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 77.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 66.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 78.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 87.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 164.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 62.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 89.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 84.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 109.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 82.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 100.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 99.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 82.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 45.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 15.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 52.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 241.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 116.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 42.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 90.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 74.0
+      },
+      {
+        "date": "2011-12-08",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-12-09",
+        "actual_quantity": 9.0
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "sku": "23084",
+    "name": "Rabbit Night Light",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 99.98,
+    "current_stock": 1522.0,
+    "daily_demand": 163.3,
+    "daily_demand_std": 387.2,
+    "lead_time_days": 3,
+    "lead_time_std": 0.4,
+    "dynamic_ss": 1112.0,
+    "rop": 1602.0,
+    "eoq": 1727.0,
+    "supplier": "ТОВ \"ПромСнаб-Рітейл\"",
+    "days_to_depletion": 9.3,
+    "history": [
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 62.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 390.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 38.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 78.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 71.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 101.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 31.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 375.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 84.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 33.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 15.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 84.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 25.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 120.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 9.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 7.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 7.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 480.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 279.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 273.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 789.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 78.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 21.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 7.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 9.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 10.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 365.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 1157.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 2647.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 1469.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 320.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 340.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 346.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 613.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 464.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 558.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 351.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 935.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 289.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 466.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 376.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 494.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 86.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 687.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 1697.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 496.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 726.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 588.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 85.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 149.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 667.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 411.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 252.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 547.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 317.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 381.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 2565.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 408.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 593.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 325.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 188.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 366.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 272.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 1819.0
+      },
+      {
+        "date": "2011-12-08",
+        "actual_quantity": 574.0
+      },
+      {
+        "date": "2011-12-09",
+        "actual_quantity": 174.0
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "sku": "22616",
+    "name": "Pack Of 12 London Tissues",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 53.68,
+    "current_stock": 1612.0,
+    "daily_demand": 71.1,
+    "daily_demand_std": 167.4,
+    "lead_time_days": 7,
+    "lead_time_std": 1.1,
+    "dynamic_ss": 742.0,
+    "rop": 1240.0,
+    "eoq": 1555.0,
+    "supplier": "ТОВ \"Union Trading Ltd\"",
+    "days_to_depletion": 22.7,
+    "history": [
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 504.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 876.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 25.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 217.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 432.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 86.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 19.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 689.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 67.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 99.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 648.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 1021.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 41.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 62.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 37.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 64.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 300.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 456.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 84.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 55.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 37.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 17.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 111.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 133.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 30.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 432.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 115.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 15.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 192.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 59.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 15.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 600.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 37.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 192.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 37.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 553.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 138.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 64.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 214.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 888.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 80.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 155.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 32.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 88.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 439.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 22.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 507.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-12-08",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-12-09",
+        "actual_quantity": 1.0
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "sku": "21977",
+    "name": "Pack Of 60 Pink Paisley Cake Cases",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 89.1,
+    "current_stock": 342.0,
+    "daily_demand": 62.1,
+    "daily_demand_std": 131.1,
+    "lead_time_days": 4,
+    "lead_time_std": 0.6,
+    "dynamic_ss": 437.0,
+    "rop": 685.0,
+    "eoq": 1128.0,
+    "supplier": "ТОВ \"Мерчант Сервіс\"",
+    "days_to_depletion": 5.5,
+    "history": [
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 266.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 444.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 39.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 7.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 9.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 624.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 600.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 175.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 78.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 100.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 266.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 78.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 25.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 149.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 792.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 698.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 150.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 147.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 79.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 362.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 700.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 105.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 124.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 52.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 674.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 74.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 99.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 33.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 133.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 30.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 7.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 56.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 51.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 25.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 146.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 62.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 53.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 243.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 10.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 221.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 77.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 58.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 124.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 9.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 57.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 55.0
+      },
+      {
+        "date": "2011-12-08",
+        "actual_quantity": 66.0
+      },
+      {
+        "date": "2011-12-09",
+        "actual_quantity": 3.0
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "sku": "22178",
+    "name": "Victorian Glass Hanging T-Light",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 69.01,
+    "current_stock": 391.0,
+    "daily_demand": 65.4,
+    "daily_demand_std": 118.4,
+    "lead_time_days": 10,
+    "lead_time_std": 1.8,
+    "dynamic_ss": 648.0,
+    "rop": 1302.0,
+    "eoq": 1315.0,
+    "supplier": "ТОВ \"Альянс Імпорт\"",
+    "days_to_depletion": 6.0,
+    "history": [
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 42.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 116.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 34.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 66.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 44.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 192.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 105.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 23.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 139.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 322.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 63.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 63.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 168.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 120.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 160.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 22.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 83.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 366.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 177.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 102.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 159.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 115.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 168.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 30.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 34.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 34.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 202.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 161.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 108.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 85.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 99.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 54.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 41.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 98.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 46.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 88.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 66.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 114.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 30.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 25.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 986.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 30.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 222.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 132.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 38.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 186.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 20.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 102.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 42.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 28.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 42.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 966.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 78.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 114.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 77.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 118.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 102.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 23.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 186.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 34.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 39.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 214.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 210.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 32.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 78.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 30.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 247.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 86.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 88.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 158.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 150.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 377.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 74.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 78.0
+      },
+      {
+        "date": "2011-12-08",
+        "actual_quantity": 109.0
+      },
+      {
+        "date": "2011-12-09",
+        "actual_quantity": 18.0
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "sku": "15036",
+    "name": "Assorted Colours Silk Fan",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 128.13,
+    "current_stock": 1066.0,
+    "daily_demand": 49.5,
+    "daily_demand_std": 176.8,
+    "lead_time_days": 6,
+    "lead_time_std": 0.9,
+    "dynamic_ss": 718.0,
+    "rop": 1015.0,
+    "eoq": 840.0,
+    "supplier": "ТОВ \"Склад Опт Торг\"",
+    "days_to_depletion": 21.5,
+    "history": [
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 83.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 68.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 1026.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 38.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 30.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 35.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 1846.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 38.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 19.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 156.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 97.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 60.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 173.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 73.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 156.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 9.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 624.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 745.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 114.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 17.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 150.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 93.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 17.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 126.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 40.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 45.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 96.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 601.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 62.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 16.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 84.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 26.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 87.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 25.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 15.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 9.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 30.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 61.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 84.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 113.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 84.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 54.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-08",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-12-09",
+        "actual_quantity": 1.0
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "sku": "21915",
+    "name": "Red  Harmonica In Box",
+    "category": "Реальний ритейл (UCI Dataset)",
+    "price": 59.84,
+    "current_stock": 1101.0,
+    "daily_demand": 81.4,
+    "daily_demand_std": 239.0,
+    "lead_time_days": 5,
+    "lead_time_std": 0.8,
+    "dynamic_ss": 888.0,
+    "rop": 1295.0,
+    "eoq": 1576.0,
+    "supplier": "ТОВ \"ЄвроТрейд Центр\"",
+    "days_to_depletion": 13.5,
+    "history": [
+      {
+        "date": "2011-06-11",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-12",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-06-13",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-06-14",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-06-15",
+        "actual_quantity": 264.0
+      },
+      {
+        "date": "2011-06-16",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-06-17",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-06-18",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-19",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-06-20",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-06-21",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-06-22",
+        "actual_quantity": 84.0
+      },
+      {
+        "date": "2011-06-23",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-06-24",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-06-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-28",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-06-29",
+        "actual_quantity": 25.0
+      },
+      {
+        "date": "2011-06-30",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-07-01",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-07-02",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-03",
+        "actual_quantity": 15.0
+      },
+      {
+        "date": "2011-07-04",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-07-05",
+        "actual_quantity": 49.0
+      },
+      {
+        "date": "2011-07-06",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-07-07",
+        "actual_quantity": 4.0
+      },
+      {
+        "date": "2011-07-08",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-10",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-07-11",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-07-12",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-13",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-14",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-07-15",
+        "actual_quantity": 85.0
+      },
+      {
+        "date": "2011-07-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-17",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-18",
+        "actual_quantity": 61.0
+      },
+      {
+        "date": "2011-07-19",
+        "actual_quantity": 133.0
+      },
+      {
+        "date": "2011-07-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-21",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-22",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-07-23",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-24",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-07-25",
+        "actual_quantity": 86.0
+      },
+      {
+        "date": "2011-07-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-27",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-28",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-07-29",
+        "actual_quantity": 37.0
+      },
+      {
+        "date": "2011-07-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-07-31",
+        "actual_quantity": 39.0
+      },
+      {
+        "date": "2011-08-01",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-02",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-08-03",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-04",
+        "actual_quantity": 288.0
+      },
+      {
+        "date": "2011-08-05",
+        "actual_quantity": 7.0
+      },
+      {
+        "date": "2011-08-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-07",
+        "actual_quantity": 2.0
+      },
+      {
+        "date": "2011-08-08",
+        "actual_quantity": 701.0
+      },
+      {
+        "date": "2011-08-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-10",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-08-11",
+        "actual_quantity": 144.0
+      },
+      {
+        "date": "2011-08-12",
+        "actual_quantity": 11.0
+      },
+      {
+        "date": "2011-08-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-14",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-15",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-16",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-17",
+        "actual_quantity": 72.0
+      },
+      {
+        "date": "2011-08-18",
+        "actual_quantity": 240.0
+      },
+      {
+        "date": "2011-08-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-21",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-22",
+        "actual_quantity": 39.0
+      },
+      {
+        "date": "2011-08-23",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-08-24",
+        "actual_quantity": 255.0
+      },
+      {
+        "date": "2011-08-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-26",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-08-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-28",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-08-30",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-08-31",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-09-01",
+        "actual_quantity": 720.0
+      },
+      {
+        "date": "2011-09-02",
+        "actual_quantity": 852.0
+      },
+      {
+        "date": "2011-09-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-04",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-09-05",
+        "actual_quantity": 103.0
+      },
+      {
+        "date": "2011-09-06",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-09-07",
+        "actual_quantity": 64.0
+      },
+      {
+        "date": "2011-09-08",
+        "actual_quantity": 42.0
+      },
+      {
+        "date": "2011-09-09",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-09-10",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-11",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-09-12",
+        "actual_quantity": 44.0
+      },
+      {
+        "date": "2011-09-13",
+        "actual_quantity": 38.0
+      },
+      {
+        "date": "2011-09-14",
+        "actual_quantity": 29.0
+      },
+      {
+        "date": "2011-09-15",
+        "actual_quantity": 157.0
+      },
+      {
+        "date": "2011-09-16",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-09-17",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-18",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-09-19",
+        "actual_quantity": 122.0
+      },
+      {
+        "date": "2011-09-20",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-09-21",
+        "actual_quantity": 269.0
+      },
+      {
+        "date": "2011-09-22",
+        "actual_quantity": 61.0
+      },
+      {
+        "date": "2011-09-23",
+        "actual_quantity": 19.0
+      },
+      {
+        "date": "2011-09-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-09-25",
+        "actual_quantity": 62.0
+      },
+      {
+        "date": "2011-09-26",
+        "actual_quantity": 48.0
+      },
+      {
+        "date": "2011-09-27",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-09-28",
+        "actual_quantity": 50.0
+      },
+      {
+        "date": "2011-09-29",
+        "actual_quantity": 65.0
+      },
+      {
+        "date": "2011-09-30",
+        "actual_quantity": 132.0
+      },
+      {
+        "date": "2011-10-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-02",
+        "actual_quantity": 14.0
+      },
+      {
+        "date": "2011-10-03",
+        "actual_quantity": 45.0
+      },
+      {
+        "date": "2011-10-04",
+        "actual_quantity": 1566.0
+      },
+      {
+        "date": "2011-10-05",
+        "actual_quantity": 64.0
+      },
+      {
+        "date": "2011-10-06",
+        "actual_quantity": 58.0
+      },
+      {
+        "date": "2011-10-07",
+        "actual_quantity": 98.0
+      },
+      {
+        "date": "2011-10-08",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-09",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-10",
+        "actual_quantity": 34.0
+      },
+      {
+        "date": "2011-10-11",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-10-12",
+        "actual_quantity": 109.0
+      },
+      {
+        "date": "2011-10-13",
+        "actual_quantity": 61.0
+      },
+      {
+        "date": "2011-10-14",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-15",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-16",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-17",
+        "actual_quantity": 293.0
+      },
+      {
+        "date": "2011-10-18",
+        "actual_quantity": 107.0
+      },
+      {
+        "date": "2011-10-19",
+        "actual_quantity": 77.0
+      },
+      {
+        "date": "2011-10-20",
+        "actual_quantity": 65.0
+      },
+      {
+        "date": "2011-10-21",
+        "actual_quantity": 276.0
+      },
+      {
+        "date": "2011-10-22",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-23",
+        "actual_quantity": 12.0
+      },
+      {
+        "date": "2011-10-24",
+        "actual_quantity": 33.0
+      },
+      {
+        "date": "2011-10-25",
+        "actual_quantity": 24.0
+      },
+      {
+        "date": "2011-10-26",
+        "actual_quantity": 21.0
+      },
+      {
+        "date": "2011-10-27",
+        "actual_quantity": 99.0
+      },
+      {
+        "date": "2011-10-28",
+        "actual_quantity": 147.0
+      },
+      {
+        "date": "2011-10-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-10-30",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-10-31",
+        "actual_quantity": 42.0
+      },
+      {
+        "date": "2011-11-01",
+        "actual_quantity": 291.0
+      },
+      {
+        "date": "2011-11-02",
+        "actual_quantity": 27.0
+      },
+      {
+        "date": "2011-11-03",
+        "actual_quantity": 2158.0
+      },
+      {
+        "date": "2011-11-04",
+        "actual_quantity": 80.0
+      },
+      {
+        "date": "2011-11-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-06",
+        "actual_quantity": 54.0
+      },
+      {
+        "date": "2011-11-07",
+        "actual_quantity": 575.0
+      },
+      {
+        "date": "2011-11-08",
+        "actual_quantity": 59.0
+      },
+      {
+        "date": "2011-11-09",
+        "actual_quantity": 13.0
+      },
+      {
+        "date": "2011-11-10",
+        "actual_quantity": 8.0
+      },
+      {
+        "date": "2011-11-11",
+        "actual_quantity": 6.0
+      },
+      {
+        "date": "2011-11-12",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-13",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-14",
+        "actual_quantity": 285.0
+      },
+      {
+        "date": "2011-11-15",
+        "actual_quantity": 36.0
+      },
+      {
+        "date": "2011-11-16",
+        "actual_quantity": 22.0
+      },
+      {
+        "date": "2011-11-17",
+        "actual_quantity": 5.0
+      },
+      {
+        "date": "2011-11-18",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-11-19",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-20",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-21",
+        "actual_quantity": 3.0
+      },
+      {
+        "date": "2011-11-22",
+        "actual_quantity": 1.0
+      },
+      {
+        "date": "2011-11-23",
+        "actual_quantity": 18.0
+      },
+      {
+        "date": "2011-11-24",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-25",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-26",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-27",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-28",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-29",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-11-30",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-01",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-02",
+        "actual_quantity": 1120.0
+      },
+      {
+        "date": "2011-12-03",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-04",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-05",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-06",
+        "actual_quantity": 0.0
+      },
+      {
+        "date": "2011-12-07",
+        "actual_quantity": 2.0
+      }
+    ]
+  }
+]

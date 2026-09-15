@@ -9,11 +9,14 @@ from models.schemas import (
     ProcurementRadarResponse,
     AbcXyzRequest,
     AbcXyzResponse,
-    HistoricalPoint
+    HistoricalPoint,
+    CopilotChatRequest,
+    CopilotChatResponse
 )
 from services.forecasting_service import generate_forecast
 from services.procurement_service import generate_procurement_radar
 from services.abc_xyz_service import calculate_abc_xyz
+from services.copilot_service import process_chat_message
 from services.dataset_service import (
     get_all_benchmark_products,
     get_benchmark_by_id,
@@ -142,6 +145,21 @@ def get_sample_product_history(sku: str, days: int = Query(default=180, ge=30, l
     """Отримання 180-денної історії операцій для обраного товару."""
     meta = get_benchmark_by_sku(sku)
     return generate_product_timeseries(meta, days=days)
+
+# ==========================================
+# 5. Інтелектуальний AI-Копілот складу (Warehouse Copilot)
+# ==========================================
+@app.post("/api/copilot/chat", response_model=CopilotChatResponse, tags=["AI-Копілот"])
+def chat_with_warehouse_copilot(request: CopilotChatRequest):
+    """
+    Інтелектуальний діалоговий AI-Копілот складу (Warehouse Copilot).
+    Підтримує пояснювальний ШІ (XAI), аудит дефіциту, генерацію офіційних листів постачальникам
+    та стратегічний аналіз асортименту у дводіапазонному режимі (Online LLM + Offline Fallback).
+    """
+    try:
+        return process_chat_message(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Помилка обробки запиту AI-Копілота: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

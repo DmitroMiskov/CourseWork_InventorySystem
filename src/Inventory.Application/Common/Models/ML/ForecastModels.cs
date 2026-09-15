@@ -303,6 +303,15 @@ namespace Inventory.Application.Common.Models.ML
         [JsonPropertyName("min_stock")]
         public double MinStock { get; set; }
 
+        [JsonPropertyName("max_stock")]
+        public double? MaxStock { get; set; }
+
+        [JsonPropertyName("lead_time_days")]
+        public int? LeadTimeDays { get; set; }
+
+        [JsonPropertyName("daily_sales_history")]
+        public List<double>? DailySalesHistory { get; set; }
+
         [JsonPropertyName("supplier_name")]
         public string? SupplierName { get; set; }
     }

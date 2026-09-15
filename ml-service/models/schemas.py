@@ -126,3 +126,26 @@ class AbcXyzResponse(BaseModel):
     total_revenue: float
     matrix_counts: Dict[str, int]
     items: List[AbcXyzItem]
+
+class ChatMessage(BaseModel):
+    role: str  # "user" | "assistant" | "system"
+    content: str
+
+class CopilotAction(BaseModel):
+    label: str
+    action_type: str  # "open_forecast", "open_radar", "open_abc", "quick_reply", "copy_text"
+    payload: Optional[str] = None
+
+class CopilotChatRequest(BaseModel):
+    message: str
+    history: Optional[List[ChatMessage]] = None
+    products: Optional[List[WarehouseProductInput]] = None
+    api_key: Optional[str] = None
+    provider: Optional[str] = "auto"  # "gemini", "openai", "offline", "auto"
+
+class CopilotChatResponse(BaseModel):
+    reply: str
+    intent: str
+    actions: List[CopilotAction] = []
+    model_used: str
+    generated_at: str

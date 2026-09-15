@@ -27,6 +27,7 @@ import Dashboard from './components/Dashboard';
 import Partners from './components/Partners';
 import AdminPage from './components/AdminPage';
 import ProcurementIntelligence from './components/ProcurementIntelligence';
+import WarehouseCopilot from './components/WarehouseCopilot';
 import SignalRStatusBadge from './components/SignalRStatusBadge';
 import ThemeToggle from './components/ThemeToggle';
 import { SignalRProvider } from './context/SignalRContext';
@@ -288,6 +289,9 @@ function App() {
         
         {currentView === 'admin' && isAdmin && (<AdminPage onBack={() => setCurrentView('list')} />)}
       </Container>
+
+      {/* ІНТЕЛЕКТУАЛЬНИЙ AI-КОПІЛОТ СКЛАДУ (DRAWER + FAB) */}
+      <WarehouseCopilot onNavigateToTab={(tab) => setCurrentView(tab)} />
     </SignalRProvider>
   );
 }

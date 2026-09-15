@@ -156,3 +156,33 @@ export interface AbcXyzResponse {
   items: AbcXyzItem[];
 }
 
+export interface CopilotMessage {
+  id?: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  actions?: CopilotAction[];
+  model_used?: string;
+  timestamp?: string;
+}
+
+export interface CopilotAction {
+  label: string;
+  action_type: 'open_forecast' | 'open_radar' | 'open_abc' | 'quick_reply' | 'copy_text' | string;
+  payload?: string | null;
+}
+
+export interface CopilotChatRequest {
+  message: string;
+  history?: { role: string; content: string }[];
+  provider?: string;
+  api_key?: string;
+}
+
+export interface CopilotChatResponse {
+  reply: string;
+  intent: string;
+  actions: CopilotAction[];
+  model_used: string;
+  generated_at: string;
+}
+

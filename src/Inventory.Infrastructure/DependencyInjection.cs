@@ -20,6 +20,7 @@ namespace Inventory.Infrastructure
 
             // Реєстрація типізованого HTTP-клієнта для зв'язку з Python ML-сервісом
             services.AddHttpClient<IMLForecastService, MLForecastService>();
+            services.AddHttpClient<ICopilotService, CopilotService>();
 
             return services;
         }

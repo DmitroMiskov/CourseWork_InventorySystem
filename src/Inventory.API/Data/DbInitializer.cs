@@ -26,6 +26,22 @@ namespace Inventory.API.Data
                 // Забезпечуємо створення схеми БД, якщо вона відсутня
                 await context.Database.EnsureCreatedAsync();
 
+                // Гарантуємо наявність нових колонок у таблиці Suppliers для наявних баз
+                try
+                {
+                    await context.Database.ExecuteSqlRawAsync(@"
+                        ALTER TABLE ""Suppliers"" ADD COLUMN IF NOT EXISTS ""Edrpou"" text NOT NULL DEFAULT '';
+                        ALTER TABLE ""Suppliers"" ADD COLUMN IF NOT EXISTS ""Address"" text NOT NULL DEFAULT '';
+                        ALTER TABLE ""Suppliers"" ADD COLUMN IF NOT EXISTS ""LeadTimeDays"" integer NOT NULL DEFAULT 5;
+                        ALTER TABLE ""Suppliers"" ADD COLUMN IF NOT EXISTS ""ContractNumber"" text NOT NULL DEFAULT '';
+                        ALTER TABLE ""Suppliers"" ADD COLUMN IF NOT EXISTS ""PaymentTerms"" text NOT NULL DEFAULT '';
+                    ");
+                }
+                catch
+                {
+                    // Ігноруємо для In-Memory або якщо база щойно створена
+                }
+
                 // 1. Створення стандартних ролей
                 string[] roles = { "Admin", "User" };
                 foreach (var role in roles)
@@ -143,10 +159,54 @@ namespace Inventory.API.Data
             var suppliers = new Dictionary<string, Supplier>();
             var supplierDefs = new[]
             {
-                new { Key = "techno", Name = "ТОВ \"ТехноДистриб'юшн\"", Contact = "Мельник Олександр", Phone = "+380442301122", Email = "sales@technodistr.ua" },
-                new { Key = "areo", Name = "ТОВ \"АРЕО\"", Contact = "Ковальчук Ірина", Phone = "+380443912040", Email = "info@areo.com.ua" },
-                new { Key = "itlog", Name = "ТОВ \"ІТ-Логістик Україна\"", Contact = "Шевченко Дмитро", Phone = "+380504123344", Email = "order@it-logistic.ua" },
-                new { Key = "net", Name = "ПП \"Мережеві Рішення\"", Contact = "Бондаренко Андрій", Phone = "+380675001234", Email = "net@solutions.ua" }
+                new { 
+                    Key = "techno", 
+                    Name = "ТОВ \"ТехноДистриб'юшн\"", 
+                    Contact = "Мельник Олександр", 
+                    Phone = "+380442301122", 
+                    Email = "sales@technodistr.ua",
+                    Edrpou = "38492011",
+                    Address = "м. Київ, вул. Велика Васильківська, 72",
+                    LeadTime = 5,
+                    Contract = "Договір № ТД-2025/03 від 14.03.2025",
+                    Terms = "Відтермінування платежу 14 днів"
+                },
+                new { 
+                    Key = "areo", 
+                    Name = "ТОВ \"АРЕО\"", 
+                    Contact = "Ковальчук Ірина", 
+                    Phone = "+380443912040", 
+                    Email = "info@areo.com.ua",
+                    Edrpou = "40192833",
+                    Address = "м. Київ, просп. Степана Бандери, 21",
+                    LeadTime = 3,
+                    Contract = "Договір № АР-88 від 10.01.2025",
+                    Terms = "Оплата по факту поставки (3 дні)"
+                },
+                new { 
+                    Key = "itlog", 
+                    Name = "ТОВ \"ІТ-Логістик Україна\"", 
+                    Contact = "Шевченко Дмитро", 
+                    Phone = "+380504123344", 
+                    Email = "order@it-logistic.ua",
+                    Edrpou = "39821455",
+                    Address = "м. Львів, вул. Городоцька, 174",
+                    LeadTime = 4,
+                    Contract = "Договір № ІТЛ-19/24 від 01.11.2024",
+                    Terms = "100% попередня оплата"
+                },
+                new { 
+                    Key = "net", 
+                    Name = "ПП \"Мережеві Рішення\"", 
+                    Contact = "Бондаренко Андрій", 
+                    Phone = "+380675001234", 
+                    Email = "net@solutions.ua",
+                    Edrpou = "37554812",
+                    Address = "м. Дніпро, вул. Січових Стрільців, 4-А",
+                    LeadTime = 6,
+                    Contract = "Договір № МР-42/25 від 20.02.2025",
+                    Terms = "Відтермінування платежу 7 днів"
+                }
             };
 
             foreach (var sDef in supplierDefs)
@@ -161,10 +221,23 @@ namespace Inventory.API.Data
                         ContactPerson = sDef.Contact,
                         Phone = sDef.Phone,
                         Email = sDef.Email,
+                        Edrpou = sDef.Edrpou,
+                        Address = sDef.Address,
+                        LeadTimeDays = sDef.LeadTime,
+                        ContractNumber = sDef.Contract,
+                        PaymentTerms = sDef.Terms,
                         Created = nowUtc.AddMonths(-3),
                         CreatedBy = "SystemSeed"
                     };
                     await context.Suppliers.AddAsync(existingSupplier);
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(existingSupplier.Edrpou)) existingSupplier.Edrpou = sDef.Edrpou;
+                    if (string.IsNullOrEmpty(existingSupplier.Address)) existingSupplier.Address = sDef.Address;
+                    if (string.IsNullOrEmpty(existingSupplier.ContractNumber)) existingSupplier.ContractNumber = sDef.Contract;
+                    if (string.IsNullOrEmpty(existingSupplier.PaymentTerms)) existingSupplier.PaymentTerms = sDef.Terms;
+                    if (existingSupplier.LeadTimeDays <= 0) existingSupplier.LeadTimeDays = sDef.LeadTime;
                 }
                 suppliers[sDef.Key] = existingSupplier;
             }

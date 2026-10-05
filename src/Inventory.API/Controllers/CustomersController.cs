@@ -41,14 +41,16 @@ namespace Inventory.API.Controllers
             var customer = new Customer
             {
                 Id = Guid.NewGuid(),
-                Name = dto.Name,
-                Phone = dto.ContactInfo ?? string.Empty
+                Name = dto.Name.Trim(),
+                Phone = dto.Phone?.Trim() ?? dto.ContactInfo?.Trim() ?? string.Empty,
+                Email = dto.Email?.Trim() ?? string.Empty,
+                Address = dto.Address?.Trim() ?? string.Empty
             };
 
             _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
 
-            return Ok(new { id = customer.Id, name = customer.Name, contactInfo = customer.Phone });
+            return Ok(new { id = customer.Id, name = customer.Name, phone = customer.Phone, email = customer.Email, address = customer.Address });
         }
 
         [HttpPut("{id}")]
@@ -57,11 +59,12 @@ namespace Inventory.API.Controllers
             var customer = await _context.Customers.FindAsync(id);
             if (customer == null) return NotFound("Клієнта не знайдено");
 
-            customer.Name = dto.Name;
-            if (dto.ContactInfo != null)
-            {
-                customer.Phone = dto.ContactInfo;
-            }
+            customer.Name = dto.Name.Trim();
+            if (dto.Phone != null) customer.Phone = dto.Phone.Trim();
+            else if (dto.ContactInfo != null) customer.Phone = dto.ContactInfo.Trim();
+
+            if (dto.Email != null) customer.Email = dto.Email.Trim();
+            if (dto.Address != null) customer.Address = dto.Address.Trim();
 
             await _context.SaveChangesAsync();
             return NoContent();

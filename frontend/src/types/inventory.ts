@@ -25,6 +25,11 @@ export interface Partner {
   contactPerson?: string;
   phone?: string;
   email?: string;
+  edrpou?: string;
+  address?: string;
+  leadTimeDays?: number;
+  contractNumber?: string;
+  paymentTerms?: string;
 }
 
 export interface StockMovement {

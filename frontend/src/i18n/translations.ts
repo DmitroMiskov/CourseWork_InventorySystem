@@ -227,6 +227,28 @@ export const translations = {
       offline: 'Офлайн',
       tooltipOnline: 'SignalR підключено: дані оновлюються в реальному часі',
       tooltipOffline: 'Підключення до сервера SignalR...'
+    },
+    barcode: {
+      title: 'Друк штрихкодів та етикеток',
+      printLabel: 'Штрихкод / Етикетка',
+      printSelected: 'Друк етикеток',
+      format: 'Формат коду',
+      barcodeCode128: 'Штрихкод (Code 128)',
+      qrCode: 'QR-код',
+      combined: 'Комбінована (Штрихкод + QR)',
+      labelSize: 'Розмір етикетки',
+      sizeStandard: '58 x 40 мм (Термопринтер)',
+      sizeLarge: '80 x 50 мм (Велика)',
+      sizeSmall: '40 x 25 мм (Компактна)',
+      copies: 'Кількість копій (на кожен товар)',
+      showPrice: 'Показувати ціну',
+      showCategory: 'Показувати категорію',
+      showDate: 'Показувати дату',
+      printNow: 'Друкувати',
+      downloadPdf: 'Експорт в PDF',
+      downloadPng: 'Завантажити зображення',
+      preview: 'Попередній перегляд етикетки',
+      batchPrint: 'Обрано товарів для друку: {{count}} шт.'
     }
   },
   en: {
@@ -455,6 +477,28 @@ export const translations = {
       offline: 'Offline',
       tooltipOnline: 'SignalR connected: real-time updates active',
       tooltipOffline: 'Connecting to SignalR server...'
+    },
+    barcode: {
+      title: 'Barcode & Label Printing',
+      printLabel: 'Barcode / Label',
+      printSelected: 'Print Labels',
+      format: 'Code Format',
+      barcodeCode128: 'Barcode (Code 128)',
+      qrCode: 'QR Code',
+      combined: 'Combined (Barcode + QR)',
+      labelSize: 'Label Size',
+      sizeStandard: '58 x 40 mm (Thermal)',
+      sizeLarge: '80 x 50 mm (Large)',
+      sizeSmall: '40 x 25 mm (Compact)',
+      copies: 'Number of copies (per item)',
+      showPrice: 'Show Price',
+      showCategory: 'Show Category',
+      showDate: 'Show Date',
+      printNow: 'Print',
+      downloadPdf: 'Export to PDF',
+      downloadPng: 'Download Image',
+      preview: 'Label Preview',
+      batchPrint: 'Selected for printing: {{count}} items'
     }
   }
 } as const;

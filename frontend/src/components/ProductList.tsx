@@ -20,6 +20,8 @@ import HistoryIcon from '@mui/icons-material/History';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import QrCodeIcon from '@mui/icons-material/QrCode';
+import PrintIcon from '@mui/icons-material/Print';
 
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -27,6 +29,7 @@ import { saveAs } from 'file-saver';
 import StockHistory from './StockHistory';
 import StockOperationModal from './StockOperationModal';
 import IssuanceModal from './IssuanceModal';
+import BarcodeModal from './BarcodeModal';
 import type { Product, Category, ServerError } from '../types/inventory';
 import { useSignalR } from '../context/SignalRContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -136,6 +139,9 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [issueModalOpen, setIssueModalOpen] = useState<boolean>(false);
 
+  const [barcodeModalOpen, setBarcodeModalOpen] = useState<boolean>(false);
+  const [barcodeProducts, setBarcodeProducts] = useState<Product[]>([]);
+
   const { subscribeStockMovement, subscribeProductChange } = useSignalR();
 
   const fetchProducts = async () => {
@@ -233,10 +239,24 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
   }, [products, sortConfig]);
 
   const filteredProducts = sortedProducts.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = product.name.toLowerCase().includes(term) ||
+      (product.sku ? product.sku.toLowerCase().includes(term) : false);
     const matchesCategory = filterCategory ? product.categoryId === filterCategory : true;
     return matchesSearch && matchesCategory;
   });
+
+  const handleOpenBarcode = (product: Product) => {
+    setBarcodeProducts([product]);
+    setBarcodeModalOpen(true);
+  };
+
+  const handleBulkBarcodePrint = () => {
+    const selected = (Array.isArray(products) ? products : []).filter(p => selectedIds.includes(p.id));
+    if (selected.length === 0) return;
+    setBarcodeProducts(selected);
+    setBarcodeModalOpen(true);
+  };
 
   const handleOpen = (product?: Product) => {
     if (product) {
@@ -581,6 +601,11 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
                           <HistoryIcon />
                         </IconButton>
                       </Tooltip>
+                      <Tooltip title={t('barcode.printLabel')}>
+                        <IconButton color="secondary" onClick={() => handleOpenBarcode(product)}>
+                          <QrCodeIcon />
+                        </IconButton>
+                      </Tooltip>
                       {canManageProducts && (
                         <Tooltip title={t('common.edit')}>
                           <IconButton color="primary" onClick={() => handleOpen(product)}>
@@ -682,7 +707,17 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
       />
 
       {selectedIds.length > 0 && (
-        <Box sx={{ position: 'fixed', bottom: 30, right: 30, zIndex: 1000 }}>
+        <Box sx={{ position: 'fixed', bottom: 30, right: 30, zIndex: 1000, display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<PrintIcon />}
+            onClick={handleBulkBarcodePrint}
+            sx={{ borderRadius: '28px', px: 2.5, py: 1.2, boxShadow: 4, fontWeight: 'bold' }}
+          >
+            {t('barcode.printSelected')} ({selectedIds.length})
+          </Button>
+
           <Badge badgeContent={selectedIds.length} color="error">
             <Fab color="primary" variant="extended" onClick={() => setIssueModalOpen(true)}>
               <ShoppingCartIcon sx={{ mr: 1 }} />
@@ -700,6 +735,12 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
           fetchProducts();
           setSelectedIds([]);
         }}
+      />
+
+      <BarcodeModal
+        open={barcodeModalOpen}
+        onClose={() => setBarcodeModalOpen(false)}
+        products={barcodeProducts}
       />
     </Paper>
   );

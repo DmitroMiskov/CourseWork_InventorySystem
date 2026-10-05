@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import datetime
 import urllib.request
@@ -76,6 +77,63 @@ def detect_product_in_query(query: str, products: List[WarehouseProductInput]) -
                 if target_sub.lower() in p.name.lower() or target_sub.lower() in p.sku.lower():
                     return p
                     
+    return None
+
+def detect_supplier_in_query(
+    query: str,
+    products: List[WarehouseProductInput],
+    radar_items: List[Any]
+) -> Optional[str]:
+    """
+    Визначає назву постачальника із запиту користувача:
+    1. Пошук збігів серед відомих постачальників зі складу.
+    2. Витягнення назви з тексту запиту за патернами (лапки, форми власності ТОВ/ФОП/ПП, фрази).
+    """
+    q_lower = query.lower()
+    
+    # 1. Збираємо список усіх відомих постачальників з товарів
+    known_suppliers = set()
+    for p in products:
+        if p.supplier_name and p.supplier_name.strip():
+            known_suppliers.add(p.supplier_name.strip())
+    for it in radar_items:
+        if hasattr(it, 'supplier_name') and it.supplier_name and it.supplier_name.strip():
+            known_suppliers.add(it.supplier_name.strip())
+            
+    # Сортуємо за спаданням довжини назви
+    for supp in sorted(known_suppliers, key=len, reverse=True):
+        supp_clean = supp.lower().replace('"', '').replace('«', '').replace('»', '').replace("'", "").strip()
+        core_name = re.sub(r'^(тов|фоп|пп|пат|прат|llc|inc)\s+', '', supp_clean).strip()
+        if supp_clean in q_lower:
+            return supp
+        if len(core_name) >= 3 and core_name in q_lower:
+            return supp
+
+    # 2. Якщо серед відомих немає, шукаємо у запиті за патернами
+    # У лапках після постачальник
+    quote_match = re.search(r'постачальни[ку|ка|ком]\s+["«\']([^"»\']+)["»\']', query, re.IGNORECASE)
+    if quote_match:
+        return quote_match.group(1).strip()
+        
+    # Будь-які лапки у запиті, якщо запит стосується постачальника
+    if any(w in q_lower for w in ["постачальник", "партнер", "дистриб", "лист"]):
+        any_quote = re.search(r'["«\']([^"»\']+)["»\']', query)
+        if any_quote:
+            return any_quote.group(1).strip()
+            
+    # Форма власності: постачальнику (ТОВ|ФОП|ПП|...) <Назва>
+    org_match = re.search(r'постачальни[ку|ка|ком]\s+((?:тов|фоп|пп|пат|прат)\s+[A-Za-zА-Яа-яІіЇїЄє0-9_\-]+(?:\s+[A-Za-zА-Яа-яІіЇїЄє0-9_\-]+)?)', query, re.IGNORECASE)
+    if org_match:
+        return org_match.group(1).strip()
+        
+    # Загальний патерн: постачальнику <Слово/Фраза>
+    general_match = re.search(r'постачальни[ку|ка|ком]\s+([A-Za-zА-Яа-яІіЇїЄє0-9_\-]+(?:\s+[A-Za-zА-Яа-яІіЇїЄє0-9_\-]+)?)', query, re.IGNORECASE)
+    if general_match:
+        candidate = general_match.group(1).strip()
+        stop_words = ["на", "про", "щодо", "для", "по", "всіх", "дефіцитних", "термінових", "нових", "наших", "основному", "нашого", "товарів"]
+        if candidate.lower() not in stop_words and not any(candidate.lower().startswith(sw + " ") for sw in stop_words):
+            return candidate
+
     return None
 
 def build_warehouse_system_context(products: List[WarehouseProductInput]) -> Dict[str, Any]:
@@ -179,12 +237,47 @@ def generate_offline_heuristic_reply(
         urgent_or_crit = context["urgent_items"] + context["critical_items"]
         if not urgent_or_crit:
             urgent_or_crit = context["radar"].items[:3]
-            
-        # Групуємо за основним постачальником
-        supplier = urgent_or_crit[0].supplier_name if urgent_or_crit else "ТОВ \"ТехноДистриб'юшн\""
-        items_for_supplier = [it for it in urgent_or_crit if it.supplier_name == supplier]
-        if not items_for_supplier:
-            items_for_supplier = urgent_or_crit[:2]
+
+        # 1. Шукаємо постачальника із запиту користувача
+        detected_supplier = detect_supplier_in_query(query, products, context["radar"].items)
+        matched_product = detect_product_in_query(query, products)
+        
+        if detected_supplier:
+            supplier = detected_supplier
+            # Фільтруємо позиції саме для цього постачальника
+            items_for_supplier = [
+                it for it in urgent_or_crit 
+                if it.supplier_name and (detected_supplier.lower() in it.supplier_name.lower() or it.supplier_name.lower() in detected_supplier.lower())
+            ]
+            # Якщо серед термінових немає, шукаємо серед усіх товарів радара
+            if not items_for_supplier:
+                items_for_supplier = [
+                    it for it in context["radar"].items 
+                    if it.supplier_name and (detected_supplier.lower() in it.supplier_name.lower() or it.supplier_name.lower() in detected_supplier.lower())
+                ]
+            # Якщо користувач зазначив конкретний товар, додаємо/використовуємо його
+            if matched_product:
+                prod_radar = next((it for it in context["radar"].items if str(it.product_id) == str(matched_product.product_id)), None)
+                if prod_radar and prod_radar not in items_for_supplier:
+                    items_for_supplier.insert(0, prod_radar)
+            # Якщо за цим постачальником не закріплено товарів у базі, але користувач звернувся саме до нього:
+            if not items_for_supplier:
+                items_for_supplier = urgent_or_crit[:3]
+        else:
+            # Постачальника не вказано явно
+            if matched_product:
+                prod_radar = next((it for it in context["radar"].items if str(it.product_id) == str(matched_product.product_id)), None)
+                if prod_radar:
+                    supplier = prod_radar.supplier_name or "ТОВ \"ТехноДистриб'юшн\""
+                    items_for_supplier = [prod_radar]
+                else:
+                    supplier = urgent_or_crit[0].supplier_name if urgent_or_crit else "ТОВ \"ТехноДистриб'юшн\""
+                    items_for_supplier = urgent_or_crit[:2]
+            else:
+                supplier = urgent_or_crit[0].supplier_name if urgent_or_crit else "ТОВ \"ТехноДистриб'юшн\""
+                items_for_supplier = [it for it in urgent_or_crit if it.supplier_name == supplier]
+                if not items_for_supplier:
+                    items_for_supplier = urgent_or_crit[:2]
             
         today_str = datetime.date.today().strftime("%d.%m.%Y")
         total_supplier_cost = sum(it.estimated_order_cost for it in items_for_supplier)
@@ -204,7 +297,7 @@ def generate_offline_heuristic_reply(
         draft += "Оплату гарантуємо згідно з умовами чинного договору.\n\n"
         draft += "З повагою,\nКерівник відділу матеріально-технічного забезпечення\nТОВ \"Складські Системи\""
         
-        reply = f"### 📝 Сформовано проєкт офіційного замовлення для постачальника:\n\n"
+        reply = f"### 📝 Сформовано проєкт офіційного замовлення для постачальника **{supplier}**:\n\n"
         reply += f"```text\n{draft}\n```\n\n"
         reply += "Ви можете скопіювати цей текст та відправити його електронною поштою постачальнику."
         

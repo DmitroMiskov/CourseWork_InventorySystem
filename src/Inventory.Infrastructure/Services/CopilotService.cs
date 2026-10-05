@@ -101,21 +101,25 @@ namespace Inventory.Infrastructure.Services
                     .AsNoTracking()
                     .ToListAsync(cancellationToken);
 
-                // Завантажуємо історію руху за останні 30 днів
+                // Завантажуємо історію руху для обчислення продажів (за 30 днів) та постачальників (за весь час)
                 var sinceDate = DateTime.UtcNow.AddDays(-30);
-                var recentMovements = await _context.StockMovements
-                    .Where(m => m.MovementDate >= sinceDate)
+                var recentSalesMovements = await _context.StockMovements
+                    .Where(m => m.MovementDate >= sinceDate && m.Type == MovementType.Out)
                     .AsNoTracking()
                     .ToListAsync(cancellationToken);
 
-                var salesByProduct = recentMovements
-                    .Where(m => m.Type == MovementType.Out)
+                var salesByProduct = recentSalesMovements
                     .GroupBy(m => m.ProductId)
                     .ToDictionary(g => g.Key, g => g.Select(m => (double)m.Quantity).ToList());
 
-                var supplierMap = recentMovements
+                // Шукаємо останнього постачальника за кожним товаром за всіма прихідними накладними
+                var incomingMovements = await _context.StockMovements
                     .Where(m => m.Type == MovementType.In && m.SupplierId.HasValue)
                     .OrderByDescending(m => m.MovementDate)
+                    .AsNoTracking()
+                    .ToListAsync(cancellationToken);
+
+                var supplierMap = incomingMovements
                     .GroupBy(m => m.ProductId)
                     .ToDictionary(g => g.Key, g => g.First().SupplierId);
 
@@ -132,7 +136,9 @@ namespace Inventory.Infrastructure.Services
                     }
                     else if (suppliers.Any())
                     {
-                        supplierName = suppliers.First().Name;
+                        // Якщо немає прямих накладних, рівномірно закріплюємо товари за зареєстрованими постачальниками
+                        int idx = Math.Abs(p.Id.GetHashCode()) % suppliers.Count;
+                        supplierName = suppliers[idx].Name;
                     }
 
                     List<double>? sales = null;

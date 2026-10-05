@@ -230,11 +230,28 @@ namespace Inventory.API.Controllers
                 if (file == null || file.Length == 0)
                     return BadRequest("Файл не обрано");
 
+                // 1. Обмеження розміру файлу (макс 5 МБ для оптимізації трафіку та пам'яті)
+                const long maxFileSize = 5 * 1024 * 1024;
+                if (file.Length > maxFileSize)
+                    return BadRequest("Розмір файлу не повинен перевищувати 5 МБ.");
+
+                // 2. Безпечний білий список дозволених розширень (захист від завантаження шкідливих скриптів)
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                var extension = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+                if (string.IsNullOrEmpty(extension) || !allowedExtensions.Contains(extension))
+                    return BadRequest("Неприпустимий формат файлу. Дозволено тільки зображення JPG, PNG або WebP.");
+
+                // 3. Перевірка MIME-типу
+                var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+                if (!allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
+                    return BadRequest("Неприпустимий MIME-тип вмісту.");
+
                 var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
                 if (!Directory.Exists(folderPath))
                     Directory.CreateDirectory(folderPath);
 
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                // 4. Генерація випадкового унікального імені (захист від Path Traversal та колізій)
+                var fileName = $"{Guid.NewGuid()}{extension}";
                 var filePath = Path.Combine(folderPath, fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
@@ -243,12 +260,12 @@ namespace Inventory.API.Controllers
                 }
 
                 var url = $"/images/{fileName}";
-                return StatusCode(200, new { url });
+                return Ok(new { url });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"UPLOAD ERROR: {ex.Message}");
-                return StatusCode(500, "Internal server error uploading file");
+                return StatusCode(500, "Помилка завантаження файлу на сервер");
             }
         }
 
@@ -318,6 +335,7 @@ namespace Inventory.API.Controllers
         public async Task<IActionResult> GetProductHistory(Guid id)
         {
             var history = await _context.ProductHistories
+                .AsNoTracking()
                 .Where(h => h.ProductId == id)
                 .OrderByDescending(h => h.CreatedAt) // Спочатку нові
                 .ToListAsync();

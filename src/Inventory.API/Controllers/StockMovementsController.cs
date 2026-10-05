@@ -28,6 +28,7 @@ namespace Inventory.API.Controllers
         public async Task<ActionResult<IEnumerable<object>>> GetAll([FromQuery] int limit = 100)
         {
             var movements = await _context.StockMovements
+                .AsNoTracking()
                 .Include(m => m.Product)
                 .Include(m => m.Supplier)
                 .Include(m => m.Customer)
@@ -58,6 +59,7 @@ namespace Inventory.API.Controllers
         public async Task<ActionResult<IEnumerable<object>>> GetByProduct(Guid productId)
         {
             var history = await _context.StockMovements
+                .AsNoTracking()
                 .Include(m => m.Supplier)
                 .Include(m => m.Customer)
                 .Where(m => m.ProductId == productId)

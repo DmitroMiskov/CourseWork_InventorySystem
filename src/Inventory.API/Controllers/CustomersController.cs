@@ -22,17 +22,21 @@ namespace Inventory.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCustomers()
         {
-            var customers = await _context.Customers.ToListAsync();
-            var result = customers.Select(c => new
-            {
-                c.Id,
-                c.Name,
-                ContactInfo = !string.IsNullOrEmpty(c.Phone) ? c.Phone : (!string.IsNullOrEmpty(c.Email) ? c.Email : c.Address),
-                c.Phone,
-                c.Email,
-                c.Address
-            });
-            return Ok(result);
+            var customers = await _context.Customers
+                .AsNoTracking()
+                .OrderBy(c => c.Name)
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Name,
+                    ContactInfo = !string.IsNullOrEmpty(c.Phone) ? c.Phone : (!string.IsNullOrEmpty(c.Email) ? c.Email : c.Address),
+                    c.Phone,
+                    c.Email,
+                    c.Address
+                })
+                .ToListAsync();
+
+            return Ok(customers);
         }
 
         [HttpPost]

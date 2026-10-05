@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Inventory.API.Data;
 using Inventory.API.Hubs;
 using Inventory.API.Services;
@@ -7,6 +8,7 @@ using Inventory.Infrastructure;
 using Inventory.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -63,6 +65,38 @@ builder.Services.AddCors(options =>
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IInventoryNotifier, InventoryNotifier>();
 builder.Services.AddHealthChecks();
+
+// Безпека: Налаштування Rate Limiting (захист від брутфорсу та DoS)
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json; charset=utf-8";
+        await context.HttpContext.Response.WriteAsync(
+            "{\"status\":429,\"message\":\"Забагато запитів. Будь ласка, зачекайте хвилину перед повторною спробою.\"}",
+            token);
+    };
+
+    // Захист автентифікації: макс 10 спроб за 1 хвилину
+    options.AddFixedWindowLimiter("auth-policy", opt =>
+    {
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+
+    // Загальний захист API: макс 150 запитів за 1 хвилину
+    options.AddSlidingWindowLimiter("api-policy", opt =>
+    {
+        opt.PermitLimit = 150;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.SegmentsPerWindow = 3;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+});
 
 // Реєстрація шарів Clean Architecture
 builder.Services.AddApplicationServices();
@@ -132,12 +166,16 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
+app.UseStaticFiles();
+
+app.UseRouting();
+
 app.UseCors("AllowAll");
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseStaticFiles();
 
 app.MapControllers();
 app.MapHub<InventoryHub>("/hubs/inventory");

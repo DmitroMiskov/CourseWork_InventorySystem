@@ -262,6 +262,21 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
     if (!e.target.files || e.target.files.length === 0) return;
     
     const file = e.target.files[0];
+
+    // Клієнтська валідація розміру та типу файлу
+    const maxSizeBytes = 5 * 1024 * 1024;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError('Неприпустимий формат. Дозволено тільки JPG, PNG або WebP.');
+      return;
+    }
+
+    if (file.size > maxSizeBytes) {
+      setError('Розмір зображення не повинен перевищувати 5 МБ.');
+      return;
+    }
+
     const uploadData = new FormData();
     uploadData.append('file', file);
 

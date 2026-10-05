@@ -22,24 +22,28 @@ namespace Inventory.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetSuppliers()
         {
-            var suppliers = await _context.Suppliers.ToListAsync();
-            var result = suppliers.Select(s => new
-            {
-                s.Id,
-                s.Name,
-                s.ContactPerson,
-                s.Phone,
-                s.Email,
-                s.Edrpou,
-                s.Address,
-                s.LeadTimeDays,
-                s.ContractNumber,
-                s.PaymentTerms,
-                ContactInfo = !string.IsNullOrEmpty(s.ContactPerson)
-                    ? (s.ContactPerson + (!string.IsNullOrEmpty(s.Phone) ? $" ({s.Phone})" : ""))
-                    : (!string.IsNullOrEmpty(s.Phone) ? s.Phone : s.Email)
-            });
-            return Ok(result);
+            var suppliers = await _context.Suppliers
+                .AsNoTracking()
+                .OrderBy(s => s.Name)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Name,
+                    s.ContactPerson,
+                    s.Phone,
+                    s.Email,
+                    s.Edrpou,
+                    s.Address,
+                    s.LeadTimeDays,
+                    s.ContractNumber,
+                    s.PaymentTerms,
+                    ContactInfo = !string.IsNullOrEmpty(s.ContactPerson)
+                        ? (s.ContactPerson + (!string.IsNullOrEmpty(s.Phone) ? $" ({s.Phone})" : ""))
+                        : (!string.IsNullOrEmpty(s.Phone) ? s.Phone : s.Email)
+                })
+                .ToListAsync();
+
+            return Ok(suppliers);
         }
 
         [HttpPost]

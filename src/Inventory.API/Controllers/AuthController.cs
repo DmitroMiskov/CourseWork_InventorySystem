@@ -1,6 +1,7 @@
 using Inventory.API.Dtos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -27,6 +28,7 @@ namespace Inventory.API.Controllers
 
         [HttpPost("register")]
         [Authorize(Roles = "Admin, admin")]
+        [EnableRateLimiting("auth-policy")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             var userExists = await _userManager.FindByNameAsync(model.Username);
@@ -53,6 +55,7 @@ namespace Inventory.API.Controllers
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting("auth-policy")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
             var user = await _userManager.FindByNameAsync(model.Username);
@@ -96,8 +99,8 @@ namespace Inventory.API.Controllers
         [Authorize(Roles = "Admin, admin")]
         public async Task<IActionResult> GetUsers()
         {
-            // Беремо всіх юзерів з бази
-            var users = await _userManager.Users.ToListAsync();
+            // Беремо всіх юзерів з бази з оптимізацією без відстеження стану
+            var users = await _userManager.Users.AsNoTracking().ToListAsync();
 
             // Важливо: Не віддаємо паролі! Робимо гарний список.
             var userList = new List<object>();

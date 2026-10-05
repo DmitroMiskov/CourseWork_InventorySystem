@@ -7,7 +7,7 @@ import {
     Box, Button, TextField, Typography, Paper, Alert, 
     FormControl, InputLabel, Select, MenuItem,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Chip
+    Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Chip, InputAdornment
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
@@ -16,6 +16,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 interface AdminPageProps {
     onBack: () => void;
@@ -44,6 +46,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [userName, setUserName] = useState<string>('');
     const [password, setPassword] = useState<string>('');
+    const [showPassword, setShowPassword] = useState<boolean>(false);
     const [role, setRole] = useState<string>('WarehouseWorker');
     
     const [message, setMessage] = useState<AlertMessage | null>(null);
@@ -123,6 +126,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             
             setUserName('');
             setPassword('');
+            setShowPassword(false);
             setOpenDialog(false);
             
             setRefreshKey(prev => prev + 1); 
@@ -203,7 +207,15 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                 </Table>
             </TableContainer>
 
-            <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="xs">
+            <Dialog 
+                open={openDialog} 
+                onClose={() => {
+                    setOpenDialog(false);
+                    setShowPassword(false);
+                }} 
+                fullWidth 
+                maxWidth="xs"
+            >
                 <DialogTitle>Новий співробітник</DialogTitle>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
@@ -215,10 +227,24 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                         />
                         <TextField 
                             label="Пароль" 
-                            type="password" 
+                            type={showPassword ? 'text' : 'password'} 
                             fullWidth 
                             value={password} 
                             onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} 
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="перемкнути видимість паролю"
+                                            onClick={() => setShowPassword(prev => !prev)}
+                                            onMouseDown={(e) => e.preventDefault()}
+                                            edge="end"
+                                        >
+                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
                         />
                         <FormControl fullWidth>
                             <InputLabel>Роль</InputLabel>

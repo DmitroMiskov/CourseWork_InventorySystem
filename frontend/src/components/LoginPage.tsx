@@ -2,7 +2,9 @@ import { useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import axios from 'axios';
 import api from '../api/axiosConfig';
-import { Box, Button, TextField, Typography, Paper, Alert } from '@mui/material';
+import { Box, Button, TextField, Typography, Paper, Alert, IconButton, InputAdornment } from '@mui/material';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import ThemeToggle from './ThemeToggle';
 
 interface LoginPageProps {
@@ -16,6 +18,7 @@ interface LoginResponse {
 export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [userName, setUserName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
@@ -58,7 +61,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     >
       <ThemeToggle sx={{ position: 'absolute', top: 20, right: 20, bgcolor: 'background.paper', boxShadow: 1 }} />
 
-      <Paper elevation={3} sx={{ p: 4, width: { xs: 340, sm: 380 }, textAlign: 'center', borderRadius: 2 }}>
+      <Paper elevation={3} sx={{ p: 4, width: 350, textAlign: 'center', borderRadius: 2 }}>
         <Typography variant="h5" mb={1} fontWeight="bold" color="primary">
           Складський облік
         </Typography>
@@ -77,12 +80,26 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           />
           <TextField
             label="Пароль"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             fullWidth
             margin="normal"
             value={password}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             autoComplete="current-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="перемкнути видимість паролю"
+                    onClick={() => setShowPassword(prev => !prev)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
 
           {error && (
@@ -100,55 +117,6 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           >
             УВІЙТИ
           </Button>
-
-          <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-            <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-              Швидкий демо-вхід за ролями:
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.8 }}>
-              <Button
-                variant="outlined"
-                color="warning"
-                size="small"
-                onClick={() => {
-                  setUserName('admin');
-                  setPassword('Admin123!');
-                }}
-                sx={{ textTransform: 'none', justifyContent: 'space-between', px: 1.5 }}
-              >
-                <span>👑 Адміністратор</span>
-                <Typography variant="caption" color="text.secondary">admin</Typography>
-              </Button>
-
-              <Button
-                variant="outlined"
-                color="secondary"
-                size="small"
-                onClick={() => {
-                  setUserName('manager');
-                  setPassword('Manager123!');
-                }}
-                sx={{ textTransform: 'none', justifyContent: 'space-between', px: 1.5 }}
-              >
-                <span>📊 Менеджер закупівель</span>
-                <Typography variant="caption" color="text.secondary">manager</Typography>
-              </Button>
-
-              <Button
-                variant="outlined"
-                color="info"
-                size="small"
-                onClick={() => {
-                  setUserName('worker');
-                  setPassword('Worker123!');
-                }}
-                sx={{ textTransform: 'none', justifyContent: 'space-between', px: 1.5 }}
-              >
-                <span>📦 Комірник (Склад)</span>
-                <Typography variant="caption" color="text.secondary">worker</Typography>
-              </Button>
-            </Box>
-          </Box>
         </form>
       </Paper>
     </Box>

@@ -13,7 +13,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-inventory_db}"]
       interval: 5s
-      timeout: 5s
+      timeout: 3s
       retries: 5
     networks:
       - inventory-network
@@ -29,7 +29,12 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     ports:
-      - "8000:8000"
+      - "${ML_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     networks:
       - inventory-network
 
@@ -45,7 +50,7 @@ services:
       db:
         condition: service_healthy
       ml:
-        condition: service_started
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
@@ -53,12 +58,17 @@ services:
       - MlService__BaseUrl=http://ml:8000
       - Superuser__Username=${SUPERUSER_USERNAME:-admin}
       - Superuser__Password=${SUPERUSER_PASSWORD:-Admin123!}
-      - Superuser__Role=Admin
+      - Superuser__Role=${SUPERUSER_ROLE:-Admin}
       - Jwt__Key=${JWT_KEY:-TUT_DUZHE_SECRETNY_KEY_DLYA_KURSOVOI_ROBOTY_12345}
     volumes:
       - product_images_prod:/app/wwwroot/images
     ports:
-      - "8080:8080"
+      - "${API_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     networks:
       - inventory-network
 
@@ -71,9 +81,15 @@ services:
     container_name: inventory-client-prod
     restart: unless-stopped
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
-      - "80:80"
+      - "${CLIENT_PORT:-80}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:80/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     networks:
       - inventory-network
 

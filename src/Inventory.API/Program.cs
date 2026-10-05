@@ -62,6 +62,7 @@ builder.Services.AddCors(options =>
 // Реєстрація SignalR та сповіщувача
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IInventoryNotifier, InventoryNotifier>();
+builder.Services.AddHealthChecks();
 
 // Реєстрація шарів Clean Architecture
 builder.Services.AddApplicationServices();
@@ -140,5 +141,6 @@ app.UseStaticFiles();
 
 app.MapControllers();
 app.MapHub<InventoryHub>("/hubs/inventory");
+app.MapHealthChecks("/health");
 
 app.Run();

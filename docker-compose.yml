@@ -1,16 +1,22 @@
 services:
-  # 1. База даних
+  # 1. База даних (PostgreSQL 15 Alpine)
   db:
     image: postgres:15-alpine
     container_name: inventory-db
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: inventory_db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-inventory_db}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-inventory_db}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   # 2. ML Inference Engine (Python 3.11 + FastAPI)
   ml:
@@ -19,58 +25,67 @@ services:
       dockerfile: Dockerfile
     image: inventory-ml:dev
     container_name: inventory-ml
+    restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
     ports:
-      - "8000:8000"
+      - "${ML_PORT:-8000}:8000"
     volumes:
-      # Монтуємо код сервісу для Hot Reload
       - ./ml-service:/app
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
-  # 3. Backend API (Режим розробки)
+  # 3. Backend API (.NET 9 Hot Reload)
   api:
     image: mcr.microsoft.com/dotnet/sdk:9.0
     container_name: inventory-api
     working_dir: /app/src/Inventory.API
+    restart: unless-stopped
     depends_on:
-      - db
-      - ml
+      db:
+        condition: service_healthy
+      ml:
+        condition: service_healthy
     environment:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=inventory_db;Username=postgres;Password=password
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=${POSTGRES_DB:-inventory_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-password}
       - MlService__BaseUrl=http://ml:8000
-      - Superuser__Username=admin
-      - Superuser__Password=Admin123!
-      - Superuser__Role=Admin
+      - Superuser__Username=${SUPERUSER_USERNAME:-admin}
+      - Superuser__Password=${SUPERUSER_PASSWORD:-Admin123!}
+      - Superuser__Role=${SUPERUSER_ROLE:-Admin}
+      - Jwt__Key=${JWT_KEY:-TUT_DUZHE_SECRETNY_KEY_DLYA_KURSOVOI_ROBOTY_12345}
     ports:
-      - "8080:8080"
+      - "${API_PORT:-8080}:8080"
     volumes:
-      # Монтуємо весь код, щоб працював Hot Reload
       - ./src:/app/src
-      # Монтуємо картинки, щоб вони зберігалися на комп'ютері
       - ./src/Inventory.API/wwwroot/images:/app/src/Inventory.API/wwwroot/images
-    # 👇 Команда запуску (автоматично перезавантажує сервер при змінах)
     command: dotnet watch run --no-launch-profile
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   # 4. Frontend (React + Vite Hot Reload)
   client:
     image: node:20-alpine
     container_name: inventory-client
     working_dir: /app
+    restart: unless-stopped
     depends_on:
       - api
     environment:
-      # Важливо для Windows, щоб бачити зміни файлів
       - CHOKIDAR_USEPOLLING=true
     ports:
-      - "80:5173" # Зовні порт 80 -> Всередині порт 5173 (стандарт Vite)
+      - "${CLIENT_PORT:-80}:5173"
     volumes:
       - ./frontend:/app
-      # Це щоб node_modules не затиралися при монтуванні
       - /app/node_modules
-    # Встановлюємо пакети і запускаємо сервер розробки
     command: sh -c "npm install && npm run dev -- --host"
 
 volumes:

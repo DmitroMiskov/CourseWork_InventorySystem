@@ -91,3 +91,25 @@ jobs:
     - name: Validate Python syntax & imports
       run: |
         python -m py_compile main.py process_uci_dataset.py
+
+  # --- ЗАВДАННЯ 4: DOCKER ТА DEVOPS КОНФІГУРАЦІЯ ---
+  devops-docker-ci:
+    name: Docker & DevOps Validation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Copy sample env
+      run: cp .env.example .env
+
+    - name: Validate Docker Compose (Development)
+      run: docker compose -f docker-compose.yml config
+
+    - name: Validate Docker Compose (Production)
+      run: docker compose -f docker-compose.prod.yml config
+
+    - name: Validate Shell Scripts Syntax
+      run: |
+        bash -n scripts/backup-db.sh
+        bash -n scripts/restore-db.sh

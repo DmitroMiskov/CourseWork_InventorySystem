@@ -5,6 +5,12 @@
 
 # dotenv files
 .env
+.env.local
+
+# Database backups
+backups/
+*.dump
+
 
 # User-specific files
 *.rsuser

@@ -11,7 +11,6 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import LogoutIcon from '@mui/icons-material/Logout';
-import PersonIcon from '@mui/icons-material/Person';
 import PeopleIcon from '@mui/icons-material/People';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import CategoryIcon from '@mui/icons-material/Category';
@@ -84,19 +83,38 @@ function App() {
   if (!isAuthenticated) {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
-  const isAdmin = userRole.toLowerCase() === 'admin';
+  
+  const roleNormalized = (userRole || '').toLowerCase();
+  const isAdmin = roleNormalized === 'admin';
+  const isManager = roleNormalized === 'manager';
+  const canAccessML = isAdmin || isManager;
+  const canAccessAdmin = isAdmin;
+
+  const getRoleDisplay = () => {
+    if (isAdmin) return { label: 'Адміністратор', color: 'warning' as const, icon: <SupervisorAccountIcon /> };
+    if (isManager) return { label: 'Менеджер', color: 'secondary' as const, icon: <PsychologyIcon /> };
+    return { label: 'Комірник', color: 'info' as const, icon: <InventoryIcon /> };
+  };
+
+  const roleInfo = getRoleDisplay();
 
   const navItems = [
     { id: 'list' as const, label: 'Склад', icon: <TableChartIcon /> },
     { id: 'categories' as const, label: 'Категорії', icon: <CategoryIcon /> },
     { id: 'partners' as const, label: 'Контрагенти', icon: <PeopleIcon /> },
     { id: 'dashboard' as const, label: 'Дашборд', icon: <BarChartIcon /> },
-    { id: 'intelligence' as const, label: 'ML Планування', icon: <PsychologyIcon /> },
-    ...(isAdmin ? [{ id: 'admin' as const, label: 'Персонал', icon: <SupervisorAccountIcon /> }] : [])
+    ...(canAccessML ? [{ id: 'intelligence' as const, label: 'ML Планування', icon: <PsychologyIcon /> }] : []),
+    ...(canAccessAdmin ? [{ id: 'admin' as const, label: 'Персонал', icon: <SupervisorAccountIcon /> }] : [])
   ];
 
   const handleNavClick = (view: 'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin') => {
-    setCurrentView(view);
+    if (view === 'intelligence' && !canAccessML) {
+      setCurrentView('list');
+    } else if (view === 'admin' && !canAccessAdmin) {
+      setCurrentView('list');
+    } else {
+      setCurrentView(view);
+    }
     setMobileOpen(false);
   };
 
@@ -160,15 +178,15 @@ function App() {
 
           {/* ІНФО ПРО ЮЗЕРА (Сховано на маленьких екранах xs) */}
           <Chip 
-            icon={<PersonIcon />} 
-            label={`${username} (${userRole})`} 
-            color={isAdmin ? "warning" : "default"}
-            variant="outlined"
+            icon={roleInfo.icon} 
+            label={`${username} (${roleInfo.label})`} 
+            color={roleInfo.color}
+            variant="filled"
             size="small"
             sx={{ 
               mr: 1, 
               color: 'white', 
-              borderColor: 'rgba(255,255,255,0.5)', 
+              fontWeight: 600,
               '& .MuiChip-icon': { color: 'white' },
               display: { xs: 'none', sm: 'inline-flex' }
             }} 
@@ -223,9 +241,10 @@ function App() {
             </Typography>
             <Chip 
               size="small" 
-              label={userRole} 
-              color={isAdmin ? "warning" : "primary"} 
-              sx={{ mt: 0.8 }} 
+              icon={roleInfo.icon}
+              label={roleInfo.label} 
+              color={roleInfo.color} 
+              sx={{ mt: 0.8, fontWeight: 'bold' }} 
             />
           </Box>
 
@@ -277,21 +296,27 @@ function App() {
 
       {/* ОСНОВНИЙ КОНТЕНТ */}
       <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 3, md: 4 }, mb: 4, px: { xs: 1, sm: 2, md: 3 } }}>
-        {currentView === 'list' && <ProductList isAdmin={isAdmin} />}
+        {currentView === 'list' && <ProductList isAdmin={isAdmin} isManager={isManager} />}
 
-        {currentView === 'categories' && <CategoryList isAdmin={isAdmin} />}
+        {currentView === 'categories' && <CategoryList isAdmin={isAdmin} isManager={isManager} />}
         
-        {currentView === 'partners' && <Partners />}
+        {currentView === 'partners' && <Partners isAdmin={isAdmin} isManager={isManager} />}
         
         {currentView === 'dashboard' && <Dashboard />}
 
-        {currentView === 'intelligence' && <ProcurementIntelligence />}
+        {currentView === 'intelligence' && canAccessML && <ProcurementIntelligence />}
         
-        {currentView === 'admin' && isAdmin && (<AdminPage onBack={() => setCurrentView('list')} />)}
+        {currentView === 'admin' && canAccessAdmin && (<AdminPage onBack={() => setCurrentView('list')} />)}
       </Container>
 
       {/* ІНТЕЛЕКТУАЛЬНИЙ AI-КОПІЛОТ СКЛАДУ (DRAWER + FAB) */}
-      <WarehouseCopilot onNavigateToTab={(tab) => setCurrentView(tab)} />
+      <WarehouseCopilot 
+        onNavigateToTab={(tab) => {
+          if (tab === 'intelligence' && !canAccessML) return;
+          if (tab === 'admin' && !canAccessAdmin) return;
+          setCurrentView(tab);
+        }} 
+      />
     </SignalRProvider>
   );
 }

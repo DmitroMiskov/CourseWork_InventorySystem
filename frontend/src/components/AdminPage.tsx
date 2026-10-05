@@ -14,6 +14,8 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PersonIcon from '@mui/icons-material/Person';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 interface AdminPageProps {
     onBack: () => void;
@@ -42,9 +44,54 @@ export default function AdminPage({ onBack }: AdminPageProps) {
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [userName, setUserName] = useState<string>('');
     const [password, setPassword] = useState<string>('');
-    const [role, setRole] = useState<string>('User');
+    const [role, setRole] = useState<string>('WarehouseWorker');
     
     const [message, setMessage] = useState<AlertMessage | null>(null);
+
+    const getRoleBadge = (roleName: string) => {
+        const r = (roleName || '').toLowerCase();
+        if (r === 'admin') {
+            return (
+                <Chip 
+                    icon={<SupervisorAccountIcon />}
+                    label="Адміністратор" 
+                    color="warning" 
+                    size="small" 
+                    sx={{ fontWeight: 'bold' }}
+                />
+            );
+        }
+        if (r === 'manager') {
+            return (
+                <Chip 
+                    icon={<TrendingUpIcon />}
+                    label="Менеджер закупівель" 
+                    color="secondary" 
+                    size="small" 
+                    sx={{ fontWeight: 'bold' }}
+                />
+            );
+        }
+        if (r === 'warehouseworker' || r === 'worker') {
+            return (
+                <Chip 
+                    icon={<InventoryIcon />}
+                    label="Комірник" 
+                    color="success" 
+                    size="small" 
+                    sx={{ fontWeight: 'bold' }}
+                />
+            );
+        }
+        return (
+            <Chip 
+                icon={<PersonIcon />}
+                label={roleName || 'Користувач'} 
+                color="default" 
+                size="small" 
+            />
+        );
+    };
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -143,12 +190,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                                     </Box>
                                 </TableCell>
                                 <TableCell>
-                                    <Chip 
-                                        icon={user.role === 'Admin' ? <SupervisorAccountIcon /> : <PersonIcon />}
-                                        label={user.role} 
-                                        color={user.role === 'Admin' ? 'warning' : 'default'} 
-                                        size="small" 
-                                    />
+                                    {getRoleBadge(user.role)}
                                 </TableCell>
                                 <TableCell align="right">
                                     <IconButton color="error" onClick={() => handleDeleteUser(user.id, user.userName)}>
@@ -185,8 +227,10 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                                 label="Роль"
                                 onChange={(e: SelectChangeEvent<string>) => setRole(e.target.value)}
                             >
-                                <MenuItem value="User">User (Комірник)</MenuItem>
-                                <MenuItem value="Admin">Admin (Керівник)</MenuItem>
+                                <MenuItem value="Admin">Admin (Адміністратор / Керівник)</MenuItem>
+                                <MenuItem value="Manager">Manager (Менеджер закупівель / Логіст)</MenuItem>
+                                <MenuItem value="WarehouseWorker">WarehouseWorker (Комірник / Оператор)</MenuItem>
+                                <MenuItem value="User">User (Базовий оператор)</MenuItem>
                             </Select>
                         </FormControl>
                     </Box>

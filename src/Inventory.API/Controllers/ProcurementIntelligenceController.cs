@@ -37,6 +37,7 @@ namespace Inventory.API.Controllers
         /// Отримання прогнозу попиту та метрик для товару (14 або 30 днів)
         /// </summary>
         [HttpGet("forecast/{productId}")]
+        [Authorize(Roles = "Admin, admin, Manager, manager")]
         public async Task<IActionResult> GetForecast(
             string productId,
             [FromQuery] int horizonDays = 14,
@@ -51,6 +52,7 @@ namespace Inventory.API.Controllers
         /// Отримання повної зведеної таблиці "Радар закупівель" (SS, ROP, EOQ, статус критичності)
         /// </summary>
         [HttpGet("radar")]
+        [Authorize(Roles = "Admin, admin, Manager, manager")]
         public async Task<IActionResult> GetRadar(
             [FromQuery] double serviceLevelZ = 1.65,
             CancellationToken cancellationToken = default)
@@ -63,6 +65,7 @@ namespace Inventory.API.Controllers
         /// Отримання матриці портфельного аналізу асортименту ABC-XYZ (Парето + варіація)
         /// </summary>
         [HttpGet("abc-xyz")]
+        [Authorize(Roles = "Admin, admin, Manager, manager")]
         public async Task<IActionResult> GetAbcXyz(
             [FromQuery] int periodDays = 180,
             CancellationToken cancellationToken = default)

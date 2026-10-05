@@ -43,7 +43,7 @@ namespace Inventory.API.Data
                 }
 
                 // 1. Створення стандартних ролей
-                string[] roles = { "Admin", "User" };
+                string[] roles = { "Admin", "Manager", "WarehouseWorker", "User" };
                 foreach (var role in roles)
                 {
                     if (!await roleManager.RoleExistsAsync(role))
@@ -53,63 +53,17 @@ namespace Inventory.API.Data
                     }
                 }
 
-                // 2. Створення / перевірка суперкористувача (Admin)
+                // 2. Створення / перевірка типових облікових записів (Admin, Manager, WarehouseWorker)
                 var superuserConfig = configuration.GetSection("Superuser");
-                var username = superuserConfig["Username"] ?? "admin";
-                var password = superuserConfig["Password"] ?? "Admin123!";
-                var email = superuserConfig["Email"] ?? "admin@inventory.local";
-                var roleName = superuserConfig["Role"] ?? "Admin";
+                var adminUsername = superuserConfig["Username"] ?? "admin";
+                var adminPassword = superuserConfig["Password"] ?? "Admin123!";
+                var adminEmail = superuserConfig["Email"] ?? "admin@inventory.local";
+                var adminRoleName = superuserConfig["Role"] ?? "Admin";
                 var ensurePassword = configuration.GetValue<bool>("Superuser:EnsurePassword", true);
 
-                var user = await userManager.FindByNameAsync(username);
-                if (user == null)
-                {
-                    user = new IdentityUser
-                    {
-                        UserName = username,
-                        Email = email,
-                        EmailConfirmed = true
-                    };
-
-                    var result = await userManager.CreateAsync(user, password);
-                    if (result.Succeeded)
-                    {
-                        await userManager.AddToRoleAsync(user, roleName);
-                        logger.LogInformation("✅ Суперкористувача '{Username}' успішно створено з роллю '{Role}'.", username, roleName);
-                    }
-                    else
-                    {
-                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                        logger.LogError("❌ Не вдалося створити суперкористувача '{Username}': {Errors}", username, errors);
-                    }
-                }
-                else
-                {
-                    // Якщо користувач вже існує - гарантуємо, що у нього є роль Admin
-                    if (!await userManager.IsInRoleAsync(user, roleName))
-                    {
-                        await userManager.AddToRoleAsync(user, roleName);
-                        logger.LogInformation("✅ Роль '{Role}' призначено для суперкористувача '{Username}'.", roleName, username);
-                    }
-
-                    // Якщо увімкнено EnsurePassword та поточний пароль не підходить - скидаємо до дефолтного
-                    if (ensurePassword && !await userManager.CheckPasswordAsync(user, password))
-                    {
-                        var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
-                        var resetResult = await userManager.ResetPasswordAsync(user, resetToken, password);
-                        if (resetResult.Succeeded)
-                        {
-                            logger.LogInformation("🔑 Пароль суперкористувача '{Username}' оновлено до гарантованого дефолтного.", username);
-                        }
-                    }
-
-                    // Зняття можливого блокування облікового запису
-                    if (await userManager.IsLockedOutAsync(user))
-                    {
-                        await userManager.SetLockoutEndDateAsync(user, null);
-                        logger.LogInformation("🔓 Блокування з облікового запису '{Username}' знято.", username);
-                    }
-                }
+                await EnsureUserAsync(userManager, logger, adminUsername, adminPassword, adminEmail, adminRoleName, ensurePassword);
+                await EnsureUserAsync(userManager, logger, "manager", "Manager123!", "manager@inventory.local", "Manager", ensurePassword);
+                await EnsureUserAsync(userManager, logger, "worker", "Worker123!", "worker@inventory.local", "WarehouseWorker", ensurePassword);
 
                 // 3. Автоматичний посів демо-даних складу (якщо база порожня)
                 await SeedDemoWarehouseDataAsync(context, logger);
@@ -117,6 +71,66 @@ namespace Inventory.API.Data
             catch (Exception ex)
             {
                 logger.LogError(ex, "❌ Помилка під час ініціалізації суперкористувача та БД");
+            }
+        }
+
+        private static async Task EnsureUserAsync(
+            UserManager<IdentityUser> userManager,
+            ILogger logger,
+            string username,
+            string password,
+            string email,
+            string roleName,
+            bool ensurePassword)
+        {
+            var user = await userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                user = new IdentityUser
+                {
+                    UserName = username,
+                    Email = email,
+                    EmailConfirmed = true
+                };
+
+                var result = await userManager.CreateAsync(user, password);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(user, roleName);
+                    logger.LogInformation("✅ Користувача '{Username}' успішно створено з роллю '{Role}'.", username, roleName);
+                }
+                else
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    logger.LogError("❌ Не вдалося створити користувача '{Username}': {Errors}", username, errors);
+                }
+            }
+            else
+            {
+                // Якщо користувач вже існує - гарантуємо, що у нього є задана роль
+                if (!await userManager.IsInRoleAsync(user, roleName))
+                {
+                    await userManager.AddToRoleAsync(user, roleName);
+                    logger.LogInformation("✅ Роль '{Role}' призначено для користувача '{Username}'.", roleName, username);
+                }
+
+                // Якщо увімкнено ensurePassword та поточний пароль не підходить - скидаємо до дефолтного
+                if (ensurePassword && !await userManager.CheckPasswordAsync(user, password))
+                {
+                    var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+                    var resetResult = await userManager.ResetPasswordAsync(user, resetToken, password);
+                    if (resetResult.Succeeded)
+                    {
+                        logger.LogInformation("🔑 Пароль користувача '{Username}' оновлено до гарантованого дефолтного.", username);
+                    }
+                }
+
+                // Зняття можливого блокування облікового запису
+                if (await userManager.IsLockedOutAsync(user))
+                {
+                    await userManager.SetLockoutEndDateAsync(user, null);
+                    logger.LogInformation("🔓 Блокування з облікового запису '{Username}' знято.", username);
+                }
             }
         }
 

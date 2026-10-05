@@ -28,7 +28,7 @@ namespace Inventory.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, admin, Manager, manager")]
         public async Task<IActionResult> Create(CreateCategoryCommand command)
         {
             var id = await _mediator.Send(command);
@@ -36,7 +36,7 @@ namespace Inventory.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, admin, Manager, manager")]
         public async Task<IActionResult> Update(Guid id, UpdateCategoryCommand command)
         {
             if (id != command.Id) return BadRequest("ID не співпадає");
@@ -45,7 +45,7 @@ namespace Inventory.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _mediator.Send(new DeleteCategoryCommand(id));

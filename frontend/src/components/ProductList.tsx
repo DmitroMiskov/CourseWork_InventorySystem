@@ -32,6 +32,7 @@ import { useSignalR } from '../context/SignalRContext';
 
 interface ProductListProps {
   isAdmin?: boolean;
+  isManager?: boolean;
 }
 
 interface UploadImageResponse {
@@ -102,7 +103,8 @@ const ProductImage = ({
   );
 };
 
-export default function ProductList({ isAdmin = false }: ProductListProps) {
+export default function ProductList({ isAdmin = false, isManager = false }: ProductListProps) {
+  const canManageProducts = isAdmin || isManager;
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   
@@ -467,23 +469,27 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
               <IconButton onClick={exportToExcel} color="success" size="small"><SaveAltIcon /></IconButton>
             </Tooltip>
 
-            <Tooltip title="Імпорт з CSV">
-              <IconButton component="label" color="primary" size="small">
-                <UploadFileIcon />
-                <input type="file" hidden accept=".csv" onChange={handleFileUpload} />
-              </IconButton>
-            </Tooltip>
+            {canManageProducts && (
+              <Tooltip title="Імпорт з CSV">
+                <IconButton component="label" color="primary" size="small">
+                  <UploadFileIcon />
+                  <input type="file" hidden accept=".csv" onChange={handleFileUpload} />
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
 
-          <Button 
-            variant="contained" 
-            startIcon={<AddIcon />} 
-            onClick={() => handleOpen()}
-            size="medium"
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            Додати товар
-          </Button>
+          {canManageProducts && (
+            <Button 
+              variant="contained" 
+              startIcon={<AddIcon />} 
+              onClick={() => handleOpen()}
+              size="medium"
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              Додати товар
+            </Button>
+          )}
         </Box>
       </Toolbar>
 
@@ -557,11 +563,13 @@ export default function ProductList({ isAdmin = false }: ProductListProps) {
                         <HistoryIcon />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Редагувати">
-                      <IconButton color="primary" onClick={() => handleOpen(product)}>
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
+                    {canManageProducts && (
+                      <Tooltip title="Редагувати">
+                        <IconButton color="primary" onClick={() => handleOpen(product)}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     {isAdmin && (
                       <Tooltip title="Видалити">
                         <IconButton color="error" onClick={() => handleDelete(product.id)}>

@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.API.Controllers
@@ -25,6 +26,7 @@ namespace Inventory.API.Controllers
         }
 
         [HttpPost("register")]
+        [Authorize(Roles = "Admin, admin")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             var userExists = await _userManager.FindByNameAsync(model.Username);
@@ -89,8 +91,9 @@ namespace Inventory.API.Controllers
             return Unauthorized();
         }
 
-        // 👇 1. Отримати список усіх користувачів
+        // 👇 1. Отримати список усіх користувачів (тільки Адміністратор)
         [HttpGet("users")]
+        [Authorize(Roles = "Admin, admin")]
         public async Task<IActionResult> GetUsers()
         {
             // Беремо всіх юзерів з бази
@@ -113,22 +116,24 @@ namespace Inventory.API.Controllers
             return Ok(userList);
         }
 
-        // 👇 2. Видалити користувача (Звільнення)
+        // 👇 2. Видалити користувача (Звільнення - тільки Адміністратор)
         [HttpDelete("users/{id}")]
+        [Authorize(Roles = "Admin, admin")]
         public async Task<IActionResult> DeleteUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound("Користувача не знайдено");
 
-            // Захист: не можна видалити самого себе або головного адміна (опціонально)
+            // Захист: не можна видалити головного адміна або свій власний поточний акаунт
             if (string.Equals(user.UserName, "admin", StringComparison.OrdinalIgnoreCase) || 
-                string.Equals(user.UserName, "boss", StringComparison.OrdinalIgnoreCase))
+                string.Equals(user.UserName, "boss", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(user.UserName, User.Identity?.Name, StringComparison.OrdinalIgnoreCase))
             {
-                return BadRequest("Цього користувача не можна видалити");
+                return BadRequest("Неможливо видалити цей обліковий запис (головний адміністратор або власний сеанс)");
             }
 
             await _userManager.DeleteAsync(user);
-            return Ok(new { message = "Користувача видалено" });
+            return Ok(new { message = "Користувача успішно видалено" });
         }
     }
 }

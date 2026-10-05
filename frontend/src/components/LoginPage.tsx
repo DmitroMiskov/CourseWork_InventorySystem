@@ -58,9 +58,12 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     >
       <ThemeToggle sx={{ position: 'absolute', top: 20, right: 20, bgcolor: 'background.paper', boxShadow: 1 }} />
 
-      <Paper elevation={3} sx={{ p: 4, width: 350, textAlign: 'center', borderRadius: 2 }}>
-        <Typography variant="h5" mb={3} fontWeight="bold" color="primary">
+      <Paper elevation={3} sx={{ p: 4, width: { xs: 340, sm: 380 }, textAlign: 'center', borderRadius: 2 }}>
+        <Typography variant="h5" mb={1} fontWeight="bold" color="primary">
           Складський облік
+        </Typography>
+        <Typography variant="body2" color="text.secondary" mb={3}>
+          Система управління запасами та підтримки рішень
         </Typography>
 
         <form onSubmit={handleLogin}>
@@ -97,6 +100,55 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           >
             УВІЙТИ
           </Button>
+
+          <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+            <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+              Швидкий демо-вхід за ролями:
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.8 }}>
+              <Button
+                variant="outlined"
+                color="warning"
+                size="small"
+                onClick={() => {
+                  setUserName('admin');
+                  setPassword('Admin123!');
+                }}
+                sx={{ textTransform: 'none', justifyContent: 'space-between', px: 1.5 }}
+              >
+                <span>👑 Адміністратор</span>
+                <Typography variant="caption" color="text.secondary">admin</Typography>
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
+                onClick={() => {
+                  setUserName('manager');
+                  setPassword('Manager123!');
+                }}
+                sx={{ textTransform: 'none', justifyContent: 'space-between', px: 1.5 }}
+              >
+                <span>📊 Менеджер закупівель</span>
+                <Typography variant="caption" color="text.secondary">manager</Typography>
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="info"
+                size="small"
+                onClick={() => {
+                  setUserName('worker');
+                  setPassword('Worker123!');
+                }}
+                sx={{ textTransform: 'none', justifyContent: 'space-between', px: 1.5 }}
+              >
+                <span>📦 Комірник (Склад)</span>
+                <Typography variant="caption" color="text.secondary">worker</Typography>
+              </Button>
+            </Box>
+          </Box>
         </form>
       </Paper>
     </Box>

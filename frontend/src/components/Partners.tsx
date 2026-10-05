@@ -65,7 +65,13 @@ const DEFAULT_FORM_DATA: PartnerFormData = {
   paymentTerms: ''
 };
 
-export default function Partners() {
+interface PartnersProps {
+  isAdmin?: boolean;
+  isManager?: boolean;
+}
+
+export default function Partners({ isAdmin = false, isManager = false }: PartnersProps) {
+  const canManagePartners = isAdmin || isManager;
   const [tabIndex, setTabIndex] = useState<number>(0); // 0 = Постачальники (Suppliers), 1 = Клієнти (Customers)
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -252,9 +258,11 @@ export default function Partners() {
               : 'Контактна інформація та адреси контрагентів для оформлення видаткових накладних М-11'}
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()} size="medium">
-          Додати {tabIndex === 0 ? 'постачальника' : 'клієнта'}
-        </Button>
+        {canManagePartners && (
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()} size="medium">
+            Додати {tabIndex === 0 ? 'постачальника' : 'клієнта'}
+          </Button>
+        )}
       </Box>
 
       {loading && <LinearProgress sx={{ mb: 2 }} />}
@@ -392,16 +400,20 @@ export default function Partners() {
                           </IconButton>
                         </Tooltip>
                       )}
-                      <Tooltip title="Редагувати">
-                        <IconButton color="primary" size="small" onClick={() => handleOpen(partner)}>
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Видалити">
-                        <IconButton color="error" size="small" onClick={() => handleDelete(partner.id, partner.name)}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      {canManagePartners && (
+                        <Tooltip title="Редагувати">
+                          <IconButton color="primary" size="small" onClick={() => handleOpen(partner)}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {isAdmin && (
+                        <Tooltip title="Видалити">
+                          <IconButton color="error" size="small" onClick={() => handleDelete(partner.id, partner.name)}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Box>
                   </TableCell>
                 </TableRow>

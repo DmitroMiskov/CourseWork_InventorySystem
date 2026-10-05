@@ -31,9 +31,11 @@ import type { Category, ServerError } from '../types/inventory';
 
 interface CategoryListProps {
   isAdmin?: boolean;
+  isManager?: boolean;
 }
 
-export default function CategoryList({ isAdmin = false }: CategoryListProps) {
+export default function CategoryList({ isAdmin = false, isManager = false }: CategoryListProps) {
+  const canManageCategories = isAdmin || isManager;
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -146,7 +148,7 @@ export default function CategoryList({ isAdmin = false }: CategoryListProps) {
         <Typography variant="h5" fontWeight="bold">
           Категорії товарів
         </Typography>
-        {isAdmin && (
+        {canManageCategories && (
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()} size="medium">
             Додати категорію
           </Button>
@@ -160,13 +162,13 @@ export default function CategoryList({ isAdmin = false }: CategoryListProps) {
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>Назва категорії</TableCell>
-              {isAdmin && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Дії</TableCell>}
+              {canManageCategories && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Дії</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
             {categories.length === 0 && !loading ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 2 : 1} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                <TableCell colSpan={canManageCategories ? 2 : 1} align="center" sx={{ py: 3, color: 'text.secondary' }}>
                   Категорій не знайдено
                 </TableCell>
               </TableRow>
@@ -176,18 +178,20 @@ export default function CategoryList({ isAdmin = false }: CategoryListProps) {
                   <TableCell>
                     <Typography variant="body1">{cat.name}</Typography>
                   </TableCell>
-                  {isAdmin && (
+                  {canManageCategories && (
                     <TableCell align="right">
                       <Tooltip title="Редагувати">
                         <IconButton color="primary" onClick={() => handleOpen(cat)}>
                           <EditIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Видалити">
-                        <IconButton color="error" onClick={() => handleDelete(cat.id, cat.name)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {isAdmin && (
+                        <Tooltip title="Видалити">
+                          <IconButton color="error" onClick={() => handleDelete(cat.id, cat.name)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </TableCell>
                   )}
                 </TableRow>

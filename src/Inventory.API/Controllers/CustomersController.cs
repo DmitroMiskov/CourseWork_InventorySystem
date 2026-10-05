@@ -36,6 +36,7 @@ namespace Inventory.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin, admin, Manager, manager")]
         public async Task<IActionResult> CreateCustomer([FromBody] PartnerDto dto)
         {
             var customer = new Customer
@@ -54,6 +55,7 @@ namespace Inventory.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin, admin, Manager, manager")]
         public async Task<IActionResult> UpdateCustomer(Guid id, [FromBody] PartnerDto dto)
         {
             var customer = await _context.Customers.FindAsync(id);
@@ -71,6 +73,7 @@ namespace Inventory.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin, admin")]
         public async Task<IActionResult> DeleteCustomer(Guid id)
         {
             var customer = await _context.Customers.FindAsync(id);

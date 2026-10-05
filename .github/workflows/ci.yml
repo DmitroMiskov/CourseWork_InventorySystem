@@ -2,47 +2,92 @@ name: Inventory System CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  # --- ЗАВДАННЯ 1: ЗБІРКА БЕКЕНДУ (.NET) ---
-  build-backend:
+  # --- ЗАВДАННЯ 1: БЕКЕНД (.NET 9 + ТЕСТИ) ---
+  backend-ci:
+    name: Backend Build & Tests (.NET 9)
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup .NET
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK 9.0
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.0.x 
-        
+        dotnet-version: '9.0.x'
+
     - name: Restore dependencies
-      run: dotnet restore ./src/Inventory.API/Inventory.API.csproj
+      run: dotnet restore InventorySystem.sln
 
-    - name: Build
-      run: dotnet build ./src/Inventory.API/Inventory.API.csproj --no-restore --configuration Release
+    - name: Build solution
+      run: dotnet build InventorySystem.sln --no-restore --configuration Release
 
-  # --- ЗАВДАННЯ 2: ЗБІРКА ФРОНТЕНДУ (React / TypeScript) ---
-  build-frontend:
+    - name: Run unit & integration tests
+      run: dotnet test InventorySystem.sln --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test_results.trx"
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: dotnet-test-results
+        path: '**/test_results.trx'
+        if-no-files-found: ignore
+
+  # --- ЗАВДАННЯ 2: ФРОНТЕНД (React 19 / TypeScript / Vite) ---
+  frontend-ci:
+    name: Frontend Build (React & TypeScript)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./frontend
-
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-    - name: Use Node.js
+    - name: Setup Node.js 22.x (LTS)
       uses: actions/setup-node@v4
       with:
-        node-version: 22.x # Актуальна LTS версія замість застарілої 20
+        node-version: 22.x
         cache: 'npm'
         cache-dependency-path: ./frontend/package-lock.json
-        
-    - name: Install dependencies
-      run: npm ci --legacy-peer-deps 
 
-    - name: Build React App (Typecheck & Vite/Webpack build)
+    - name: Install dependencies
+      run: npm ci --legacy-peer-deps
+
+    - name: Typecheck & Build Bundle
       run: npm run build
+
+  # --- ЗАВДАННЯ 3: ML-СЕРВІС (Python 3.11 / FastAPI) ---
+  ml-service-ci:
+    name: ML Service Validation (Python 3.11)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ml-service
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: ./ml-service/requirements.txt
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Validate Python syntax & imports
+      run: |
+        python -m py_compile main.py process_uci_dataset.py

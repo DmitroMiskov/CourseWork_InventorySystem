@@ -27,6 +27,7 @@ import {
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CloseIcon from '@mui/icons-material/Close';
 import { downloadWaybillPdf, type WaybillData } from '../utils/pdfWaybillGenerator';
+import { useLanguage } from '../context/LanguageContext';
 
 interface StockHistoryProps {
   open: boolean;
@@ -35,7 +36,6 @@ interface StockHistoryProps {
   productName?: string;
 }
 
-// movementType: 1 = Вхід/Прихід (In), 2 = Вихід/Розхід (Out)
 interface StockMovement {
   id: string;
   productId: string;
@@ -57,6 +57,7 @@ export default function StockHistory({
   productId,
   productName
 }: StockHistoryProps) {
+  const { t } = useLanguage();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -78,14 +79,14 @@ export default function StockHistory({
         setMovements(res.data);
       } catch (err: unknown) {
         console.error(err);
-        setError('Не вдалося завантажити історію операцій для цього товару');
+        setError(t('common.error'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchHistory();
-  }, [open, productId]);
+  }, [open, productId, t]);
 
   const isIncoming = (item: StockMovement): boolean => {
     const val = item.movementType ?? item.type;
@@ -98,7 +99,7 @@ export default function StockHistory({
       ? new Date(item.createdAt).toISOString().slice(0, 10).replace(/-/g, '')
       : '2026';
     const idShort = item.id ? item.id.replace(/-/g, '').slice(0, 4).toUpperCase() : '0001';
-    const docPrefix = isInc ? 'ПН' : 'ВН';
+    const docPrefix = isInc ? 'PN' : 'VN';
     const data: WaybillData = {
       documentNumber: `${docPrefix}-${dateStr}-${idShort}`,
       date: item.createdAt || new Date(),
@@ -110,12 +111,12 @@ export default function StockHistory({
       reason:
         item.reason ||
         item.note ||
-        (isInc ? 'Оприбуткування товару на склад' : 'Видача матеріальних цінностей зі складу'),
-      storekeeperName: item.userName || 'Адміністратор складу',
+        (isInc ? t('operations.receipt') : t('operations.writeOff')),
+      storekeeperName: item.userName || 'Storekeeper',
       items: [
         {
-          name: productName || 'Товар',
-          unit: 'шт',
+          name: productName || t('intelligence.productName'),
+          unit: t('common.pcs'),
           quantity: item.quantity,
           price: 0
         }
@@ -125,7 +126,7 @@ export default function StockHistory({
       await downloadWaybillPdf(data);
     } catch (err) {
       console.error(err);
-      setError('Не вдалося сформувати PDF накладну');
+      setError(t('copilot.pdfError'));
     }
   };
 
@@ -134,21 +135,17 @@ export default function StockHistory({
       <DialogTitle sx={{ m: 0, p: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-            Історія руху: {productName || 'Товар'}
+            {t('history.title')}: {productName || t('intelligence.productName')}
           </Typography>
           {isMobile && (
-            <IconButton
-              aria-label="close"
-              onClick={onClose}
-              sx={{ color: (theme) => theme.palette.grey[500] }}
-            >
+            <IconButton onClick={onClose} size="small" edge="end">
               <CloseIcon />
             </IconButton>
           )}
         </Box>
       </DialogTitle>
 
-      <DialogContent dividers>
+      <DialogContent dividers sx={{ p: { xs: 1, sm: 2 } }}>
         {loading && <LinearProgress sx={{ mb: 2 }} />}
 
         {error && (
@@ -157,56 +154,72 @@ export default function StockHistory({
           </Typography>
         )}
 
-        <TableContainer component={Paper} elevation={1} sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <Table size="small" sx={{ minWidth: 600 }}>
-            <TableHead>
+        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <Table size="small" sx={{ minWidth: 550 }}>
+            <TableHead sx={{ bgcolor: 'action.hover' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>Дата</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Тип операції</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Кількість</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Контрагент</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Причина / Коментар</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold' }}>PDF</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>{t('history.operationDate')}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>{t('history.operationType')}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>{t('history.quantity')}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>{t('history.partner')}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>{t('history.reasonNote')}</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold' }}>{t('history.downloadPdf')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {movements.length === 0 && !loading ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 3, color: 'text.secondary' }}>
-                    Записів про рух товару не знайдено
+                    {t('history.empty')}
                   </TableCell>
                 </TableRow>
               ) : (
                 movements
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((item) => {
-                    const incoming = isIncoming(item);
+                    const inc = isIncoming(item);
                     return (
                       <TableRow key={item.id} hover>
                         <TableCell>
-                          {new Date(item.createdAt).toLocaleString('uk-UA', {
-                            dateStyle: 'short',
-                            timeStyle: 'short'
-                          })}
+                          <Typography variant="body2">
+                            {new Date(item.createdAt).toLocaleString([], {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </Typography>
                         </TableCell>
+
                         <TableCell>
                           <Chip
-                            label={incoming ? 'Прихід' : 'Розхід / Списання'}
-                            color={incoming ? 'success' : 'warning'}
+                            label={inc ? t('operations.receipt') : t('operations.writeOff')}
+                            color={inc ? 'success' : 'warning'}
                             size="small"
+                            variant="filled"
+                            sx={{ fontWeight: 'bold' }}
                           />
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: incoming ? 'green' : 'error.main' }}>
-                          {incoming ? `+${item.quantity}` : `-${item.quantity}`}
+
+                        <TableCell sx={{ fontWeight: 'bold', color: inc ? 'success.main' : 'warning.main' }}>
+                          {inc ? `+${item.quantity}` : `-${item.quantity}`}
                         </TableCell>
+
                         <TableCell>
-                          {item.supplierName || item.customerName || '—'}
+                          <Typography variant="body2">
+                            {item.customerName || item.supplierName || '—'}
+                          </Typography>
                         </TableCell>
+
                         <TableCell>
-                          {item.reason || item.note || item.comment || '—'}
+                          <Typography variant="body2" color="text.secondary">
+                            {item.reason || item.note || item.comment || '—'}
+                          </Typography>
                         </TableCell>
+
                         <TableCell align="center">
-                          <Tooltip title="Завантажити накладну (PDF)">
+                          <Tooltip title={t('operations.generateWaybill')}>
                             <IconButton
                               size="small"
                               color="primary"
@@ -230,17 +243,17 @@ export default function StockHistory({
           count={movements.length}
           rowsPerPage={rowsPerPage}
           page={page}
-          onPageChange={(_, newPage: number) => setPage(newPage)}
-          onRowsPerPageChange={(e: ChangeEvent<HTMLInputElement>) => {
+          onPageChange={(_, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
             setRowsPerPage(parseInt(e.target.value, 10));
             setPage(0);
           }}
         />
       </DialogContent>
 
-      <DialogActions>
+      <DialogActions sx={{ p: 2 }}>
         <Button onClick={onClose} variant="outlined">
-          Закрити
+          {t('common.close')}
         </Button>
       </DialogActions>
     </Dialog>

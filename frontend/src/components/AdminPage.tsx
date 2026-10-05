@@ -7,7 +7,7 @@ import {
     Box, Button, TextField, Typography, Paper, Alert, 
     FormControl, InputLabel, Select, MenuItem,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Chip, InputAdornment
+    Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Chip, InputAdornment, Tooltip
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
@@ -18,6 +18,7 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { useLanguage } from '../context/LanguageContext';
 
 interface AdminPageProps {
     onBack: () => void;
@@ -40,6 +41,7 @@ interface AlertMessage {
 }
 
 export default function AdminPage({ onBack }: AdminPageProps) {
+    const { t } = useLanguage();
     const [users, setUsers] = useState<User[]>([]);
     const [refreshKey, setRefreshKey] = useState<number>(0);
     
@@ -57,7 +59,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             return (
                 <Chip 
                     icon={<SupervisorAccountIcon />}
-                    label="Адміністратор" 
+                    label={t('roles.admin')} 
                     color="warning" 
                     size="small" 
                     sx={{ fontWeight: 'bold' }}
@@ -68,7 +70,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             return (
                 <Chip 
                     icon={<TrendingUpIcon />}
-                    label="Менеджер закупівель" 
+                    label={t('roles.manager')} 
                     color="secondary" 
                     size="small" 
                     sx={{ fontWeight: 'bold' }}
@@ -79,7 +81,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             return (
                 <Chip 
                     icon={<InventoryIcon />}
-                    label="Комірник" 
+                    label={t('roles.worker')} 
                     color="success" 
                     size="small" 
                     sx={{ fontWeight: 'bold' }}
@@ -89,7 +91,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
         return (
             <Chip 
                 icon={<PersonIcon />}
-                label={roleName || 'Користувач'} 
+                label={roleName || t('roles.user')} 
                 color="default" 
                 size="small" 
             />
@@ -102,7 +104,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                 const res = await api.get<User[]>('/Auth/users');
                 setUsers(res.data);
             } catch (err: unknown) {
-                console.error("Не вдалося завантажити користувачів", err);
+                console.error("Fetch users error", err);
             }
         };
 
@@ -111,7 +113,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
 
     const handleCreateUser = async () => {
         if (!userName || !password) {
-            setMessage({ type: 'error', text: 'Заповніть логін та пароль' });
+            setMessage({ type: 'error', text: t('staff.fillCredentials') });
             return;
         }
 
@@ -122,7 +124,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                 role 
             }); 
             
-            setMessage({ type: 'success', text: `Співробітника ${userName} додано!` });
+            setMessage({ type: 'success', text: `${t('staff.userAdded')} (${userName})` });
             
             setUserName('');
             setPassword('');
@@ -131,7 +133,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             
             setRefreshKey(prev => prev + 1); 
         } catch (err: unknown) {
-            let errorText = 'Помилка створення';
+            let errorText = t('common.error');
 
             if (axios.isAxiosError<ErrorResponse>(err)) {
                 errorText = err.response?.data?.message || err.response?.data?.title || errorText;
@@ -142,16 +144,16 @@ export default function AdminPage({ onBack }: AdminPageProps) {
     };
 
     const handleDeleteUser = async (id: string, name: string) => {
-        if (!window.confirm(`Ви точно хочете звільнити ${name}?`)) return;
+        if (!window.confirm(`${t('staff.fireConfirm')} ${name}?`)) return;
 
         try {
             await api.delete(`/Auth/users/${id}`);
             
-            setMessage({ type: 'success', text: `Користувача ${name} видалено` });
+            setMessage({ type: 'success', text: `${t('staff.userDeleted')}: ${name}` });
             setRefreshKey(prev => prev + 1);
         } catch (err: unknown) {
             console.error(err);
-            setMessage({ type: 'error', text: 'Не вдалося видалити користувача' });
+            setMessage({ type: 'error', text: t('common.error') });
         }
     };
 
@@ -159,13 +161,13 @@ export default function AdminPage({ onBack }: AdminPageProps) {
         <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 1.5 }}>
                 <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
-                    Назад
+                    {t('common.back')}
                 </Button>
                 <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
-                    Управління персоналом
+                    {t('staff.title')}
                 </Typography>
                 <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenDialog(true)}>
-                    Додати працівника
+                    {t('staff.addEmployee')}
                 </Button>
             </Box>
 
@@ -179,9 +181,9 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                 <Table sx={{ minWidth: 400 }}>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Login</TableCell>
-                            <TableCell>Role</TableCell>
-                            <TableCell align="right">Actions</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{t('staff.login')}</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{t('staff.role')}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('staff.actions')}</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -197,9 +199,11 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                                     {getRoleBadge(user.role)}
                                 </TableCell>
                                 <TableCell align="right">
-                                    <IconButton color="error" onClick={() => handleDeleteUser(user.id, user.userName)}>
-                                        <DeleteIcon />
-                                    </IconButton>
+                                    <Tooltip title={t('common.delete')}>
+                                        <IconButton color="error" onClick={() => handleDeleteUser(user.id, user.userName)}>
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </Tooltip>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -216,17 +220,17 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                 fullWidth 
                 maxWidth="xs"
             >
-                <DialogTitle>Новий співробітник</DialogTitle>
+                <DialogTitle>{t('staff.newEmployee')}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                         <TextField 
-                            label="Логін" 
+                            label={t('staff.login')} 
                             fullWidth 
                             value={userName} 
                             onChange={(e: ChangeEvent<HTMLInputElement>) => setUserName(e.target.value)} 
                         />
                         <TextField 
-                            label="Пароль" 
+                            label={t('staff.password')} 
                             type={showPassword ? 'text' : 'password'} 
                             fullWidth 
                             value={password} 
@@ -235,7 +239,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton
-                                            aria-label="перемкнути видимість паролю"
+                                            aria-label={t('auth.togglePassword')}
                                             onClick={() => setShowPassword(prev => !prev)}
                                             onMouseDown={(e) => e.preventDefault()}
                                             edge="end"
@@ -247,23 +251,23 @@ export default function AdminPage({ onBack }: AdminPageProps) {
                             }}
                         />
                         <FormControl fullWidth>
-                            <InputLabel>Роль</InputLabel>
+                            <InputLabel>{t('staff.role')}</InputLabel>
                             <Select
                                 value={role}
-                                label="Роль"
+                                label={t('staff.role')}
                                 onChange={(e: SelectChangeEvent<string>) => setRole(e.target.value)}
                             >
-                                <MenuItem value="Admin">Admin (Адміністратор / Керівник)</MenuItem>
-                                <MenuItem value="Manager">Manager (Менеджер закупівель / Логіст)</MenuItem>
-                                <MenuItem value="WarehouseWorker">WarehouseWorker (Комірник / Оператор)</MenuItem>
-                                <MenuItem value="User">User (Базовий оператор)</MenuItem>
+                                <MenuItem value="Admin">{t('roles.admin')}</MenuItem>
+                                <MenuItem value="Manager">{t('roles.manager')}</MenuItem>
+                                <MenuItem value="WarehouseWorker">{t('roles.worker')}</MenuItem>
+                                <MenuItem value="User">{t('roles.user')}</MenuItem>
                             </Select>
                         </FormControl>
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setOpenDialog(false)}>Скасувати</Button>
-                    <Button variant="contained" onClick={handleCreateUser}>Створити</Button>
+                    <Button onClick={() => setOpenDialog(false)}>{t('common.cancel')}</Button>
+                    <Button variant="contained" onClick={handleCreateUser}>{t('common.add')}</Button>
                 </DialogActions>
             </Dialog>
         </Paper>

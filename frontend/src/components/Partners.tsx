@@ -40,6 +40,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 
 import type { Partner, ServerError } from '../types/inventory';
 import { downloadOrderLetterPdf } from '../utils/pdfOrderLetterGenerator';
+import { useLanguage } from '../context/LanguageContext';
 
 interface PartnerFormData {
   name: string;
@@ -71,8 +72,9 @@ interface PartnersProps {
 }
 
 export default function Partners({ isAdmin = false, isManager = false }: PartnersProps) {
+  const { t } = useLanguage();
   const canManagePartners = isAdmin || isManager;
-  const [tabIndex, setTabIndex] = useState<number>(0); // 0 = Постачальники (Suppliers), 1 = Клієнти (Customers)
+  const [tabIndex, setTabIndex] = useState<number>(0); // 0 = Suppliers, 1 = Customers
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -83,7 +85,6 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
   const [formData, setFormData] = useState<PartnerFormData>(DEFAULT_FORM_DATA);
 
   const currentEndpoint = tabIndex === 0 ? '/suppliers' : '/customers';
-  const partnerTypeLabel = tabIndex === 0 ? 'постачальника' : 'клієнта';
 
   const fetchPartners = useCallback(async () => {
     setLoading(true);
@@ -92,11 +93,11 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
       setPartners(res.data);
     } catch (err: unknown) {
       console.error(err);
-      setError(`Не вдалося завантажити список ${tabIndex === 0 ? 'постачальників' : 'клієнтів'}`);
+      setError(t('common.error'));
     } finally {
       setLoading(false);
     }
-  }, [currentEndpoint, tabIndex]);
+  }, [currentEndpoint, t]);
 
   useEffect(() => {
     fetchPartners();
@@ -137,7 +138,7 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
   const handleSave = async () => {
     const trimmedName = formData.name.trim();
     if (!trimmedName) {
-      setError("Назва підприємства або організації є обов'язковою!");
+      setError(t('products.enterName'));
       return;
     }
 
@@ -158,71 +159,63 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
     try {
       if (currentPartner) {
         await api.put(`${currentEndpoint}/${currentPartner.id}`, payload);
-        setSuccessMsg(`Дані ${partnerTypeLabel} "${trimmedName}" успішно оновлено`);
+        setSuccessMsg(t('common.success'));
       } else {
         await api.post(currentEndpoint, payload);
-        setSuccessMsg(`Нового ${partnerTypeLabel} "${trimmedName}" успішно створено`);
+        setSuccessMsg(t('common.success'));
       }
       handleClose();
       await fetchPartners();
     } catch (err: unknown) {
       console.error(err);
       if (axios.isAxiosError<ServerError>(err)) {
-        const msg = err.response?.data?.title || 'Помилка збереження';
-        setError(`Сервер: ${msg}`);
+        const msg = err.response?.data?.title || t('common.error');
+        setError(msg);
       } else {
-        setError('Непередбачена помилка збереження');
+        setError(t('common.error'));
       }
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Ви дійсно бажаєте видалити ${partnerTypeLabel} "${name}"?`)) return;
+    if (!window.confirm(`${t('common.confirmDelete')} "${name}"?`)) return;
 
     try {
       await api.delete(`${currentEndpoint}/${id}`);
-      setSuccessMsg(`Успішно видалено: "${name}"`);
+      setSuccessMsg(t('common.success'));
       await fetchPartners();
     } catch (err: unknown) {
       console.error(err);
       if (axios.isAxiosError<ServerError>(err)) {
-        const msg = err.response?.data?.title || 'Не вдалося видалити запис';
-        setError(`Помилка: ${msg}`);
+        const msg = err.response?.data?.title || t('common.error');
+        setError(msg);
       } else {
-        setError('Помилка при видаленні');
+        setError(t('common.error'));
       }
     }
   };
 
   const handleGenerateOrderLetter = async (supplier: Partner) => {
     try {
-      const todayStr = new Date().toLocaleDateString('uk-UA');
+      const todayStr = new Date().toLocaleDateString();
       const orderNumber = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-01`;
 
       const draftText = `Вихідний № ${orderNumber} від ${todayStr}
-Кому: Відділ оптових продажів ${supplier.name}
-Від кого: ТОВ "Складські Системи та Логістика"
-Тема: Замовлення на поповнення складських запасів згідно з ${supplier.contractNumber || 'договором постачання'}
+Кому: ${supplier.name}
+Від кого: Складська служба
+Тема: Замовлення на поповнення складських запасів згідно з ${supplier.contractNumber || 'договором'}
 
-Шановні партнери!
+Просимо виставити рахунок-фактуру та погодити графік відвантаження продукції відповідно до узгодженого терміну поставки (${supplier.leadTimeDays || 5} робочих днів).
 
-Просимо виставити рахунок-фактуру та погодити графік відвантаження номенклатури продукції відповідно до узгодженого терміну поставки (${supplier.leadTimeDays || 5} робочих днів).
-
-1. Номенклатурні позиції згідно з плановим графіком поповнення запасів (Артикул: SKU-DEF-01) — 10 шт. по ціні 5,000.00 ₴ (Сума: 50,000.00 ₴)
-
-Сукупна планова вартість поставки: 50,000.00 ₴ з ПДВ.
-Бажаний термін прибуття товару на наш розподільчий склад: протягом ${supplier.leadTimeDays || 5} робочих днів.
-Умови оплати: ${supplier.paymentTerms || 'безготівковий розрахунок згідно з договором'}.
-
-З повагою,
-Керівник відділу матеріально-технічного забезпечення
-ТОВ "Складські Системи та Логістика"`;
+1. Номенклатурні позиції згідно з графіком поповнення: 10 шт.
+Бажаний термін прибуття на склад: протягом ${supplier.leadTimeDays || 5} робочих днів.
+Умови оплати: ${supplier.paymentTerms || 'згідно з договором'}.`;
 
       await downloadOrderLetterPdf(draftText);
-      setSuccessMsg(`Офіційний лист-замовлення для "${supplier.name}" успішно сформовано у PDF!`);
+      setSuccessMsg(t('copilot.pdfSuccess'));
     } catch (err) {
       console.error(err);
-      setError('Помилка при генерації PDF листа-замовлення');
+      setError(t('copilot.pdfError'));
     }
   };
 
@@ -241,26 +234,19 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
       </Snackbar>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabIndex} onChange={handleTabChange} aria-label="контрагенти" textColor="primary" indicatorColor="primary">
-          <Tab icon={<LocalShippingIcon />} iconPosition="start" label="Постачальники продукції" />
-          <Tab icon={<AssignmentIcon />} iconPosition="start" label="Клієнти / Покупці" />
+        <Tabs value={tabIndex} onChange={handleTabChange} textColor="primary" indicatorColor="primary">
+          <Tab icon={<LocalShippingIcon />} iconPosition="start" label={t('partners.suppliers')} />
+          <Tab icon={<AssignmentIcon />} iconPosition="start" label={t('partners.customers')} />
         </Tabs>
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Box>
-          <Typography variant="h5" fontWeight="bold">
-            {tabIndex === 0 ? 'Реєстр постачальників' : 'База клієнтів та покупців'}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {tabIndex === 0
-              ? 'Реквізити постачальників, логістичні плечі (Lead Time L) для розрахунків ROP/SS та договори'
-              : 'Контактна інформація та адреси контрагентів для оформлення видаткових накладних М-11'}
-          </Typography>
-        </Box>
+        <Typography variant="h5" fontWeight="bold">
+          {tabIndex === 0 ? t('partners.suppliersTitle') : t('partners.customersTitle')}
+        </Typography>
         {canManagePartners && (
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()} size="medium">
-            Додати {tabIndex === 0 ? 'постачальника' : 'клієнта'}
+            {tabIndex === 0 ? t('partners.addSupplier') : t('partners.addCustomer')}
           </Button>
         )}
       </Box>
@@ -272,25 +258,25 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
           <TableHead sx={{ bgcolor: 'action.hover' }}>
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold' }}>
-                {tabIndex === 0 ? 'Постачальник / ЄДРПОУ' : 'Назва клієнта'}
+                {tabIndex === 0 ? `${t('partners.suppliers')} / ${t('partners.edrpou')}` : t('partners.name')}
               </TableCell>
-              {tabIndex === 0 && <TableCell sx={{ fontWeight: 'bold' }}>Контактна особа</TableCell>}
-              <TableCell sx={{ fontWeight: 'bold' }}>Контакти (Тел / Email)</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Адреса</TableCell>
+              {tabIndex === 0 && <TableCell sx={{ fontWeight: 'bold' }}>{t('partners.contactPerson')}</TableCell>}
+              <TableCell sx={{ fontWeight: 'bold' }}>{t('partners.contacts')}</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>{t('partners.address')}</TableCell>
               {tabIndex === 0 && (
                 <>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Плече (Lead Time)</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Договір / Оплата</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>{t('partners.leadTime')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{t('partners.contract')}</TableCell>
                 </>
               )}
-              <TableCell align="right" sx={{ fontWeight: 'bold' }}>Дії</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('common.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {partners.length === 0 && !loading ? (
               <TableRow>
                 <TableCell colSpan={tabIndex === 0 ? 7 : 4} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                  Записів не знайдено
+                  {t('partners.notFound')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -302,7 +288,7 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
                     </Typography>
                     {partner.edrpou && (
                       <Chip
-                        label={`ЄДРПОУ: ${partner.edrpou}`}
+                        label={`${t('partners.edrpou')}: ${partner.edrpou}`}
                         size="small"
                         sx={{ mt: 0.5, height: 20, fontSize: '0.72rem', bgcolor: 'action.selected' }}
                       />
@@ -371,7 +357,7 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
                       <TableCell align="center">
                         <Chip
                           icon={<LocalShippingIcon sx={{ fontSize: '14px !important' }} />}
-                          label={`${partner.leadTimeDays || 5} дн.`}
+                          label={`${partner.leadTimeDays || 5} ${t('common.days')}`}
                           size="small"
                           color="primary"
                           variant="outlined"
@@ -380,7 +366,7 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" fontWeight="500">
-                          {partner.contractNumber || 'За разовими замовленнями'}
+                          {partner.contractNumber || t('partners.onDemand')}
                         </Typography>
                         {partner.paymentTerms && (
                           <Typography variant="caption" color="text.secondary" display="block">
@@ -394,21 +380,21 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
                   <TableCell align="right">
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
                       {tabIndex === 0 && (
-                        <Tooltip title="Сформувати офіційний лист-замовлення (PDF)">
+                        <Tooltip title={t('partners.generatePdf')}>
                           <IconButton color="secondary" size="small" onClick={() => handleGenerateOrderLetter(partner)}>
                             <PictureAsPdfIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       )}
                       {canManagePartners && (
-                        <Tooltip title="Редагувати">
+                        <Tooltip title={t('common.edit')}>
                           <IconButton color="primary" size="small" onClick={() => handleOpen(partner)}>
                             <EditIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       )}
                       {isAdmin && (
-                        <Tooltip title="Видалити">
+                        <Tooltip title={t('common.delete')}>
                           <IconButton color="error" size="small" onClick={() => handleDelete(partner.id, partner.name)}>
                             <DeleteIcon fontSize="small" />
                           </IconButton>
@@ -426,14 +412,16 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
       {/* ДІАЛОГ СТВОРЕННЯ ТА РЕДАГУВАННЯ */}
       <Dialog open={openDialog} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>
-          {currentPartner ? `Редагувати ${partnerTypeLabel}` : `Створити ${partnerTypeLabel}`}
+          {currentPartner
+            ? (tabIndex === 0 ? t('partners.editSupplier') : t('partners.editCustomer'))
+            : (tabIndex === 0 ? t('partners.addSupplier') : t('partners.addCustomer'))}
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2} sx={{ mt: 0.2 }}>
             <Grid size={{ xs: 12, sm: 8 }}>
               <TextField
                 autoFocus
-                label="Назва підприємства / організації *"
+                label={`${t('partners.name')} *`}
                 fullWidth
                 value={formData.name}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -443,7 +431,7 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
-                label="Код ЄДРПОУ / ІПН"
+                label={t('partners.edrpou')}
                 fullWidth
                 value={formData.edrpou}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -454,7 +442,7 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Контактна особа (ПІБ менеджера)"
+                label={t('partners.contactPerson')}
                 fullWidth
                 value={formData.contactPerson}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -464,7 +452,7 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Номер телефону"
+                label={t('partners.phone')}
                 placeholder="+380..."
                 fullWidth
                 value={formData.phone}
@@ -476,7 +464,7 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Електронна пошта (Email)"
+                label={t('partners.email')}
                 placeholder="order@partner.ua"
                 type="email"
                 fullWidth
@@ -490,7 +478,7 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
             {tabIndex === 0 && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
-                  label="Плече поставки (днів) — Lead Time L"
+                  label={t('partners.leadTimeDays')}
                   type="number"
                   inputProps={{ min: 1, max: 90 }}
                   fullWidth
@@ -498,15 +486,13 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setFormData((prev) => ({ ...prev, leadTimeDays: parseInt(e.target.value, 10) || 5 }))
                   }
-                  helperText="Використовується для розрахунку точки ROP"
                 />
               </Grid>
             )}
 
             <Grid size={{ xs: 12 }}>
               <TextField
-                label="Юридична / фактична адреса"
-                placeholder="м. Київ, вул. Хрещатик, 1"
+                label={t('partners.address')}
                 fullWidth
                 value={formData.address}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -519,8 +505,7 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
               <>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
-                    label="Номер та дата договору"
-                    placeholder="Договір № 12/25 від 01.02.2025"
+                    label={t('partners.contractNumber')}
                     fullWidth
                     value={formData.contractNumber}
                     onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -530,8 +515,7 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
-                    label="Умови оплати"
-                    placeholder="Відтермінування 14 днів"
+                    label={t('partners.paymentTerms')}
                     fullWidth
                     value={formData.paymentTerms}
                     onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -544,9 +528,9 @@ export default function Partners({ isAdmin = false, isManager = false }: Partner
           </Grid>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={handleClose}>Скасувати</Button>
+          <Button onClick={handleClose}>{t('common.cancel')}</Button>
           <Button variant="contained" onClick={handleSave}>
-            Зберегти
+            {t('common.save')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -7,10 +7,12 @@ import DashboardStats from './DashboardStats';
 import AnalyticsCharts from './AnalyticsCharts';
 import type { Product, Category, StockMovement } from '../types/inventory';
 import { useSignalR } from '../context/SignalRContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export type { Product };
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const { subscribeStockMovement, subscribeProductChange } = useSignalR();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -25,7 +27,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        setError('Ви не авторизовані. Будь ласка, увійдіть.');
+        setError(t('auth.loginError'));
         setLoading(false);
         return;
       }
@@ -47,10 +49,10 @@ export default function Dashboard() {
       setProducts(productList);
       setCategories(categoryList);
       setMovements(movementList);
-      setLastUpdated(new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     } catch (err: unknown) {
       console.error(err);
-      setError("Не вдалося завантажити дані для аналітики. Перевірте з'єднання.");
+      setError(t('common.error'));
 
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         localStorage.removeItem('token');
@@ -59,13 +61,12 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // Оновлюємо статистику в реальному часі при складських операціях
   useEffect(() => {
     const unsubMove = subscribeStockMovement(() => {
       fetchData();
@@ -85,7 +86,7 @@ export default function Dashboard() {
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 12 }}>
         <CircularProgress size={48} sx={{ mb: 2 }} />
         <Typography variant="body1" color="text.secondary">
-          Завантаження статистики та показників складу...
+          {t('common.loading')}
         </Typography>
       </Box>
     );
@@ -94,22 +95,17 @@ export default function Dashboard() {
   return (
     <Box sx={{ pb: 6 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Box>
-          <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2.125rem' } }}>
-            Аналітика та статистика складу
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Огляд ключових показників, розподілу активів та динаміки руху запасів
-          </Typography>
-        </Box>
+        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2.125rem' } }}>
+          {t('dashboard.title')}
+        </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           {lastUpdated && (
             <Typography variant="caption" color="text.secondary">
-              Оновлено: {lastUpdated}
+              {t('dashboard.updatedAt')}: {lastUpdated}
             </Typography>
           )}
-          <Tooltip title="Оновити статистику">
+          <Tooltip title={t('dashboard.refreshTooltip')}>
             <IconButton onClick={fetchData} color="primary" disabled={loading}>
               <RefreshIcon />
             </IconButton>
@@ -120,7 +116,7 @@ export default function Dashboard() {
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} action={
           <Button color="inherit" size="small" onClick={fetchData}>
-            Повторити
+            {t('common.retry')}
           </Button>
         }>
           {error}

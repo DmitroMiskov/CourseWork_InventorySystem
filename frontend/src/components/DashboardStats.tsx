@@ -7,6 +7,7 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CategoryIcon from '@mui/icons-material/Category';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import type { Product, Category, StockMovement } from '../types/inventory';
+import { useLanguage } from '../context/LanguageContext';
 
 interface DashboardStatsProps {
   products: Product[];
@@ -17,13 +18,12 @@ interface DashboardStatsProps {
 interface StatItemProps {
   title: string;
   value: string | number;
-  subtitle?: string;
   icon: ReactNode;
   color: string;
   bgColor: string;
 }
 
-const StatCard = ({ title, value, subtitle, icon, color, bgColor }: StatItemProps) => (
+const StatCard = ({ title, value, icon, color, bgColor }: StatItemProps) => (
   <Paper 
     elevation={1} 
     sx={{ 
@@ -57,22 +57,18 @@ const StatCard = ({ title, value, subtitle, icon, color, bgColor }: StatItemProp
       {icon}
     </Box>
     <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
         {title}
       </Typography>
-      <Typography variant="h5" fontWeight="bold" sx={{ my: 0.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <Typography variant="h5" fontWeight="bold" sx={{ mt: 0.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {value}
       </Typography>
-      {subtitle && (
-        <Typography variant="caption" color="text.secondary">
-          {subtitle}
-        </Typography>
-      )}
     </Box>
   </Paper>
 );
 
 export default function DashboardStats({ products, categories, movements }: DashboardStatsProps) {
+  const { t } = useLanguage();
   const safeProducts = Array.isArray(products) ? products : [];
   const safeCategories = Array.isArray(categories) ? categories : [];
   const safeMovements = Array.isArray(movements) ? movements : [];
@@ -86,9 +82,8 @@ export default function DashboardStats({ products, categories, movements }: Dash
     <Grid container spacing={2.5} sx={{ mb: 4 }}>
       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <StatCard
-          title="Вартість складу"
-          value={`${Math.round(totalCost).toLocaleString('uk-UA')} ₴`}
-          subtitle="Сумарна оцінка активів"
+          title={t('dashboard.totalCost')}
+          value={`${Math.round(totalCost).toLocaleString()} ${t('common.uah')}`}
           icon={<AttachMoneyIcon fontSize="medium" />}
           color="#2e7d32"
           bgColor="#e8f5e9"
@@ -96,9 +91,8 @@ export default function DashboardStats({ products, categories, movements }: Dash
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <StatCard
-          title="Загальний залишок"
-          value={totalQuantity.toLocaleString('uk-UA')}
-          subtitle="Одиниць продукції на складі"
+          title={t('dashboard.totalQuantity')}
+          value={`${totalQuantity.toLocaleString()} ${t('dashboard.inUnit')}`}
           icon={<Inventory2Icon fontSize="medium" />}
           color="#1976d2"
           bgColor="#e3f2fd"
@@ -106,9 +100,8 @@ export default function DashboardStats({ products, categories, movements }: Dash
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <StatCard
-          title="Номенклатура (SKU)"
-          value={safeProducts.length}
-          subtitle={`У ${safeCategories.length} категоріях`}
+          title={t('dashboard.totalSkus')}
+          value={`${safeProducts.length} (${safeCategories.length})`}
           icon={<CategoryIcon fontSize="medium" />}
           color="#7b1fa2"
           bgColor="#f3e5f5"
@@ -116,9 +109,8 @@ export default function DashboardStats({ products, categories, movements }: Dash
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <StatCard
-          title="Критичний залишок"
+          title={t('dashboard.criticalStock')}
           value={lowStockCount}
-          subtitle="Менше або рівне мін. ліміту"
           icon={<WarningAmberIcon fontSize="medium" />}
           color="#ed6c02"
           bgColor="#fff3e0"
@@ -126,9 +118,8 @@ export default function DashboardStats({ products, categories, movements }: Dash
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <StatCard
-          title="Закінчились на складі"
+          title={t('dashboard.outOfStock')}
           value={outOfStockCount}
-          subtitle="Потребують термінового замовлення"
           icon={<ErrorOutlineIcon fontSize="medium" />}
           color="#d32f2f"
           bgColor="#ffebee"
@@ -136,9 +127,8 @@ export default function DashboardStats({ products, categories, movements }: Dash
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <StatCard
-          title="Операції зі складом"
+          title={t('dashboard.operationsCount')}
           value={safeMovements.length}
-          subtitle="Зафіксовано рухів товарів"
           icon={<SyncAltIcon fontSize="medium" />}
           color="#00838f"
           bgColor="#e0f7fa"

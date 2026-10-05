@@ -29,6 +29,7 @@ import StockOperationModal from './StockOperationModal';
 import IssuanceModal from './IssuanceModal';
 import type { Product, Category, ServerError } from '../types/inventory';
 import { useSignalR } from '../context/SignalRContext';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ProductListProps {
   isAdmin?: boolean;
@@ -104,6 +105,7 @@ const ProductImage = ({
 };
 
 export default function ProductList({ isAdmin = false, isManager = false }: ProductListProps) {
+  const { t } = useLanguage();
   const canManageProducts = isAdmin || isManager;
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -154,7 +156,7 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
       setCategories(categoryList);
     } catch (err: unknown) {
       console.error(err);
-      setError("Не вдалося завантажити дані. Перевірте з'єднання.");
+      setError(t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -183,7 +185,6 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
     fetchProducts();
   }, []);
 
-  // Підписка на події SignalR для оновлення залишків та товарів у реальному часі
   useEffect(() => {
     const unsubMove = subscribeStockMovement((movement) => {
       setProducts(prev => prev.map(p => 
@@ -274,27 +275,27 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
       setFormData(prev => ({ ...prev, imageUrl: res.data.url }));
     } catch (err: unknown) {
       console.error(err);
-      setError("Не вдалося завантажити фото");
+      setError(t('common.error'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Ви впевнені, що хочете видалити цей товар?')) {
+    if (window.confirm(t('products.deleteConfirm'))) {
       try {
         await api.delete(`/products/${id}`);
         await fetchProducts();
       } catch (err: unknown) {
         console.error(err);
-        setError("Помилка при видаленні товару");
+        setError(t('common.error'));
       }
     }
   };
 
   const handleSave = async () => {
     if (!formData.name || !formData.categoryId || !formData.price) {
-      setError("Заповніть назву, категорію та ціну!");
+      setError(t('products.enterName'));
       return;
     }
 
@@ -321,25 +322,25 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
     } catch (err: unknown) {
       console.error(err);
       if (axios.isAxiosError<ServerError>(err)) {
-        const msg = err.response?.data?.title || "Помилка збереження";
-        setError(`Сервер: ${msg}`);
+        const msg = err.response?.data?.title || t('common.error');
+        setError(msg);
       } else {
-        setError("Помилка збереження даних");
+        setError(t('common.error'));
       }
     }
   };
 
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(products.map(p => ({
-      Назва: p.name,
-      Категорія: p.category?.name || '',
-      Ціна: p.price,
-      Кількість: p.quantity,
-      Одиниця: p.unit,
-      Опис: p.description
+      [t('products.name')]: p.name,
+      [t('products.category')]: p.category?.name || '',
+      [t('products.price')]: p.price,
+      [t('products.quantity')]: p.quantity,
+      [t('products.unit')]: p.unit,
+      [t('products.description')]: p.description
     })));
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Товари");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory");
     const excelBuffer: unknown = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const data = new Blob([excelBuffer as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
     saveAs(data, 'inventory_export.xlsx');
@@ -357,16 +358,11 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
           'Content-Type': 'multipart/form-data',
         }
       });
-      alert("Імпорт успішний!");
+      alert(t('products.importSuccess'));
       await fetchProducts();
     } catch (err: unknown) {
       console.error(err);
-      if (axios.isAxiosError<string>(err)) {
-        const msg = err.response?.data || "Помилка імпорту";
-        setError(typeof msg === 'string' ? msg : "Сталася помилка імпорту");
-      } else {
-        setError("Сталася неочікувана помилка імпорту");
-      }
+      setError(t('products.importError'));
     } finally {
       setLoading(false);
       event.target.value = '';
@@ -420,7 +416,7 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="h6" component="div" fontWeight="bold">
-            Список товарів
+            {t('products.title')}
           </Typography>
         </Box>
 
@@ -432,7 +428,7 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
           flexGrow: 1
         }}>
           <TextField
-            label="Пошук"
+            label={t('common.search')}
             variant="outlined"
             size="small"
             value={searchTerm}
@@ -444,13 +440,13 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
           />
 
           <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 160 } }}>
-            <InputLabel>Категорія</InputLabel>
+            <InputLabel>{t('products.category')}</InputLabel>
             <Select
               value={filterCategory}
-              label="Категорія"
+              label={t('products.category')}
               onChange={(e) => setFilterCategory(e.target.value as string)}
             >
-              <MenuItem value=""><em>Всі</em></MenuItem>
+              <MenuItem value=""><em>{t('common.all')}</em></MenuItem>
               {categories.map(cat => (
                 <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
               ))}
@@ -465,12 +461,12 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
           justifyContent: { xs: 'space-between', sm: 'flex-end' } 
         }}>
           <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <Tooltip title="Експорт в Excel">
+            <Tooltip title={t('products.exportExcel')}>
               <IconButton onClick={exportToExcel} color="success" size="small"><SaveAltIcon /></IconButton>
             </Tooltip>
 
             {canManageProducts && (
-              <Tooltip title="Імпорт з CSV">
+              <Tooltip title={t('products.importCsv')}>
                 <IconButton component="label" color="primary" size="small">
                   <UploadFileIcon />
                   <input type="file" hidden accept=".csv" onChange={handleFileUpload} />
@@ -487,7 +483,7 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
               size="medium"
               sx={{ whiteSpace: 'nowrap' }}
             >
-              Додати товар
+              {t('products.addProduct')}
             </Button>
           )}
         </Box>
@@ -506,80 +502,88 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
                   indeterminate={selectedIds.length > 0 && selectedIds.length < filteredProducts.length}
                 />
               </TableCell>
-              <TableCell onClick={() => handleSort('name')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Назва ↕</TableCell>
-              <TableCell onClick={() => handleSort('categoryId')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Категорія ↕</TableCell>
-              <TableCell onClick={() => handleSort('price')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Ціна ↕</TableCell>
-              <TableCell onClick={() => handleSort('quantity')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>Кількість ↕</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Дії</TableCell>
+              <TableCell onClick={() => handleSort('name')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>{t('products.name')} ↕</TableCell>
+              <TableCell onClick={() => handleSort('categoryId')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>{t('products.category')} ↕</TableCell>
+              <TableCell onClick={() => handleSort('price')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>{t('products.price')} ↕</TableCell>
+              <TableCell onClick={() => handleSort('quantity')} sx={{ cursor: 'pointer', fontWeight: 'bold' }}>{t('products.quantity')} ↕</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>{t('common.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredProducts
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((product) => (
-                <TableRow 
-                  key={product.id}
-                  sx={{ 
-                    backgroundColor: product.quantity <= product.minStock 
-                      ? (theme) => theme.palette.mode === 'dark' ? 'rgba(239, 68, 68, 0.16)' : '#fff0f0' 
-                      : 'inherit' 
-                  }}
-                >
-                  <TableCell padding="checkbox">
-                    <Checkbox 
-                      checked={selectedIds.includes(product.id)}
-                      onChange={() => handleSelect(product.id)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <ProductImage 
-                        key={product.imageUrl || 'no-img'}
-                        imageName={product.imageUrl} 
-                        alt={product.name} 
-                        size={40} 
+            {filteredProducts.length === 0 && !loading ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                  {t('products.notFound')}
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredProducts
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((product) => (
+                  <TableRow 
+                    key={product.id}
+                    sx={{ 
+                      backgroundColor: product.quantity <= product.minStock 
+                        ? (theme) => theme.palette.mode === 'dark' ? 'rgba(239, 68, 68, 0.16)' : '#fff0f0' 
+                        : 'inherit' 
+                    }}
+                  >
+                    <TableCell padding="checkbox">
+                      <Checkbox 
+                        checked={selectedIds.includes(product.id)}
+                        onChange={() => handleSelect(product.id)}
                       />
-                      <Typography variant="body2">{product.name}</Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip label={product.category?.name || 'Без категорії'} size="small" />
-                  </TableCell>
-                  <TableCell>{product.price} грн</TableCell>
-                  <TableCell>
-                    {product.quantity} {product.unit}
-                    {product.quantity <= product.minStock && (
-                      <Typography variant="caption" color="error" display="block">(Закінчується!)</Typography>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Tooltip title="Прихід / Розхід">
-                      <IconButton color="warning" onClick={() => handleOpenOperation(product)}>
-                        <SyncAltIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Історія руху">
-                      <IconButton color="info" onClick={() => handleOpenHistory(product)}>
-                        <HistoryIcon />
-                      </IconButton>
-                    </Tooltip>
-                    {canManageProducts && (
-                      <Tooltip title="Редагувати">
-                        <IconButton color="primary" onClick={() => handleOpen(product)}>
-                          <EditIcon />
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <ProductImage 
+                          key={product.imageUrl || 'no-img'}
+                          imageName={product.imageUrl} 
+                          alt={product.name} 
+                          size={40} 
+                        />
+                        <Typography variant="body2">{product.name}</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={product.category?.name || t('products.noCategory')} size="small" />
+                    </TableCell>
+                    <TableCell>{product.price} {t('common.uah')}</TableCell>
+                    <TableCell>
+                      {product.quantity} {product.unit}
+                      {product.quantity <= product.minStock && (
+                        <Typography variant="caption" color="error" display="block">{t('products.lowStockBadge')}</Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title={t('products.stockOperation')}>
+                        <IconButton color="warning" onClick={() => handleOpenOperation(product)}>
+                          <SyncAltIcon />
                         </IconButton>
                       </Tooltip>
-                    )}
-                    {isAdmin && (
-                      <Tooltip title="Видалити">
-                        <IconButton color="error" onClick={() => handleDelete(product.id)}>
-                          <DeleteIcon />
+                      <Tooltip title={t('products.movementHistory')}>
+                        <IconButton color="info" onClick={() => handleOpenHistory(product)}>
+                          <HistoryIcon />
                         </IconButton>
                       </Tooltip>
-                    )}
-                  </TableCell>
-                </TableRow>
-            ))}
+                      {canManageProducts && (
+                        <Tooltip title={t('common.edit')}>
+                          <IconButton color="primary" onClick={() => handleOpen(product)}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {isAdmin && (
+                        <Tooltip title={t('common.delete')}>
+                          <IconButton color="error" onClick={() => handleDelete(product.id)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -598,7 +602,7 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
       />
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth fullScreen={isMobile}>
-        <DialogTitle>{currentProduct ? 'Редагувати товар' : 'Новий товар'}</DialogTitle>
+        <DialogTitle>{currentProduct ? t('products.editProduct') : t('products.newProduct')}</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
             <ProductImage 
@@ -611,38 +615,35 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
             
             <Box>
               <Button variant="outlined" component="label" startIcon={<PhotoCamera />}>
-                Завантажити фото
+                {t('products.uploadImage')}
                 <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
               </Button>
-              <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
-                Формати: JPG, PNG, WEBP
-              </Typography>
             </Box>
           </Box>
 
-          <TextField margin="dense" label="Назва" fullWidth value={formData.name} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })} />
-          <TextField margin="dense" label="Опис" fullWidth multiline rows={2} value={formData.description} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, description: e.target.value })} />
+          <TextField margin="dense" label={t('products.name')} fullWidth value={formData.name} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })} />
+          <TextField margin="dense" label={t('products.description')} fullWidth multiline rows={2} value={formData.description} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, description: e.target.value })} />
           
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <TextField margin="dense" label="Ціна" type="number" fullWidth value={formData.price} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, price: e.target.value })} />
-            <TextField margin="dense" label="Кількість" type="number" fullWidth value={formData.quantity} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, quantity: e.target.value })} />
+            <TextField margin="dense" label={t('products.price')} type="number" fullWidth value={formData.price} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, price: e.target.value })} />
+            <TextField margin="dense" label={t('products.quantity')} type="number" fullWidth value={formData.quantity} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, quantity: e.target.value })} />
           </Box>
           
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <TextField margin="dense" label="Одиниця виміру" fullWidth value={formData.unit} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, unit: e.target.value })} />
-            <TextField margin="dense" label="Мін. залишок" type="number" fullWidth value={formData.minStock} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, minStock: e.target.value })} />
+            <TextField margin="dense" label={t('products.unit')} fullWidth value={formData.unit} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, unit: e.target.value })} />
+            <TextField margin="dense" label={t('products.minStock')} type="number" fullWidth value={formData.minStock} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, minStock: e.target.value })} />
           </Box>
 
           <FormControl fullWidth margin="dense" sx={{ mt: 2 }}>
-            <InputLabel>Категорія</InputLabel>
-            <Select value={formData.categoryId} label="Категорія" onChange={(e) => setFormData({ ...formData, categoryId: e.target.value as string })}>
+            <InputLabel>{t('products.category')}</InputLabel>
+            <Select value={formData.categoryId} label={t('products.category')} onChange={(e) => setFormData({ ...formData, categoryId: e.target.value as string })}>
               {categories.map(cat => <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>)}
             </Select>
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Скасувати</Button>
-          <Button onClick={handleSave} variant="contained">Зберегти</Button>
+          <Button onClick={() => setOpen(false)}>{t('common.cancel')}</Button>
+          <Button onClick={handleSave} variant="contained">{t('common.save')}</Button>
         </DialogActions>
       </Dialog>
 
@@ -670,7 +671,7 @@ export default function ProductList({ isAdmin = false, isManager = false }: Prod
           <Badge badgeContent={selectedIds.length} color="error">
             <Fab color="primary" variant="extended" onClick={() => setIssueModalOpen(true)}>
               <ShoppingCartIcon sx={{ mr: 1 }} />
-              Оформити видачу
+              {t('products.issueSelected')}
             </Fab>
           </Badge>
         </Box>

@@ -30,6 +30,7 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import api from '../api/axiosConfig';
 import type { CopilotMessage, CopilotAction, CopilotChatResponse } from '../types/inventory';
 import { downloadOrderLetterPdf } from '../utils/pdfOrderLetterGenerator';
+import { useLanguage } from '../context/LanguageContext';
 
 interface WarehouseCopilotProps {
   onNavigateToTab?: (tabName: 'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin') => void;
@@ -60,6 +61,7 @@ const INITIAL_GREETING: CopilotMessage = {
 };
 
 export const WarehouseCopilot: React.FC<WarehouseCopilotProps> = ({ onNavigateToTab }) => {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<CopilotMessage[]>([INITIAL_GREETING]);
   const [inputText, setInputText] = useState<string>('');
@@ -321,7 +323,7 @@ export const WarehouseCopilot: React.FC<WarehouseCopilotProps> = ({ onNavigateTo
   return (
     <>
       {/* ПЛАВАЮЧА КНОПКА ВИКЛИКУ COPILOT */}
-      <Tooltip title="AI-Копілот складу (Чат-асистент)" placement="left">
+      <Tooltip title={t('copilot.title')} placement="left">
         <Fab
           color="primary"
           onClick={() => setIsOpen(true)}
@@ -385,18 +387,13 @@ export const WarehouseCopilot: React.FC<WarehouseCopilotProps> = ({ onNavigateTo
             >
               <AutoAwesomeIcon sx={{ color: '#fff' }} />
             </Box>
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
-                AI-Копілот складу
-              </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                LLM & Explainable AI асистент
-              </Typography>
-            </Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
+              {t('copilot.title')}
+            </Typography>
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Tooltip title="Очистити діалог">
+            <Tooltip title={t('copilot.clearHistory')}>
               <IconButton size="small" onClick={handleClearHistory} sx={{ color: '#fff' }}>
                 <DeleteOutlineIcon fontSize="small" />
               </IconButton>
@@ -405,36 +402,6 @@ export const WarehouseCopilot: React.FC<WarehouseCopilotProps> = ({ onNavigateTo
               <CloseIcon />
             </IconButton>
           </Box>
-        </Box>
-
-        {/* ПІДШАПКА: СТАТУС РУШІЯ */}
-        <Box
-          sx={{
-            px: 2,
-            py: 1,
-            bgcolor: 'action.hover',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                bgcolor: 'success.main',
-                boxShadow: '0 0 6px #4caf50'
-              }}
-            />
-            <Typography variant="caption" color="text.secondary">
-              Автономний XAI-рушій + Cloud LLM
-            </Typography>
-          </Box>
-          <Chip label="PostgreSQL live" size="small" color="success" variant="outlined" sx={{ height: 20, fontSize: '0.7rem' }} />
         </Box>
 
         {/* СПИСОК ПОВІДОМЛЕНЬ */}
@@ -588,28 +555,28 @@ export const WarehouseCopilot: React.FC<WarehouseCopilotProps> = ({ onNavigateTo
           }}
         >
           <Chip
-            label="🚨 Що замовити?"
+            label={t('copilot.quickOrders')}
             size="small"
             clickable
             onClick={() => handleSendMessage('Що терміново треба замовити?')}
             sx={{ fontSize: '0.75rem', bgcolor: 'action.hover' }}
           />
           <Chip
-            label="🧠 Чому статус RTX 4070?"
+            label={t('copilot.quickXai')}
             size="small"
             clickable
             onClick={() => handleSendMessage('Поясни статус товару RTX 4070')}
             sx={{ fontSize: '0.75rem', bgcolor: 'action.hover' }}
           />
           <Chip
-            label="✉️ Лист постачальнику"
+            label={t('copilot.quickLetter')}
             size="small"
             clickable
             onClick={() => handleSendMessage('Склади лист постачальнику на замовлення дефіцитних товарів')}
             sx={{ fontSize: '0.75rem', bgcolor: 'action.hover' }}
           />
           <Chip
-            label="📊 Товари групи A"
+            label={t('copilot.quickAbc')}
             size="small"
             clickable
             onClick={() => handleSendMessage('Які товари входять до групи A за виручкою?')}
@@ -632,7 +599,7 @@ export const WarehouseCopilot: React.FC<WarehouseCopilotProps> = ({ onNavigateTo
             multiline
             maxRows={4}
             size="small"
-            placeholder="Запитайте у Копілота про залишки, попит або листи..."
+            placeholder={t('copilot.placeholder')}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => {
@@ -652,6 +619,7 @@ export const WarehouseCopilot: React.FC<WarehouseCopilotProps> = ({ onNavigateTo
             color="primary"
             disabled={!inputText.trim() || isLoading}
             onClick={() => handleSendMessage()}
+            aria-label={t('copilot.send')}
             sx={{
               bgcolor: 'primary.main',
               color: '#fff',

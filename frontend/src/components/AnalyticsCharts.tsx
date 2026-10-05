@@ -22,6 +22,7 @@ import {
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import type { Product, Category, StockMovement } from '../types/inventory';
+import { useLanguage } from '../context/LanguageContext';
 
 interface AnalyticsChartsProps {
   products: Product[];
@@ -35,6 +36,7 @@ const PALETTE = [
 ];
 
 export default function AnalyticsCharts({ products, categories, movements }: AnalyticsChartsProps) {
+  const { t } = useLanguage();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
@@ -62,7 +64,7 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
 
     safeProducts.forEach((p) => {
       const catId = p.categoryId || 'unknown';
-      const catName = p.category?.name || categoryMap[catId]?.name || 'Інше';
+      const catName = p.category?.name || categoryMap[catId]?.name || 'Other';
       if (!categoryMap[catId]) {
         categoryMap[catId] = { name: catName, value: 0, count: 0 };
       }
@@ -98,11 +100,11 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
     });
 
     return [
-      { name: 'В нормі', value: inStock, color: '#2e7d32' },
-      { name: 'Низький залишок', value: lowStock, color: '#ed6c02' },
-      { name: 'Відсутній', value: outOfStock, color: '#d32f2f' }
+      { name: t('dashboard.inStock'), value: inStock, color: '#2e7d32' },
+      { name: t('dashboard.lowStock'), value: lowStock, color: '#ed6c02' },
+      { name: t('dashboard.outOfStockStatus'), value: outOfStock, color: '#d32f2f' }
     ].filter((item) => item.value > 0);
-  }, [safeProducts]);
+  }, [safeProducts, t]);
 
   // 3. Топ найцінніших товарів на складі
   const topValuedProducts = useMemo(() => {
@@ -113,21 +115,21 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
         totalValue: Math.round((p.price || 0) * (p.quantity || 0)),
         quantity: p.quantity,
         price: p.price,
-        unit: p.unit || 'шт'
+        unit: p.unit || t('common.pcs')
       }))
       .filter((p) => p.totalValue > 0)
       .sort((a, b) => b.totalValue - a.totalValue)
       .slice(0, 6);
-  }, [safeProducts]);
+  }, [safeProducts, t]);
 
-  // 4. Динаміка руху складських залишків (Останні операції за днями)
+  // 4. Динаміка руху складських залишків
   const movementTrendData = useMemo(() => {
     if (safeMovements.length === 0) return [];
 
     const dateMap: Record<string, { date: string; incoming: number; outgoing: number }> = {};
 
     safeMovements.forEach((m) => {
-      const dateStr = m.createdAt ? new Date(m.createdAt).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' }) : 'Сьогодні';
+      const dateStr = m.createdAt ? new Date(m.createdAt).toLocaleDateString([], { day: '2-digit', month: '2-digit' }) : '—';
       if (!dateMap[dateStr]) {
         dateMap[dateStr] = { date: dateStr, incoming: 0, outgoing: 0 };
       }
@@ -156,16 +158,13 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
         {/* Графік 1: Розподіл вартості за категоріями */}
         <Grid size={{ xs: 12, md: 7 }}>
           <Paper sx={{ p: 3, borderRadius: 2, height: '100%', border: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Розподіл вартості за категоріями
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Сумарна вартість товарів (₴) у розрізі категорій
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+              {t('dashboard.costDistribution')}
             </Typography>
 
             {categoryChartData.length === 0 ? (
               <Box sx={{ py: 8, textAlign: 'center', color: 'text.secondary' }}>
-                Немає товарів з доданою вартістю для відображення
+                {t('common.emptyData')}
               </Box>
             ) : (
               <Box sx={{ width: '100%', height: 300 }}>
@@ -189,8 +188,8 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
                       contentStyle={chartTooltipStyle}
                       formatter={(val: number | string | undefined) =>
                         typeof val === 'number'
-                          ? [`${val.toLocaleString('uk-UA')} ₴`, 'Вартість']
-                          : [val ?? '', 'Вартість']
+                          ? [`${val.toLocaleString()} ${t('common.uah')}`, t('dashboard.sumValue')]
+                          : [val ?? '', t('dashboard.sumValue')]
                       }
                     />
                     <Legend />
@@ -204,16 +203,13 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
         {/* Графік 2: Стан запасів */}
         <Grid size={{ xs: 12, md: 5 }}>
           <Paper sx={{ p: 3, borderRadius: 2, height: '100%', border: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Стан складських запасів
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Співвідношення нормальних, низьких та нульових залишків
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+              {t('dashboard.stockHealth')}
             </Typography>
 
             {stockHealthData.length === 0 ? (
               <Box sx={{ py: 8, textAlign: 'center', color: 'text.secondary' }}>
-                Товари ще не додано до складу
+                {t('common.emptyData')}
               </Box>
             ) : (
               <Box sx={{ width: '100%', height: 300 }}>
@@ -237,8 +233,8 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
                       contentStyle={chartTooltipStyle}
                       formatter={(val: number | string | undefined) =>
                         typeof val === 'number'
-                          ? [`${val} позицій`, 'Кількість']
-                          : [val ?? '', 'Кількість']
+                          ? [`${val} ${t('common.pcs')}`, t('products.quantity')]
+                          : [val ?? '', t('products.quantity')]
                       }
                     />
                     <Legend />
@@ -255,16 +251,13 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
         {/* Графік 3: Топ найцінніших товарів */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 3, borderRadius: 2, height: '100%', border: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Топ-6 найцінніших позицій на складі
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Товари з найбільшою сумарною вартістю (Кількість × Ціна)
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+              {t('dashboard.topProducts')}
             </Typography>
 
             {topValuedProducts.length === 0 ? (
               <Box sx={{ py: 8, textAlign: 'center', color: 'text.secondary' }}>
-                Дані про вартість відсутні
+                {t('common.emptyData')}
               </Box>
             ) : (
               <Box sx={{ width: '100%', height: 300 }}>
@@ -277,11 +270,11 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
                       contentStyle={chartTooltipStyle}
                       formatter={(val: number | string | undefined) =>
                         typeof val === 'number'
-                          ? [`${val.toLocaleString('uk-UA')} ₴`, 'Сума активу']
-                          : [val ?? '', 'Сума активу']
+                          ? [`${val.toLocaleString()} ${t('common.uah')}`, t('dashboard.sumValue')]
+                          : [val ?? '', t('dashboard.sumValue')]
                       }
                     />
-                    <Bar dataKey="totalValue" fill={isDark ? "#38bdf8" : "#1976d2"} radius={[4, 4, 0, 0]} name="Вартість (₴)" />
+                    <Bar dataKey="totalValue" fill={isDark ? "#38bdf8" : "#1976d2"} radius={[4, 4, 0, 0]} name={`${t('dashboard.sumValue')} (${t('common.uah')})`} />
                   </BarChart>
                 </ResponsiveContainer>
               </Box>
@@ -292,16 +285,13 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
         {/* Графік 4: Динаміка операцій */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 3, borderRadius: 2, height: '100%', border: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Динаміка операцій (Прихід vs Розхід)
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Обсяги надходжень та видач товарів за датами
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+              {t('dashboard.operationsDynamics')}
             </Typography>
 
             {movementTrendData.length === 0 ? (
               <Box sx={{ py: 8, textAlign: 'center', color: 'text.secondary' }}>
-                Історія рухів товарів поки що порожня
+                {t('common.emptyData')}
               </Box>
             ) : (
               <Box sx={{ width: '100%', height: 300 }}>
@@ -312,8 +302,8 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
                     <YAxis stroke={axisStroke} />
                     <Tooltip contentStyle={chartTooltipStyle} />
                     <Legend />
-                    <Area type="monotone" dataKey="incoming" stroke="#2e7d32" fill={isDark ? "rgba(46, 125, 50, 0.4)" : "#a5d6a7"} name="Прихід (од.)" />
-                    <Area type="monotone" dataKey="outgoing" stroke="#d32f2f" fill={isDark ? "rgba(211, 47, 47, 0.4)" : "#ffcdd2"} name="Розхід (од.)" />
+                    <Area type="monotone" dataKey="incoming" stroke="#2e7d32" fill={isDark ? "rgba(46, 125, 50, 0.4)" : "#a5d6a7"} name={t('operations.receipt')} />
+                    <Area type="monotone" dataKey="outgoing" stroke="#d32f2f" fill={isDark ? "rgba(211, 47, 47, 0.4)" : "#ffcdd2"} name={t('operations.writeOff')} />
                   </AreaChart>
                 </ResponsiveContainer>
               </Box>
@@ -327,7 +317,7 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <WarningAmberIcon color="warning" />
           <Typography variant="h6" fontWeight="bold">
-            Товари, що потребують термінового поповнення
+            {t('dashboard.reorderAlerts')}
           </Typography>
         </Box>
 
@@ -335,7 +325,7 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2, bgcolor: isDark ? 'rgba(46, 125, 50, 0.15)' : '#f1f8e9', borderRadius: 1, color: isDark ? '#81c784' : '#2e7d32' }}>
             <CheckCircleOutlineIcon />
             <Typography variant="body2" fontWeight="500">
-              Всі складські запаси знаходяться в межах встановлених норм!
+              {t('dashboard.allGood')}
             </Typography>
           </Box>
         ) : (
@@ -343,11 +333,11 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
             <Table size="small" sx={{ minWidth: 480 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Назва товару</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Артикул</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Поточний залишок</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Мін. ліміт</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Статус</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{t('products.name')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{t('products.sku')}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('intelligence.currentStock')}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('products.minStock')}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>{t('intelligence.urgencyStatus')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -358,15 +348,15 @@ export default function AnalyticsCharts({ products, categories, movements }: Ana
                       <TableCell sx={{ fontWeight: 500 }}>{p.name}</TableCell>
                       <TableCell>{p.sku || '—'}</TableCell>
                       <TableCell align="right" sx={{ fontWeight: 'bold', color: isZero ? 'error.main' : 'warning.dark' }}>
-                        {p.quantity} {p.unit || 'шт'}
+                        {p.quantity} {p.unit || t('common.pcs')}
                       </TableCell>
                       <TableCell align="right">
-                        {p.minStock} {p.unit || 'шт'}
+                        {p.minStock} {p.unit || t('common.pcs')}
                       </TableCell>
                       <TableCell align="center">
                         <Chip
                           size="small"
-                          label={isZero ? 'Вичерпано' : 'Критичний'}
+                          label={isZero ? t('dashboard.outOfStockStatus') : t('dashboard.lowStock')}
                           color={isZero ? 'error' : 'warning'}
                           variant="filled"
                         />

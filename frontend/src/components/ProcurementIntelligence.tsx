@@ -55,8 +55,10 @@ import type {
   ForecastResponse,
   AbcXyzResponse
 } from '../types/inventory';
+import { useLanguage } from '../context/LanguageContext';
 
 const ProcurementIntelligence: React.FC = () => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<number>(0);
 
   // Стан даних
@@ -236,21 +238,16 @@ const ProcurementIntelligence: React.FC = () => {
     <Box sx={{ pb: 6 }}>
       {/* Верхня панель заголовка */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <PsychologyIcon color="primary" sx={{ fontSize: 36 }} />
-            <Typography variant="h4" fontWeight="bold">
-              Інтелектуальне планування запасів
-            </Typography>
-          </Box>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Система підтримки прийняття рішень (DSS): ML-прогнозування на базі реального комерційного датасету <strong>UCI Machine Learning (Online Retail II — 541 909 транзакцій)</strong>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <PsychologyIcon color="primary" sx={{ fontSize: 36 }} />
+          <Typography variant="h4" fontWeight="bold">
+            {t('intelligence.title')}
           </Typography>
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Chip
-            label={isMlOnline ? 'ML Inference Engine: Онлайн' : 'ML Сервіс: Автономний / Резервний'}
+            label={isMlOnline ? t('intelligence.mlEngineOnline') : t('intelligence.mlEngineOffline')}
             color={isMlOnline ? 'success' : 'warning'}
             variant="outlined"
             size="medium"
@@ -264,7 +261,7 @@ const ProcurementIntelligence: React.FC = () => {
               if (activeTab === 2) loadAbcXyz();
             }}
           >
-            Оновити
+            {t('common.refresh')}
           </Button>
         </Box>
       </Box>
@@ -282,12 +279,11 @@ const ProcurementIntelligence: React.FC = () => {
             <Card sx={{ bgcolor: 'error.main', color: 'error.contrastText', borderRadius: 2 }}>
               <CardContent sx={{ py: 2 }}>
                 <Typography variant="overline" sx={{ opacity: 0.9 }}>
-                  Термінові замовлення
+                  {t('intelligence.urgentOrders')}
                 </Typography>
                 <Typography variant="h3" fontWeight="bold">
                   {radarData.urgent_count}
                 </Typography>
-                <Typography variant="caption">Вичерпання запасу &lt; 2 днів</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -296,12 +292,11 @@ const ProcurementIntelligence: React.FC = () => {
             <Card sx={{ bgcolor: 'warning.main', color: 'warning.contrastText', borderRadius: 2 }}>
               <CardContent sx={{ py: 2 }}>
                 <Typography variant="overline" sx={{ opacity: 0.9 }}>
-                  Критичні залишки (нижче ROP)
+                  {t('intelligence.criticalStock')}
                 </Typography>
                 <Typography variant="h3" fontWeight="bold">
                   {radarData.critical_count + radarData.warning_count}
                 </Typography>
-                <Typography variant="caption">Потрібне формування замовлення</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -310,12 +305,11 @@ const ProcurementIntelligence: React.FC = () => {
             <Card sx={{ bgcolor: 'success.main', color: 'success.contrastText', borderRadius: 2 }}>
               <CardContent sx={{ py: 2 }}>
                 <Typography variant="overline" sx={{ opacity: 0.9 }}>
-                  Оптимальний рівень
+                  {t('intelligence.optimalLevel')}
                 </Typography>
                 <Typography variant="h3" fontWeight="bold">
                   {radarData.norm_count}
                 </Typography>
-                <Typography variant="caption">Запас перевищує точку ROP</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -324,12 +318,11 @@ const ProcurementIntelligence: React.FC = () => {
             <Card sx={{ bgcolor: 'primary.dark', color: 'primary.contrastText', borderRadius: 2 }}>
               <CardContent sx={{ py: 2 }}>
                 <Typography variant="overline" sx={{ opacity: 0.9 }}>
-                  Сума рекоменд. замовлень
+                  {t('intelligence.recommendedOrdersSum')}
                 </Typography>
                 <Typography variant="h4" fontWeight="bold" sx={{ mt: 0.5 }}>
-                  {radarData.total_recommended_procurement_cost.toLocaleString()} ₴
+                  {radarData.total_recommended_procurement_cost.toLocaleString()} {t('common.uah')}
                 </Typography>
-                <Typography variant="caption">На основі оптимальної партії EOQ</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -339,9 +332,9 @@ const ProcurementIntelligence: React.FC = () => {
       {/* Вкладки навігації розділу */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={activeTab} onChange={handleTabChange} textColor="primary" indicatorColor="primary">
-          <Tab icon={<ShoppingCartCheckoutIcon />} iconPosition="start" label="Радар закупівель (SS / ROP / EOQ)" />
-          <Tab icon={<TrendingUpIcon />} iconPosition="start" label="Прогнозування попиту (ML Time-Series)" />
-          <Tab icon={<PsychologyIcon />} iconPosition="start" label="Матриця портфельного аналізу ABC-XYZ" />
+          <Tab icon={<ShoppingCartCheckoutIcon />} iconPosition="start" label={t('intelligence.radarTab')} />
+          <Tab icon={<TrendingUpIcon />} iconPosition="start" label={t('intelligence.forecastTab')} />
+          <Tab icon={<PsychologyIcon />} iconPosition="start" label={t('intelligence.abcXyzTab')} />
         </Tabs>
       </Box>
 
@@ -352,14 +345,9 @@ const ProcurementIntelligence: React.FC = () => {
         <Card elevation={2} sx={{ borderRadius: 2 }}>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1.5 }}>
-              <Box>
-                <Typography variant="h6" fontWeight="bold">
-                  Зведена аналітична відомість стану складських запасів
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Квантиль надійності: Z = 1.65 (95% рівень обслуговування)
-                </Typography>
-              </Box>
+              <Typography variant="h6" fontWeight="bold">
+                {t('intelligence.radarTab')}
+              </Typography>
               <Button
                 variant="outlined"
                 color="success"
@@ -368,7 +356,7 @@ const ProcurementIntelligence: React.FC = () => {
                 disabled={!radarData || !radarData.items || radarData.items.length === 0}
                 sx={{ textTransform: 'none', fontWeight: 'bold' }}
               >
-                Експорт у Excel (.xlsx)
+                {t('intelligence.exportRadarExcel')}
               </Button>
             </Box>
 
@@ -381,19 +369,17 @@ const ProcurementIntelligence: React.FC = () => {
                 <Table size="small" aria-label="procurement radar table">
                   <TableHead sx={{ bgcolor: 'action.hover' }}>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 'bold' }}>Артикул</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold' }}>Назва товару</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold' }}>Категорія</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Залишок</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Попит D</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Буфер SS</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Поріг ROP</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Партія EOQ</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Днів до 0</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>Статус</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Дозамовлення</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold' }}>Постачальник</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>Дія</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold' }}>{t('intelligence.sku')}</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold' }}>{t('intelligence.productName')}</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold' }}>{t('products.category')}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('intelligence.currentStock')}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('intelligence.safetyStock')}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('intelligence.reorderPoint')}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('intelligence.orderQuantity')}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('intelligence.daysToDepletion')}</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>{t('intelligence.urgencyStatus')}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('partners.suppliers')}</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>{t('common.actions')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -413,20 +399,16 @@ const ProcurementIntelligence: React.FC = () => {
                         <TableCell sx={{ fontWeight: 'medium' }}>{item.sku}</TableCell>
                         <TableCell>{item.name}</TableCell>
                         <TableCell>{item.category}</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>{item.current_stock} шт</TableCell>
-                        <TableCell align="right">{item.daily_demand} /дн</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>{item.current_stock} {t('common.pcs')}</TableCell>
                         <TableCell align="right" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-                          {item.safety_stock} шт
+                          {item.safety_stock} {t('common.pcs')}
                         </TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>{item.reorder_point} шт</TableCell>
-                        <TableCell align="right">{item.eoq} шт</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>{item.reorder_point} {t('common.pcs')}</TableCell>
+                        <TableCell align="right">{item.eoq} {t('common.pcs')}</TableCell>
                         <TableCell align="right" sx={{ fontWeight: 'bold', color: item.days_to_depletion <= 3 ? 'error.main' : 'inherit' }}>
-                          {item.days_to_depletion} дн
+                          {item.days_to_depletion} {t('common.days')}
                         </TableCell>
                         <TableCell align="center">{getStatusChip(item.status, item.status_code)}</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 'bold', color: item.recommended_order_qty > 0 ? 'error.main' : 'text.secondary' }}>
-                          {item.recommended_order_qty > 0 ? `+${item.recommended_order_qty} шт (${item.estimated_order_cost.toLocaleString()} ₴)` : '—'}
-                        </TableCell>
                         <TableCell sx={{ fontSize: '0.85rem' }}>{item.supplier_name}</TableCell>
                         <TableCell align="center">
                           <MuiTooltip title="Переглянути прогноз попиту для цього товару">

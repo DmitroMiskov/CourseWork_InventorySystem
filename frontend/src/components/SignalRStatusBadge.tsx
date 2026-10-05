@@ -3,21 +3,23 @@ import { Chip, Tooltip } from '@mui/material';
 import WifiIcon from '@mui/icons-material/Wifi';
 import WifiOffIcon from '@mui/icons-material/WifiOff';
 import { useSignalR } from '../context/SignalRContext';
+import { useLanguage } from '../context/LanguageContext';
 import * as signalR from '@microsoft/signalr';
 
 export const SignalRStatusBadge: React.FC = () => {
   const { connectionState, isConnected } = useSignalR();
+  const { t } = useLanguage();
 
-  let label = 'Realtime Офлайн';
+  let label = t('signalr.offline');
   let color: 'success' | 'warning' | 'default' = 'default';
   let icon = <WifiOffIcon sx={{ fontSize: '1rem !important' }} />;
 
   if (connectionState === signalR.HubConnectionState.Connected) {
-    label = 'Realtime Live';
+    label = t('signalr.online');
     color = 'success';
     icon = <WifiIcon sx={{ fontSize: '1rem !important' }} />;
   } else if (connectionState === signalR.HubConnectionState.Connecting || connectionState === signalR.HubConnectionState.Reconnecting) {
-    label = 'З\'єднання...';
+    label = t('signalr.connecting');
     color = 'warning';
   }
 
@@ -25,8 +27,8 @@ export const SignalRStatusBadge: React.FC = () => {
     <Tooltip 
       title={
         isConnected 
-          ? 'SignalR підключено: залишки та операції оновлюються в реальному часі без перезавантаження' 
-          : 'Спроба підключення до сервера SignalR...'
+          ? t('signalr.tooltipOnline') 
+          : t('signalr.tooltipOffline')
       }
     >
       <Chip

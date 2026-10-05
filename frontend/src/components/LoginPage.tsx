@@ -6,6 +6,8 @@ import { Box, Button, TextField, Typography, Paper, Alert, IconButton, InputAdor
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import ThemeToggle from './ThemeToggle';
+import LanguageToggle from './LanguageToggle';
+import { useLanguage } from '../context/LanguageContext';
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
@@ -16,6 +18,7 @@ interface LoginResponse {
 }
 
 export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
+  const { t } = useLanguage();
   const [userName, setUserName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -39,12 +42,12 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 401) {
-          setError('Невірний логін або пароль');
+          setError(t('auth.loginError'));
           return;
         }
       }
 
-      setError("Помилка з'єднання з сервером. Перевірте, чи працює API.");
+      setError(t('auth.connectionError'));
     }
   };
 
@@ -59,19 +62,19 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
         backgroundColor: 'background.default',
       }}
     >
-      <ThemeToggle sx={{ position: 'absolute', top: 20, right: 20, bgcolor: 'background.paper', boxShadow: 1 }} />
+      <Box sx={{ position: 'absolute', top: 20, right: 20, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <LanguageToggle sx={{ bgcolor: 'background.paper', boxShadow: 1, color: 'text.primary' }} />
+        <ThemeToggle sx={{ bgcolor: 'background.paper', boxShadow: 1 }} />
+      </Box>
 
       <Paper elevation={3} sx={{ p: 4, width: 350, textAlign: 'center', borderRadius: 2 }}>
-        <Typography variant="h5" mb={1} fontWeight="bold" color="primary">
-          Складський облік
-        </Typography>
-        <Typography variant="body2" color="text.secondary" mb={3}>
-          Система управління запасами та підтримки рішень
+        <Typography variant="h5" mb={3} fontWeight="bold" color="primary">
+          {t('auth.loginTitle')}
         </Typography>
 
         <form onSubmit={handleLogin}>
           <TextField
-            label="Логін"
+            label={t('auth.username')}
             fullWidth
             margin="normal"
             value={userName}
@@ -79,7 +82,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             autoComplete="username"
           />
           <TextField
-            label="Пароль"
+            label={t('auth.password')}
             type={showPassword ? 'text' : 'password'}
             fullWidth
             margin="normal"
@@ -90,7 +93,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
-                    aria-label="перемкнути видимість паролю"
+                    aria-label={t('auth.togglePassword')}
                     onClick={() => setShowPassword(prev => !prev)}
                     onMouseDown={(e) => e.preventDefault()}
                     edge="end"
@@ -115,7 +118,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             size="large"
             sx={{ mt: 3 }}
           >
-            УВІЙТИ
+            {t('auth.loginButton')}
           </Button>
         </form>
       </Paper>

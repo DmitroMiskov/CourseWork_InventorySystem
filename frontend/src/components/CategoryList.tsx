@@ -28,6 +28,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { Category, ServerError } from '../types/inventory';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CategoryListProps {
   isAdmin?: boolean;
@@ -35,6 +36,7 @@ interface CategoryListProps {
 }
 
 export default function CategoryList({ isAdmin = false, isManager = false }: CategoryListProps) {
+  const { t } = useLanguage();
   const canManageCategories = isAdmin || isManager;
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -52,7 +54,7 @@ export default function CategoryList({ isAdmin = false, isManager = false }: Cat
       setCategories(res.data);
     } catch (err: unknown) {
       console.error(err);
-      setError('Не вдалося завантажити категорії');
+      setError(t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -82,7 +84,7 @@ export default function CategoryList({ isAdmin = false, isManager = false }: Cat
   const handleSave = async () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError('Назва категорії не може бути порожньою');
+      setError(t('products.enterName'));
       return;
     }
 
@@ -92,40 +94,40 @@ export default function CategoryList({ isAdmin = false, isManager = false }: Cat
           id: currentCategory.id,
           name: trimmedName,
         });
-        setSuccessMsg('Категорію успішно оновлено');
+        setSuccessMsg(t('common.success'));
       } else {
         await api.post('/categories', {
           name: trimmedName,
         });
-        setSuccessMsg('Категорію успішно створено');
+        setSuccessMsg(t('common.success'));
       }
       handleClose();
       await fetchCategories();
     } catch (err: unknown) {
       console.error(err);
       if (axios.isAxiosError<ServerError>(err)) {
-        const msg = err.response?.data?.title || 'Помилка при збереженні категорії';
-        setError(`Сервер: ${msg}`);
+        const msg = err.response?.data?.title || t('common.error');
+        setError(msg);
       } else {
-        setError('Непередбачена помилка збереження');
+        setError(t('common.error'));
       }
     }
   };
 
   const handleDelete = async (id: string, categoryName: string) => {
-    if (!window.confirm(`Видалити категорію "${categoryName}"?`)) return;
+    if (!window.confirm(`${t('common.confirmDelete')} "${categoryName}"?`)) return;
 
     try {
       await api.delete(`/categories/${id}`);
-      setSuccessMsg(`Категорію "${categoryName}" видалено`);
+      setSuccessMsg(t('common.success'));
       await fetchCategories();
     } catch (err: unknown) {
       console.error(err);
       if (axios.isAxiosError<ServerError>(err)) {
-        const msg = err.response?.data?.title || 'Не вдалося видалити категорію';
-        setError(`Помилка: ${msg}`);
+        const msg = err.response?.data?.title || t('common.error');
+        setError(msg);
       } else {
-        setError('Помилка при видаленні категорії');
+        setError(t('common.error'));
       }
     }
   };
@@ -146,11 +148,11 @@ export default function CategoryList({ isAdmin = false, isManager = false }: Cat
 
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h5" fontWeight="bold">
-          Категорії товарів
+          {t('categories.title')}
         </Typography>
         {canManageCategories && (
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()} size="medium">
-            Додати категорію
+            {t('categories.addCategory')}
           </Button>
         )}
       </Box>
@@ -161,15 +163,15 @@ export default function CategoryList({ isAdmin = false, isManager = false }: Cat
         <Table sx={{ minWidth: 350 }}>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Назва категорії</TableCell>
-              {canManageCategories && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Дії</TableCell>}
+              <TableCell sx={{ fontWeight: 'bold' }}>{t('categories.categoryName')}</TableCell>
+              {canManageCategories && <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('common.actions')}</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
             {categories.length === 0 && !loading ? (
               <TableRow>
                 <TableCell colSpan={canManageCategories ? 2 : 1} align="center" sx={{ py: 3, color: 'text.secondary' }}>
-                  Категорій не знайдено
+                  {t('categories.notFound')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -180,13 +182,13 @@ export default function CategoryList({ isAdmin = false, isManager = false }: Cat
                   </TableCell>
                   {canManageCategories && (
                     <TableCell align="right">
-                      <Tooltip title="Редагувати">
+                      <Tooltip title={t('common.edit')}>
                         <IconButton color="primary" onClick={() => handleOpen(cat)}>
                           <EditIcon />
                         </IconButton>
                       </Tooltip>
                       {isAdmin && (
-                        <Tooltip title="Видалити">
+                        <Tooltip title={t('common.delete')}>
                           <IconButton color="error" onClick={() => handleDelete(cat.id, cat.name)}>
                             <DeleteIcon />
                           </IconButton>
@@ -203,22 +205,22 @@ export default function CategoryList({ isAdmin = false, isManager = false }: Cat
 
       <Dialog open={openDialog} onClose={handleClose} fullWidth maxWidth="xs">
         <DialogTitle>
-          {currentCategory ? 'Редагувати категорію' : 'Створити категорію'}
+          {currentCategory ? t('categories.editCategory') : t('categories.newCategory')}
         </DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label="Назва категорії"
+            label={t('categories.categoryName')}
             fullWidth
             value={name}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Скасувати</Button>
+          <Button onClick={handleClose}>{t('common.cancel')}</Button>
           <Button variant="contained" onClick={handleSave}>
-            Зберегти
+            {t('common.save')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -43,9 +43,9 @@ import {
   downloadWaybillPdf,
   printWaybillPdf,
   formatCurrency,
-  numberToUkrainianWords,
   type WaybillData
 } from '../utils/pdfWaybillGenerator';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Customer {
   id: string;
@@ -85,6 +85,7 @@ export default function IssuanceModal({
   selectedProducts,
   onSuccess
 }: IssuanceModalProps) {
+  const { t } = useLanguage();
   const [items, setItems] = useState<IssueItem[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerId, setCustomerId] = useState<string>('');
@@ -96,13 +97,12 @@ export default function IssuanceModal({
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Генеруємо новий номер накладної при відкритті вікна
   useEffect(() => {
     if (!open) return;
 
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    setDocumentNumber(`ВН-${dateStr}-${randomSuffix}`);
+    setDocumentNumber(`VN-${dateStr}-${randomSuffix}`);
     setCompletedWaybill(null);
     setError('');
 
@@ -113,7 +113,7 @@ export default function IssuanceModal({
         name: p.name,
         price: Number(p.price) || 0,
         availableQuantity: p.quantity,
-        unit: p.unit || 'шт',
+        unit: p.unit || t('common.pcs'),
         issueQuantity: 1
       }))
     );
@@ -123,14 +123,13 @@ export default function IssuanceModal({
         const res = await api.get<Customer[]>('/customers');
         setCustomers(Array.isArray(res.data) ? res.data : []);
       } catch (err: unknown) {
-        console.error('Помилка завантаження контрагентів:', err);
+        console.error('Fetch customers error:', err);
       }
     };
 
     fetchCustomers();
-  }, [open, selectedProducts]);
+  }, [open, selectedProducts, t]);
 
-  // Підсумкові обчислення
   const totalQuantity = useMemo(
     () => items.reduce((sum, item) => sum + item.issueQuantity, 0),
     [items]
@@ -146,13 +145,12 @@ export default function IssuanceModal({
     [customers, customerId]
   );
 
-  // Формуємо об'єкт накладної
   const buildWaybillData = (): WaybillData => ({
-    documentNumber: documentNumber || `ВН-${Date.now().toString().slice(-6)}`,
+    documentNumber: documentNumber || `VN-${Date.now().toString().slice(-6)}`,
     date: new Date(),
     customer: selectedCustomer,
-    reason: reason.trim() || 'Видача матеріальних цінностей зі складу',
-    storekeeperName: localStorage.getItem('username') || 'Адміністратор складу',
+    reason: reason.trim() || t('operations.issuance'),
+    storekeeperName: localStorage.getItem('username') || 'Storekeeper',
     items: items.map((it) => ({
       sku: it.sku,
       name: it.name,
@@ -175,51 +173,38 @@ export default function IssuanceModal({
     setItems((prev) => prev.filter((item) => item.productId !== productId));
   };
 
-  // Попередній перегляд або друк накладної без списання
   const handlePreviewPdf = async () => {
-    if (items.length === 0) {
-      setError('Немає товарів для формування накладної');
-      return;
-    }
+    if (items.length === 0) return;
     try {
       const data = buildWaybillData();
       await printWaybillPdf(data);
     } catch (err) {
       console.error(err);
-      setError('Не вдалося відкрити накладну для друку');
+      setError(t('copilot.pdfError'));
     }
   };
 
-  // Пряме завантаження файлу PDF
   const handleDownloadPdf = async () => {
-    if (items.length === 0) {
-      setError('Немає товарів для формування накладної');
-      return;
-    }
+    if (items.length === 0) return;
     try {
       const data = buildWaybillData();
       await downloadWaybillPdf(data);
     } catch (err) {
       console.error(err);
-      setError('Не вдалося сформувати PDF накладну');
+      setError(t('copilot.pdfError'));
     }
   };
 
   const handleSubmit = async () => {
-    if (items.length === 0) {
-      setError('Список товарів для видачі порожній');
-      return;
-    }
+    if (items.length === 0) return;
 
     for (const item of items) {
       if (item.issueQuantity <= 0) {
-        setError(`Вкажіть кількість більше 0 для товару "${item.name}"`);
+        setError(`${item.name}: ${t('operations.quantity')}`);
         return;
       }
       if (item.issueQuantity > item.availableQuantity) {
-        setError(
-          `Кількість для видачі "${item.name}" перевищує залишок (${item.availableQuantity} ${item.unit})`
-        );
+        setError(`${item.name}: ${t('operations.insufficientStock')} (${item.availableQuantity} ${item.unit})`);
         return;
       }
     }
@@ -230,30 +215,27 @@ export default function IssuanceModal({
     const waybillData = buildWaybillData();
 
     try {
-      // 1. Проводимо складські операції списання
       await Promise.all(
         items.map((item) =>
           api.post('/StockMovements', {
             productId: item.productId,
             quantity: item.issueQuantity,
             type: 2,
-            movementType: 2, // 2 = Розхід / Видача
+            movementType: 2,
             customerId: customerId || null,
-            reason: reason.trim() || `Видача за накладною № ${documentNumber}`
+            reason: reason.trim() || `${t('operations.issuance')} ${documentNumber}`
           })
         )
       );
 
-      // 2. Якщо ввімкнено автозавантаження — відразу завантажуємо PDF
       if (autoDownloadPdf) {
         try {
           await downloadWaybillPdf(waybillData);
         } catch (pdfErr) {
-          console.error('Помилка автоматичного завантаження PDF:', pdfErr);
+          console.error('PDF error:', pdfErr);
         }
       }
 
-      // 3. Зберігаємо дані для вікна успішного завершення
       setCompletedWaybill(waybillData);
       onSuccess();
     } catch (err: unknown) {
@@ -263,10 +245,10 @@ export default function IssuanceModal({
         const msg =
           typeof data === 'string'
             ? data
-            : data?.message || data?.title || 'Помилка оформлення видачі';
-        setError(`Сервер: ${msg}`);
+            : data?.message || data?.title || t('common.error');
+        setError(msg);
       } else {
-        setError('Непередбачена помилка під час видачі товарів');
+        setError(t('common.error'));
       }
     } finally {
       setLoading(false);
@@ -290,7 +272,7 @@ export default function IssuanceModal({
       <DialogTitle sx={{ pb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="h6" fontWeight="bold">
-            {completedWaybill ? 'Видачу оформлено' : 'Оформлення видачі'}
+            {t('operations.issuanceTitle')}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Chip
@@ -318,17 +300,11 @@ export default function IssuanceModal({
           </Alert>
         )}
 
-        {/* 1. Екран успіху після проведення видачі */}
         {completedWaybill ? (
           <Box sx={{ py: 2, textAlign: 'center' }}>
             <CheckCircleIcon sx={{ fontSize: 60, color: 'success.main', mb: 1 }} />
             <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Товари успішно списано зі складу!
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Сформовано офіційну накладну{' '}
-              <strong>№ {completedWaybill.documentNumber}</strong> від{' '}
-              {new Date().toLocaleDateString('uk-UA')}.
+              {t('operations.issuedSuccess')}
             </Typography>
 
             <Paper
@@ -336,19 +312,16 @@ export default function IssuanceModal({
               sx={{ p: 2.5, mb: 3, maxWidth: 500, mx: 'auto', textAlign: 'left', bgcolor: 'action.hover' }}
             >
               <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Одержувач:</strong> {completedWaybill.customer?.name || 'Не вказано'}
+                <strong>{t('operations.receiver')}:</strong> {completedWaybill.customer?.name || '—'}
               </Typography>
               <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Підстава:</strong> {completedWaybill.reason}
+                <strong>{t('operations.reason')}:</strong> {completedWaybill.reason}
               </Typography>
               <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Позицій:</strong> {completedWaybill.items.length} найм. ({totalQuantity} од.)
+                <strong>{t('products.quantity')}:</strong> {completedWaybill.items.length} ({totalQuantity} {t('common.pcs')})
               </Typography>
               <Typography variant="body2" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
-                <strong>Загальна сума:</strong> {formatCurrency(totalAmount)} грн
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {numberToUkrainianWords(totalAmount)}
+                <strong>{t('common.total')}:</strong> {formatCurrency(totalAmount)} {t('common.uah')}
               </Typography>
             </Paper>
 
@@ -359,30 +332,29 @@ export default function IssuanceModal({
                 startIcon={<PictureAsPdfIcon />}
                 onClick={() => downloadWaybillPdf(completedWaybill)}
               >
-                Завантажити накладну (PDF)
+                {t('operations.downloadPdf')}
               </Button>
               <Button
                 variant="outlined"
                 startIcon={<PrintIcon />}
                 onClick={() => printWaybillPdf(completedWaybill)}
               >
-                Роздрукувати накладну
+                {t('operations.printPdf')}
               </Button>
             </Box>
           </Box>
         ) : (
-          /* 2. Форма оформлення видачі */
           <>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 2 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Отримувач / Клієнт</InputLabel>
+                <InputLabel>{t('operations.receiver')}</InputLabel>
                 <Select
                   value={customerId}
-                  label="Отримувач / Клієнт"
+                  label={t('operations.receiver')}
                   onChange={(e: SelectChangeEvent<string>) => setCustomerId(e.target.value)}
                 >
                   <MenuItem value="">
-                    <em>Не вказано</em>
+                    <em>—</em>
                   </MenuItem>
                   {customers.map((c) => (
                     <MenuItem key={c.id} value={c.id}>
@@ -393,7 +365,7 @@ export default function IssuanceModal({
               </FormControl>
 
               <TextField
-                label="Номер накладної"
+                label={t('operations.documentNumber')}
                 size="small"
                 fullWidth
                 value={documentNumber}
@@ -402,30 +374,25 @@ export default function IssuanceModal({
             </Box>
 
             <TextField
-              label="Підстава / Замовлення / Примітка"
+              label={t('operations.reason')}
               fullWidth
               size="small"
               sx={{ mb: 2 }}
               value={reason}
-              placeholder="Наприклад: Замовлення №45 від ТОВ «ТехноРітейл»"
               onChange={(e: ChangeEvent<HTMLInputElement>) => setReason(e.target.value)}
             />
-
-            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
-              Товари для включення у накладну ({items.length}):
-            </Typography>
 
             <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 280, mb: 2, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
               <Table size="small" sx={{ minWidth: 520 }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Товар / Артикул</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>Ціна</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: 'bold' }}>Залишок</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>{t('products.name')}</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('products.price')}</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 'bold' }}>{t('intelligence.currentStock')}</TableCell>
                     <TableCell align="center" width={110} sx={{ fontWeight: 'bold' }}>
-                      До видачі
+                      {t('operations.quantity')}
                     </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>Сума</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('common.total')}</TableCell>
                     <TableCell align="center" width={40}></TableCell>
                   </TableRow>
                 </TableHead>
@@ -433,7 +400,7 @@ export default function IssuanceModal({
                   {items.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} align="center" sx={{ py: 3, color: 'text.secondary' }}>
-                        Список товарів порожній
+                        {t('common.emptyData')}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -447,13 +414,13 @@ export default function IssuanceModal({
                             </Typography>
                             {item.sku && (
                               <Typography variant="caption" color="text.secondary">
-                                Артикул: {item.sku}
+                                {item.sku}
                               </Typography>
                             )}
                           </TableCell>
                           <TableCell align="right">
                             <Typography variant="body2">
-                              {formatCurrency(item.price)} грн
+                              {formatCurrency(item.price)} {t('common.uah')}
                             </Typography>
                           </TableCell>
                           <TableCell align="center">
@@ -474,7 +441,7 @@ export default function IssuanceModal({
                           </TableCell>
                           <TableCell align="right">
                             <Typography variant="body2" fontWeight="bold">
-                              {formatCurrency(itemTotal)} грн
+                              {formatCurrency(itemTotal)} {t('common.uah')}
                             </Typography>
                           </TableCell>
                           <TableCell align="center">
@@ -494,7 +461,6 @@ export default function IssuanceModal({
               </Table>
             </TableContainer>
 
-            {/* Підсумковий блок */}
             <Box
               sx={{
                 p: 1.5,
@@ -509,20 +475,14 @@ export default function IssuanceModal({
                 gap: 1
               }}
             >
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Всього позицій: <strong>{items.length}</strong> | Загальна кількість: <strong>{totalQuantity} од.</strong>
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {numberToUkrainianWords(totalAmount)}
-                </Typography>
-              </Box>
+              <Typography variant="body2" color="text.secondary">
+                {t('products.quantity')}: <strong>{totalQuantity} {t('common.pcs')}</strong>
+              </Typography>
               <Typography variant="h6" color="primary.main" fontWeight="bold">
-                Разом: {formatCurrency(totalAmount)} грн
+                {t('common.total')}: {formatCurrency(totalAmount)} {t('common.uah')}
               </Typography>
             </Box>
 
-            {/* Опція автозавантаження */}
             <Box sx={{ mt: 1.5 }}>
               <FormControlLabel
                 control={
@@ -535,7 +495,7 @@ export default function IssuanceModal({
                 }
                 label={
                   <Typography variant="body2">
-                    Автоматично завантажити видаткову накладну (PDF) після підтвердження
+                    {t('operations.downloadPdf')}
                   </Typography>
                 }
               />
@@ -547,12 +507,12 @@ export default function IssuanceModal({
       <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: 2, flexWrap: 'wrap', gap: 1, justifyContent: 'flex-end' }}>
         {completedWaybill ? (
           <Button onClick={handleClose} variant="contained">
-            Закрити
+            {t('common.close')}
           </Button>
         ) : (
           <>
             <Button onClick={handleClose} disabled={loading}>
-              Скасувати
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handlePreviewPdf}
@@ -560,7 +520,7 @@ export default function IssuanceModal({
               startIcon={<PrintIcon />}
               variant="outlined"
             >
-              Друк
+              {t('operations.printPdf')}
             </Button>
             <Button
               onClick={handleDownloadPdf}
@@ -569,7 +529,7 @@ export default function IssuanceModal({
               variant="outlined"
               color="secondary"
             >
-              Накладна (PDF)
+              {t('operations.generateWaybill')}
             </Button>
             <Button
               onClick={handleSubmit}
@@ -577,7 +537,7 @@ export default function IssuanceModal({
               color="primary"
               disabled={loading || items.length === 0}
             >
-              {loading ? 'Оформлення...' : 'Підтвердити видачу'}
+              {loading ? t('common.loading') : t('operations.execute')}
             </Button>
           </>
         )}

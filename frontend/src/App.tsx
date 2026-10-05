@@ -29,6 +29,8 @@ import ProcurementIntelligence from './components/ProcurementIntelligence';
 import WarehouseCopilot from './components/WarehouseCopilot';
 import SignalRStatusBadge from './components/SignalRStatusBadge';
 import ThemeToggle from './components/ThemeToggle';
+import LanguageToggle from './components/LanguageToggle';
+import { useLanguage } from './context/LanguageContext';
 import { SignalRProvider } from './context/SignalRContext';
 import type { CustomJwtPayload } from './types/inventory';
 
@@ -84,6 +86,7 @@ function App() {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
   
+  const { t } = useLanguage();
   const roleNormalized = (userRole || '').toLowerCase();
   const isAdmin = roleNormalized === 'admin';
   const isManager = roleNormalized === 'manager';
@@ -91,20 +94,20 @@ function App() {
   const canAccessAdmin = isAdmin;
 
   const getRoleDisplay = () => {
-    if (isAdmin) return { label: 'Адміністратор', color: 'warning' as const, icon: <SupervisorAccountIcon /> };
-    if (isManager) return { label: 'Менеджер', color: 'secondary' as const, icon: <PsychologyIcon /> };
-    return { label: 'Комірник', color: 'info' as const, icon: <InventoryIcon /> };
+    if (isAdmin) return { label: t('roles.admin'), color: 'warning' as const, icon: <SupervisorAccountIcon /> };
+    if (isManager) return { label: t('roles.manager'), color: 'secondary' as const, icon: <PsychologyIcon /> };
+    return { label: t('roles.worker'), color: 'info' as const, icon: <InventoryIcon /> };
   };
 
   const roleInfo = getRoleDisplay();
 
   const navItems = [
-    { id: 'list' as const, label: 'Склад', icon: <TableChartIcon /> },
-    { id: 'categories' as const, label: 'Категорії', icon: <CategoryIcon /> },
-    { id: 'partners' as const, label: 'Контрагенти', icon: <PeopleIcon /> },
-    { id: 'dashboard' as const, label: 'Дашборд', icon: <BarChartIcon /> },
-    ...(canAccessML ? [{ id: 'intelligence' as const, label: 'ML Планування', icon: <PsychologyIcon /> }] : []),
-    ...(canAccessAdmin ? [{ id: 'admin' as const, label: 'Персонал', icon: <SupervisorAccountIcon /> }] : [])
+    { id: 'list' as const, label: t('nav.inventory'), icon: <TableChartIcon /> },
+    { id: 'categories' as const, label: t('nav.categories'), icon: <CategoryIcon /> },
+    { id: 'partners' as const, label: t('nav.partners'), icon: <PeopleIcon /> },
+    { id: 'dashboard' as const, label: t('nav.dashboard'), icon: <BarChartIcon /> },
+    ...(canAccessML ? [{ id: 'intelligence' as const, label: t('nav.intelligence'), icon: <PsychologyIcon /> }] : []),
+    ...(canAccessAdmin ? [{ id: 'admin' as const, label: t('nav.staff'), icon: <SupervisorAccountIcon /> }] : [])
   ];
 
   const handleNavClick = (view: 'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin') => {
@@ -129,7 +132,7 @@ function App() {
             edge="start"
             onClick={() => setMobileOpen(true)}
             sx={{ mr: 1, display: { xs: 'inline-flex', md: 'none' } }}
-            aria-label="відкрити меню"
+            aria-label="menu"
           >
             <MenuIcon />
           </IconButton>
@@ -147,7 +150,7 @@ function App() {
               whiteSpace: 'nowrap'
             }}
           >
-            Складський облік
+            {t('common.appName')}
           </Typography>
 
           {/* МЕНЮ НАВІГАЦІЇ ДЛЯ ДЕСКТОПУ (md+) */}
@@ -173,6 +176,9 @@ function App() {
           {/* ІНДИКАТОР РЕАЛЬНОГО ЧАСУ (SIGNALR) */}
           <SignalRStatusBadge />
 
+          {/* ПЕРЕМИКАЧ МОВИ (UA/EN) */}
+          <LanguageToggle />
+
           {/* ПЕРЕМИКАЧ ТЕМИ */}
           <ThemeToggle />
 
@@ -193,7 +199,7 @@ function App() {
           />
 
           <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Вийти">
+            <Tooltip title={t('common.logout')}>
               <IconButton color="inherit" onClick={handleLogout} size="small">
                 <LogoutIcon />
               </IconButton>
@@ -221,7 +227,7 @@ function App() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <InventoryIcon color="primary" />
               <Typography variant="h6" fontWeight="bold">
-                Складський облік
+                {t('common.appName')}
               </Typography>
             </Box>
             <IconButton onClick={() => setMobileOpen(false)} size="small">
@@ -231,12 +237,9 @@ function App() {
 
           <Divider />
 
-          {/* Профіль користувача в Drawer */}
+          {/* Профіль користувача в Drawer (без зайвих текстових ярликів) */}
           <Box sx={{ p: 2, bgcolor: 'action.hover' }}>
-            <Typography variant="caption" color="text.secondary">
-              Авторизований користувач:
-            </Typography>
-            <Typography variant="body1" fontWeight="bold" sx={{ mt: 0.5 }}>
+            <Typography variant="body1" fontWeight="bold">
               {username}
             </Typography>
             <Chip 

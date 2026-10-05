@@ -44,6 +44,9 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 import api from '../api/axiosConfig';
 import type {
@@ -128,6 +131,59 @@ const ProcurementIntelligence: React.FC = () => {
   useEffect(() => {
     checkHealthAndLoadRadar();
   }, []);
+
+  const exportRadarToExcel = () => {
+    if (!radarData || !radarData.items || radarData.items.length === 0) {
+      return;
+    }
+
+    const exportRows = radarData.items.map(item => ({
+      'Артикул (SKU)': item.sku,
+      'Назва товару': item.name,
+      'Категорія': item.category,
+      'Поточний залишок (шт)': item.current_stock,
+      'Середньодобовий попит D (шт/дн)': item.daily_demand,
+      'Страховий буфер SS (шт)': item.safety_stock,
+      'Точка перезамовлення ROP (шт)': item.reorder_point,
+      'Оптимальна партія EOQ (шт)': item.eoq,
+      'Днів до вичерпання': item.days_to_depletion,
+      'Статус безпеки': item.status,
+      'Рекомендоване дозамовлення (шт)': item.recommended_order_qty,
+      'Орієнтовна вартість замовлення (₴)': item.estimated_order_cost,
+      'Ціна одиниці (₴)': item.unit_price,
+      'Постачальник': item.supplier_name
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportRows);
+
+    worksheet['!cols'] = [
+      { wch: 16 }, // SKU
+      { wch: 36 }, // Name
+      { wch: 20 }, // Category
+      { wch: 18 }, // Stock
+      { wch: 22 }, // Demand
+      { wch: 18 }, // SS
+      { wch: 20 }, // ROP
+      { wch: 18 }, // EOQ
+      { wch: 16 }, // Days
+      { wch: 16 }, // Status
+      { wch: 22 }, // Order Qty
+      { wch: 24 }, // Order Cost
+      { wch: 16 }, // Unit Price
+      { wch: 28 }, // Supplier
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Радар закупівель');
+
+    const excelBuffer: unknown = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer as BlobPart], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
+    });
+
+    const dateStr = new Date().toISOString().slice(0, 10);
+    saveAs(blob, `Radar_Zakupivel_Export_${dateStr}.xlsx`);
+  };
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -295,13 +351,25 @@ const ProcurementIntelligence: React.FC = () => {
       {activeTab === 0 && (
         <Card elevation={2} sx={{ borderRadius: 2 }}>
           <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6" fontWeight="bold">
-                Зведена аналітична відомість стану складських запасів
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Квантиль надійності: Z = 1.65 (95% рівень обслуговування)
-              </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1.5 }}>
+              <Box>
+                <Typography variant="h6" fontWeight="bold">
+                  Зведена аналітична відомість стану складських запасів
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Квантиль надійності: Z = 1.65 (95% рівень обслуговування)
+                </Typography>
+              </Box>
+              <Button
+                variant="outlined"
+                color="success"
+                startIcon={<SaveAltIcon />}
+                onClick={exportRadarToExcel}
+                disabled={!radarData || !radarData.items || radarData.items.length === 0}
+                sx={{ textTransform: 'none', fontWeight: 'bold' }}
+              >
+                Експорт у Excel (.xlsx)
+              </Button>
             </Box>
 
             {loadingRadar ? (

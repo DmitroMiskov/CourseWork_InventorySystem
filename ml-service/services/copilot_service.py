@@ -302,6 +302,11 @@ def generate_offline_heuristic_reply(
         reply += "Ви можете скопіювати цей текст та відправити його електронною поштою постачальнику."
         
         actions.append(CopilotAction(
+            label="📄 Завантажити лист (PDF)",
+            action_type="download_pdf",
+            payload=draft
+        ))
+        actions.append(CopilotAction(
             label="📋 Скопіювати текст листа",
             action_type="copy_text",
             payload=draft

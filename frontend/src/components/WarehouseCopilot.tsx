@@ -25,9 +25,11 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
 import api from '../api/axiosConfig';
 import type { CopilotMessage, CopilotAction, CopilotChatResponse } from '../types/inventory';
+import { downloadOrderLetterPdf } from '../utils/pdfOrderLetterGenerator';
 
 interface WarehouseCopilotProps {
   onNavigateToTab?: (tabName: 'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin') => void;
@@ -142,6 +144,25 @@ export const WarehouseCopilot: React.FC<WarehouseCopilotProps> = ({ onNavigateTo
         navigator.clipboard.writeText(action.payload);
         setSnackbarMessage('Текст листа скопійовано в буфер обміну!');
       }
+    } else if (action.action_type === 'download_pdf') {
+      if (action.payload) {
+        handleDownloadPdf(action.payload);
+      }
+    } else if (action.action_type === 'open_stock') {
+      if (onNavigateToTab) {
+        onNavigateToTab('list');
+        setIsOpen(false);
+      }
+    }
+  };
+
+  const handleDownloadPdf = async (text: string) => {
+    try {
+      await downloadOrderLetterPdf(text);
+      setSnackbarMessage('Офіційний лист-замовлення успішно згенеровано та завантажено у PDF!');
+    } catch (err) {
+      console.error('PDF error:', err);
+      setSnackbarMessage('Помилка при створенні PDF-документа');
     }
   };
 
@@ -162,36 +183,63 @@ export const WarehouseCopilot: React.FC<WarehouseCopilotProps> = ({ onNavigateTo
         if (insideCodeBlock) {
           // Закриваємо блок
           const blockText = codeBlockContent.join('\n');
+          const isOrderLetter = blockText.includes('Вихідний №') || blockText.includes('Кому:') || blockText.includes('замовлення на поповнення') || blockText.includes('рахунок-фактуру');
+          
           elements.push(
-            <Paper
-              key={`code-${idx}`}
-              elevation={0}
-              sx={{
-                p: 1.5,
-                my: 1,
-                bgcolor: 'action.hover',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1.5,
-                fontFamily: 'monospace',
-                fontSize: '0.82rem',
-                whiteSpace: 'pre-wrap',
-                position: 'relative'
-              }}
-            >
-              <IconButton
-                size="small"
-                onClick={() => {
-                  navigator.clipboard.writeText(blockText);
-                  setSnackbarMessage('Код/текст скопійовано!');
+            <Box key={`code-wrap-${idx}`} sx={{ my: 1.5 }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 1.5,
+                  bgcolor: 'action.hover',
+                  border: '1px solid',
+                  borderColor: isOrderLetter ? 'primary.main' : 'divider',
+                  borderRadius: 1.5,
+                  fontFamily: 'monospace',
+                  fontSize: '0.82rem',
+                  whiteSpace: 'pre-wrap',
+                  position: 'relative'
                 }}
-                sx={{ position: 'absolute', top: 6, right: 6 }}
-                title="Копіювати текст"
               >
-                <ContentCopyIcon fontSize="small" />
-              </IconButton>
-              {blockText}
-            </Paper>
+                <Box sx={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 0.5 }}>
+                  {isOrderLetter && (
+                    <Tooltip title="Завантажити як офіційний PDF-лист">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => handleDownloadPdf(blockText)}
+                      >
+                        <PictureAsPdfIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  <Tooltip title="Копіювати текст">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        navigator.clipboard.writeText(blockText);
+                        setSnackbarMessage('Код/текст скопійовано!');
+                      }}
+                    >
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+                {blockText}
+              </Paper>
+              {isOrderLetter && (
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="primary"
+                  startIcon={<PictureAsPdfIcon />}
+                  onClick={() => handleDownloadPdf(blockText)}
+                  sx={{ mt: 1, textTransform: 'none', fontWeight: 'bold' }}
+                >
+                  Завантажити офіційний лист-замовлення (PDF)
+                </Button>
+              )}
+            </Box>
           );
           codeBlockContent = [];
           insideCodeBlock = false;

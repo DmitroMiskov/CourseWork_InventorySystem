@@ -103,9 +103,10 @@ def calculate_abc_xyz(
         cum_share += share
 
         # ABC класифікація: A (до 80%), B (до 95%), C (решта 5%)
-        if cum_share <= 80.5:
+        # Найперший товар завжди відноситься до групи A. Позиції, що починаються до 80%, є щонайменше B.
+        if cum_share <= 80.5 or (cum_share - share) == 0.0:
             abc = "A"
-        elif cum_share <= 95.5:
+        elif cum_share <= 95.5 or (cum_share - share) < 80.0:
             abc = "B"
         else:
             abc = "C"

@@ -321,7 +321,7 @@ def generate_forecast(
 
     # Якщо передано зовнішні історичні записи з .NET API (реальні операції зі складу)
     if history_records and len(history_records) >= 14:
-        df = pd.DataFrame([r.dict() for r in history_records])
+        df = pd.DataFrame([r.model_dump() if hasattr(r, "model_dump") else r.dict() for r in history_records])
         df["date"] = pd.to_datetime(df["date"])
         df = df.sort_values("date")
         daily_df = df.groupby(df["date"].dt.date)["quantity"].sum().reset_index()

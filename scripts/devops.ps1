@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 # Master DevOps Script - Inventory System
 # Використання:
 #   .\scripts\devops.ps1 dev      - Запуск середовища розробки (Hot Reload)
@@ -74,9 +74,18 @@ switch ($Command) {
     }
 
     "test" {
-        Write-Host "🧪 Запуск .NET тестів..." -ForegroundColor Cyan
+        Write-Host "🧪 Запуск .NET тестів (CQRS & Domain)..." -ForegroundColor Cyan
         Set-Location $rootDir
         dotnet test InventorySystem.sln --configuration Release --verbosity normal
+
+        Write-Host "`n🧪 Запуск ML Service тестів (FastAPI, DSS, Forecast, Pareto, Copilot)..." -ForegroundColor Cyan
+        if ((docker ps --filter "name=inventory-ml" --format "{{.Names}}") -eq "inventory-ml") {
+            docker exec inventory-ml python -m unittest discover tests
+        } else {
+            Set-Location "$rootDir\ml-service"
+            python -m unittest discover tests
+            Set-Location $rootDir
+        }
 
         Write-Host "`n🧪 Збірка Frontend (Typecheck & Bundle)..." -ForegroundColor Cyan
         Set-Location "$rootDir\frontend"

@@ -17,11 +17,16 @@ namespace Inventory.API.Controllers
     {
         private readonly IApplicationDbContext _context;
         private readonly IInventoryNotifier _notifier;
+        private readonly IAuditService _auditService;
 
-        public StockMovementsController(IApplicationDbContext context, IInventoryNotifier notifier)
+        public StockMovementsController(
+            IApplicationDbContext context, 
+            IInventoryNotifier notifier,
+            IAuditService auditService)
         {
             _context = context;
             _notifier = notifier;
+            _auditService = auditService;
         }
 
         [HttpGet]
@@ -182,6 +187,16 @@ namespace Inventory.API.Controllers
                     Timestamp = DateTime.UtcNow
                 });
             }
+
+            var sign = effectiveType == MovementType.In ? "+" : "-";
+            await _auditService.LogAsync(
+                action: "StockOperation",
+                entityType: "StockMovement",
+                entityId: movement.Id.ToString(),
+                entityName: product.Name,
+                details: $"{actionName}: {sign}{dto.Quantity} шт. Залишок після: {product.Quantity} шт. Примітка: {dto.Reason ?? "-"}",
+                newValues: $"{{\"quantity\": {dto.Quantity}, \"stockAfter\": {product.Quantity}, \"type\": \"{effectiveType}\"}}"
+            );
 
             return Ok(new { movement.Id, Message = "Успішно" });
         }

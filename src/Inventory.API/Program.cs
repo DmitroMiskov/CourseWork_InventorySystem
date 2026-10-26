@@ -4,6 +4,7 @@ using Inventory.API.Data;
 using Inventory.API.Hubs;
 using Inventory.API.Services;
 using Inventory.Application;
+using Inventory.Application.Common.Interfaces;
 using Inventory.Infrastructure;
 using Inventory.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -61,11 +62,13 @@ builder.Services.AddCors(options =>
               .AllowCredentials());
 });
 
-// Реєстрація SignalR, сповіщувача та Telegram Alerting Service
+// Реєстрація SignalR, сповіщувача, аудиту та Telegram Alerting Service
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<ITelegramAlertService, TelegramAlertService>();
 builder.Services.AddScoped<IInventoryNotifier, InventoryNotifier>();
+builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddHealthChecks();
 
 // Безпека: Налаштування Rate Limiting (захист від брутфорсу та DoS)

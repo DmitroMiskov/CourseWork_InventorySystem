@@ -12,6 +12,7 @@ namespace Inventory.Application.Common.Interfaces
         DbSet<Supplier> Suppliers { get; }
         DbSet<Customer> Customers { get; }
         DbSet<ProductHistory> ProductHistories { get; }
+        DbSet<AuditLog> AuditLogs { get; }
 
         DatabaseFacade Database { get; }
 

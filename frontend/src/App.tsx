@@ -17,6 +17,7 @@ import CategoryIcon from '@mui/icons-material/Category';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import PsychologyIcon from '@mui/icons-material/Psychology';
+import HistoryIcon from '@mui/icons-material/History';
 
 // Компоненти
 import ProductList from './components/ProductList';
@@ -25,6 +26,7 @@ import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import Partners from './components/Partners';
 import AdminPage from './components/AdminPage';
+import AuditLogPage from './components/AuditLogPage';
 import ProcurementIntelligence from './components/ProcurementIntelligence';
 import WarehouseCopilot from './components/WarehouseCopilot';
 import SignalRStatusBadge from './components/SignalRStatusBadge';
@@ -63,7 +65,9 @@ function App() {
   const [userRole, setUserRole] = useState(initialState.role);
   const [username, setUsername] = useState(initialState.name);
   
-  const [currentView, setCurrentView] = useState<'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin'>('list');
+  type ViewType = 'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin' | 'auditLog';
+
+  const [currentView, setCurrentView] = useState<ViewType>('list');
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
 
   // Функція для оновлення стану після успішного входу
@@ -108,13 +112,16 @@ function App() {
     { id: 'partners' as const, label: t('nav.partners'), icon: <PeopleIcon /> },
     { id: 'dashboard' as const, label: t('nav.dashboard'), icon: <BarChartIcon /> },
     ...(canAccessML ? [{ id: 'intelligence' as const, label: t('nav.intelligence'), icon: <PsychologyIcon /> }] : []),
-    ...(canAccessAdmin ? [{ id: 'admin' as const, label: t('nav.staff'), icon: <SupervisorAccountIcon /> }] : [])
+    ...(canAccessAdmin ? [
+      { id: 'admin' as const, label: t('nav.staff'), icon: <SupervisorAccountIcon /> },
+      { id: 'auditLog' as const, label: t('nav.auditLog'), icon: <HistoryIcon /> }
+    ] : [])
   ];
 
-  const handleNavClick = (view: 'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin') => {
+  const handleNavClick = (view: ViewType) => {
     if (view === 'intelligence' && !canAccessML) {
       setCurrentView('list');
-    } else if (view === 'admin' && !canAccessAdmin) {
+    } else if ((view === 'admin' || view === 'auditLog') && !canAccessAdmin) {
       setCurrentView('list');
     } else {
       setCurrentView(view);
@@ -314,6 +321,8 @@ function App() {
         {currentView === 'intelligence' && canAccessML && <ProcurementIntelligence />}
         
         {currentView === 'admin' && canAccessAdmin && (<AdminPage onBack={() => setCurrentView('list')} />)}
+
+        {currentView === 'auditLog' && canAccessAdmin && <AuditLogPage />}
       </Container>
 
       {/* ІНТЕЛЕКТУАЛЬНИЙ AI-КОПІЛОТ СКЛАДУ (DRAWER + FAB) */}
@@ -321,6 +330,7 @@ function App() {
         onNavigateToTab={(tab) => {
           if (tab === 'intelligence' && !canAccessML) return;
           if (tab === 'admin' && !canAccessAdmin) return;
+          if (tab === 'auditLog' && !canAccessAdmin) return;
           setCurrentView(tab);
         }} 
       />

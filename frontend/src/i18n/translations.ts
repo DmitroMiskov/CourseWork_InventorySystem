@@ -47,7 +47,8 @@ export const translations = {
       partners: 'Контрагенти',
       dashboard: 'Дашборд',
       intelligence: 'ML Планування',
-      staff: 'Персонал'
+      staff: 'Персонал',
+      auditLog: 'Журнал аудиту'
     },
     roles: {
       admin: 'Адміністратор',
@@ -269,6 +270,59 @@ export const translations = {
       minutesAgo: 'хв тому',
       hoursAgo: 'год тому',
       goToRadar: 'Радар закупівель'
+    },
+    auditLog: {
+      title: 'Журнал аудиту та безпеки',
+      subtitle: 'Повний хронологічний аудит дій користувачів, змін залишків та модифікацій карток',
+      totalLogs: 'Всього записів',
+      todayLogs: 'За сьогодні',
+      weekLogs: 'За 7 днів',
+      topUsers: 'Топ користувачів',
+      searchPlaceholder: 'Пошук за користувачем, назвою або деталями...',
+      filterAction: 'Фільтр за дією',
+      filterEntity: 'Фільтр за сутністю',
+      allActions: 'Всі дії',
+      allEntities: 'Всі сутності',
+      fromDate: 'З дати',
+      toDate: 'По дату',
+      exportCsv: 'Експорт CSV',
+      refresh: 'Оновити',
+      resetFilters: 'Скинути фільтри',
+      colTime: 'Час',
+      colUser: 'Користувач',
+      colAction: 'Дія',
+      colEntity: 'Сутність',
+      colName: 'Обʼєкт',
+      colDetails: 'Деталі',
+      colIp: 'IP адреса',
+      viewDetails: 'Деталі',
+      noLogs: 'Записів аудиту не знайдено',
+      detailsTitle: 'Детальний перегляд події аудиту',
+      recordId: 'ID запису',
+      operator: 'Оператор',
+      timestamp: 'Час операції',
+      changesComparison: 'Порівняння змін',
+      oldValue: 'Було (Old Values)',
+      newValue: 'Стало (New Values)',
+      actionsBreakdown: 'Розподіл за діями',
+      entitiesBreakdown: 'Розподіл за сутностями',
+      rowsPerPage: 'Рядків на сторінці',
+      actions: {
+        all: 'Всі дії',
+        create: 'Створення',
+        update: 'Оновлення',
+        delete: 'Видалення',
+        import: 'Імпорт',
+        stockOperation: 'Складська операція'
+      },
+      entities: {
+        all: 'Всі сутності',
+        product: 'Товар',
+        stockMovement: 'Рух товару',
+        category: 'Категорія',
+        partner: 'Контрагент',
+        user: 'Користувач'
+      }
     }
   },
   en: {
@@ -317,7 +371,8 @@ export const translations = {
       partners: 'Counterparties',
       dashboard: 'Dashboard',
       intelligence: 'ML Planning',
-      staff: 'Staff'
+      staff: 'Staff',
+      auditLog: 'Audit Log'
     },
     roles: {
       admin: 'Administrator',
@@ -539,6 +594,59 @@ export const translations = {
       minutesAgo: 'm ago',
       hoursAgo: 'h ago',
       goToRadar: 'Procurement Radar'
+    },
+    auditLog: {
+      title: 'Audit & Security Log',
+      subtitle: 'Full chronological audit trail of user actions, inventory adjustments, and entity modifications',
+      totalLogs: 'Total Records',
+      todayLogs: 'Today',
+      weekLogs: 'Past 7 Days',
+      topUsers: 'Top Active Users',
+      searchPlaceholder: 'Search by operator, item name, or details...',
+      filterAction: 'Filter by Action',
+      filterEntity: 'Filter by Entity',
+      allActions: 'All Actions',
+      allEntities: 'All Entities',
+      fromDate: 'From Date',
+      toDate: 'To Date',
+      exportCsv: 'Export CSV',
+      refresh: 'Refresh',
+      resetFilters: 'Reset Filters',
+      colTime: 'Timestamp',
+      colUser: 'Operator',
+      colAction: 'Action',
+      colEntity: 'Entity',
+      colName: 'Target Item',
+      colDetails: 'Details',
+      colIp: 'IP Address',
+      viewDetails: 'Details',
+      noLogs: 'No audit records found matching filters',
+      detailsTitle: 'Audit Event Details',
+      recordId: 'Record ID',
+      operator: 'Operator',
+      timestamp: 'Timestamp',
+      changesComparison: 'Changes Comparison',
+      oldValue: 'Previous State (Old Values)',
+      newValue: 'Current State (New Values)',
+      actionsBreakdown: 'Actions Breakdown',
+      entitiesBreakdown: 'Entities Breakdown',
+      rowsPerPage: 'Rows per page',
+      actions: {
+        all: 'All Actions',
+        create: 'Creation',
+        update: 'Modification',
+        delete: 'Deletion',
+        import: 'Import',
+        stockOperation: 'Stock Operation'
+      },
+      entities: {
+        all: 'All Entities',
+        product: 'Product',
+        stockMovement: 'Stock Movement',
+        category: 'Category',
+        partner: 'Counterparty',
+        user: 'User'
+      }
     }
   }
 } as const;

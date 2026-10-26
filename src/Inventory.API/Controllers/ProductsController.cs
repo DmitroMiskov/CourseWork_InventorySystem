@@ -25,12 +25,14 @@ namespace Inventory.API.Controllers
         private readonly IMediator _mediator;
         private readonly IApplicationDbContext _context;
         private readonly IInventoryNotifier _notifier;
+        private readonly IAuditService _auditService;
 
-        public ProductsController(IMediator mediator, IApplicationDbContext context, IInventoryNotifier notifier)
+        public ProductsController(IMediator mediator, IApplicationDbContext context, IInventoryNotifier notifier, IAuditService auditService)
         {
             _mediator = mediator;
             _context = context;
             _notifier = notifier;
+            _auditService = auditService;
         }
 
         // GET: api/products
@@ -81,6 +83,15 @@ namespace Inventory.API.Controllers
                 Message = $"Створено новий товар '{command.Name}' (кількість: {command.Quantity} {command.Unit})"
             });
 
+            await _auditService.LogAsync(
+                action: "Create",
+                entityType: "Product",
+                entityId: productId.ToString(),
+                entityName: command.Name,
+                details: $"Створено товар: {command.Name} (SKU: {command.SKU}, Ціна: {command.Price} грн, Залишок: {command.Quantity} {command.Unit})",
+                newValues: $"{{\"sku\":\"{command.SKU}\",\"name\":\"{command.Name}\",\"price\":{command.Price},\"quantity\":{command.Quantity}}}"
+            );
+
             return Ok(productId);
         }
 
@@ -102,6 +113,14 @@ namespace Inventory.API.Controllers
                 ProductName = prodName,
                 Message = $"Товар '{prodName}' видалено зі складу"
             });
+
+            await _auditService.LogAsync(
+                action: "Delete",
+                entityType: "Product",
+                entityId: id.ToString(),
+                entityName: prodName,
+                details: $"Видалено товар '{prodName}' зі складу"
+            );
 
             return NoContent();
         }
@@ -127,6 +146,15 @@ namespace Inventory.API.Controllers
                 NewQuantity = command.Quantity,
                 Message = $"Оновлено дані товару '{command.Name}'"
             });
+
+            await _auditService.LogAsync(
+                action: "Update",
+                entityType: "Product",
+                entityId: id.ToString(),
+                entityName: command.Name,
+                details: $"Оновлено параметри товару '{command.Name}' (Ціна: {command.Price} грн, Залишок: {command.Quantity})",
+                newValues: $"{{\"sku\":\"{command.Sku}\",\"name\":\"{command.Name}\",\"price\":{command.Price},\"quantity\":{command.Quantity}}}"
+            );
 
             return NoContent();
         }

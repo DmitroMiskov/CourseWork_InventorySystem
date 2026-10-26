@@ -19,6 +19,7 @@ namespace Inventory.Infrastructure.Persistence
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<ProductHistory> ProductHistories { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,6 +42,17 @@ namespace Inventory.Infrastructure.Persistence
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+            });
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UserName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Action).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.EntityType).IsRequired().HasMaxLength(50);
+                entity.HasIndex(e => e.Timestamp);
+                entity.HasIndex(e => e.UserName);
+                entity.HasIndex(e => e.Action);
+                entity.HasIndex(e => e.EntityType);
             });
         }
     }

@@ -61,8 +61,10 @@ builder.Services.AddCors(options =>
               .AllowCredentials());
 });
 
-// Реєстрація SignalR та сповіщувача
+// Реєстрація SignalR, сповіщувача та Telegram Alerting Service
+builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<ITelegramAlertService, TelegramAlertService>();
 builder.Services.AddScoped<IInventoryNotifier, InventoryNotifier>();
 builder.Services.AddHealthChecks();
 

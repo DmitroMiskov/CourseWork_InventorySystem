@@ -28,6 +28,7 @@ import AdminPage from './components/AdminPage';
 import ProcurementIntelligence from './components/ProcurementIntelligence';
 import WarehouseCopilot from './components/WarehouseCopilot';
 import SignalRStatusBadge from './components/SignalRStatusBadge';
+import NotificationCenter from './components/NotificationCenter';
 import ThemeToggle from './components/ThemeToggle';
 import LanguageToggle from './components/LanguageToggle';
 import { useLanguage } from './context/LanguageContext';
@@ -172,6 +173,9 @@ function App() {
               </Button>
             ))}
           </Box>
+
+          {/* ЦЕНТР СПОВІЩЕНЬ ТА АЛЕРТІВ */}
+          <NotificationCenter onNavigate={(view) => setCurrentView(view as any)} />
 
           {/* ІНДИКАТОР РЕАЛЬНОГО ЧАСУ (SIGNALR) */}
           <SignalRStatusBadge />

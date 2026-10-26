@@ -6,11 +6,16 @@ namespace Inventory.API.Services
     public class InventoryNotifier : IInventoryNotifier
     {
         private readonly IHubContext<InventoryHub> _hubContext;
+        private readonly ITelegramAlertService _telegramAlertService;
         private readonly ILogger<InventoryNotifier> _logger;
 
-        public InventoryNotifier(IHubContext<InventoryHub> hubContext, ILogger<InventoryNotifier> logger)
+        public InventoryNotifier(
+            IHubContext<InventoryHub> hubContext, 
+            ITelegramAlertService telegramAlertService,
+            ILogger<InventoryNotifier> logger)
         {
             _hubContext = hubContext;
+            _telegramAlertService = telegramAlertService;
             _logger = logger;
         }
 
@@ -88,6 +93,19 @@ namespace Inventory.API.Services
                 };
 
                 await _hubContext.Clients.All.SendAsync("ReceiveNotification", notification);
+
+                // Відправляємо сповіщення в Telegram, якщо інтеграція увімкнена
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _telegramAlertService.SendLowStockAlertAsync(alert.ProductName, alert.CurrentStock, alert.MinStock);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Помилка при фоновій відправці сповіщення в Telegram");
+                    }
+                });
             }
             catch (Exception ex)
             {

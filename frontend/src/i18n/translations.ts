@@ -249,6 +249,26 @@ export const translations = {
       downloadPng: 'Завантажити зображення',
       preview: 'Попередній перегляд етикетки',
       batchPrint: 'Обрано товарів для друку: {{count}} шт.'
+    },
+    notifications: {
+      title: 'Сповіщення та алерти',
+      all: 'Всі',
+      unread: 'Непрочитані',
+      lowStock: 'Дефіцити',
+      markAllRead: 'Позначити всі як прочитані',
+      clearAll: 'Очистити',
+      noNotifications: 'Немає активних сповіщень',
+      allRead: 'Усі сповіщення прочитано',
+      soundOn: 'Звук увімкнено',
+      soundOff: 'Звук вимкнено',
+      pushOn: 'Push-сповіщення увімкнено',
+      pushOff: 'Push-сповіщення вимкнено',
+      telegramSettings: 'Налаштування Telegram',
+      newAlerts: 'нових',
+      justNow: 'Щойно',
+      minutesAgo: 'хв тому',
+      hoursAgo: 'год тому',
+      goToRadar: 'Радар закупівель'
     }
   },
   en: {
@@ -499,6 +519,26 @@ export const translations = {
       downloadPng: 'Download Image',
       preview: 'Label Preview',
       batchPrint: 'Selected for printing: {{count}} items'
+    },
+    notifications: {
+      title: 'Notifications & Alerts',
+      all: 'All',
+      unread: 'Unread',
+      lowStock: 'Deficits',
+      markAllRead: 'Mark all as read',
+      clearAll: 'Clear all',
+      noNotifications: 'No active notifications',
+      allRead: 'All notifications read',
+      soundOn: 'Sound enabled',
+      soundOff: 'Sound disabled',
+      pushOn: 'Push notifications enabled',
+      pushOff: 'Push notifications disabled',
+      telegramSettings: 'Telegram Settings',
+      newAlerts: 'new',
+      justNow: 'Just now',
+      minutesAgo: 'm ago',
+      hoursAgo: 'h ago',
+      goToRadar: 'Procurement Radar'
     }
   }
 } as const;

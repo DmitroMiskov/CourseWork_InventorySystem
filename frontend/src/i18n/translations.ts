@@ -48,7 +48,8 @@ export const translations = {
       dashboard: 'Дашборд',
       intelligence: 'ML Планування',
       staff: 'Персонал',
-      auditLog: 'Журнал аудиту'
+      auditLog: 'Журнал аудиту',
+      inventoryAudit: 'Інвентаризація'
     },
     roles: {
       admin: 'Адміністратор',
@@ -323,6 +324,62 @@ export const translations = {
         partner: 'Контрагент',
         user: 'Користувач'
       }
+    },
+    inventoryAudit: {
+      title: 'Інвентаризація та переоблік',
+      subtitle: 'Планові та вибіркові перевірки залишків, акти розходжень, списання нестач та оприбуткування лишків',
+      newAudit: 'Новий переоблік',
+      createModalTitle: 'Створення нової інвентаризації',
+      auditTitleField: 'Назва переобліку (наприклад: "Плановий переоблік за жовтень")',
+      selectCategory: 'Категорія товарів для аудиту',
+      allCategories: 'Весь склад (всі товари)',
+      notesField: 'Примітки / Розпорядження',
+      startAuditBtn: 'Розпочати переоблік',
+      allAudits: 'Всі інвентаризації',
+      backToList: 'До списку переобліків',
+      auditNumber: 'Номер документа',
+      status: 'Статус',
+      date: 'Дата створення',
+      completedDate: 'Дата проведення',
+      responsible: 'Відповідальний',
+      totalPositions: 'Всього позицій',
+      checkedPositions: 'Пораховано',
+      discrepancyCount: 'Розбіжностей',
+      surplus: 'Лишки',
+      deficit: 'Нестачі',
+      netBalance: 'Баланс розбіжностей',
+      completeAudit: 'Провести переоблік',
+      cancelAudit: 'Скасувати переоблік',
+      exportAct: 'Акт розбіжностей (CSV)',
+      matchRemaining: 'Звірити залишок',
+      matchRemainingTooltip: 'Встановити факт = обліку для всіх ще непорахованих позицій',
+      confirmComplete: 'Провести інвентаризацію? Складські залишки товарів буде автоматично оновлено, а в системі сформовано коригувальні рухи (списання нестач та оприбуткування лишків).',
+      confirmCancel: 'Скасувати цю сесію переобліку без змін на складі?',
+      saveCounts: 'Зберегти внесені факти',
+      savedSuccess: 'Зміни успішно збережено!',
+      completedSuccess: 'Інвентаризацію проведено! Залишки на складі оновлено.',
+      actualQuantity: 'Факт (шт)',
+      expectedQuantity: 'Облік (шт)',
+      difference: 'Розбіжність',
+      diffCost: 'Сума (грн)',
+      unitPrice: 'Ціна',
+      quickInput: 'Швидкий підрахунок',
+      filterDiscrepancies: 'Тільки розбіжності',
+      searchPlaceholder: 'Пошук товару за назвою або SKU...',
+      noAudits: 'Документів інвентаризації не знайдено',
+      noItemsInAudit: 'У цій сесії переобліку немає товарів',
+      statuses: {
+        draft: 'Чернетка',
+        inProgress: 'В процесі',
+        completed: 'Проведено',
+        cancelled: 'Скасовано'
+      },
+      itemStatuses: {
+        pending: 'Очікує',
+        match: 'Збіг',
+        surplus: 'Лишок',
+        deficit: 'Нестача'
+      }
     }
   },
   en: {
@@ -372,7 +429,8 @@ export const translations = {
       dashboard: 'Dashboard',
       intelligence: 'ML Planning',
       staff: 'Staff',
-      auditLog: 'Audit Log'
+      auditLog: 'Audit Log',
+      inventoryAudit: 'Stocktaking'
     },
     roles: {
       admin: 'Administrator',
@@ -646,6 +704,62 @@ export const translations = {
         category: 'Category',
         partner: 'Counterparty',
         user: 'User'
+      }
+    },
+    inventoryAudit: {
+      title: 'Inventory Audits & Stocktaking',
+      subtitle: 'Scheduled & ad-hoc stock counts, discrepancy acts, write-offs and surplus adjustments',
+      newAudit: 'New Stock Count',
+      createModalTitle: 'Create New Inventory Audit',
+      auditTitleField: 'Audit Title (e.g., "October Scheduled Stocktaking")',
+      selectCategory: 'Product Category to Audit',
+      allCategories: 'Entire Warehouse (All Products)',
+      notesField: 'Notes / Directives',
+      startAuditBtn: 'Start Stock Count',
+      allAudits: 'All Inventory Audits',
+      backToList: 'Back to Audits List',
+      auditNumber: 'Document #',
+      status: 'Status',
+      date: 'Created Date',
+      completedDate: 'Completed Date',
+      responsible: 'Responsible Operator',
+      totalPositions: 'Total Items',
+      checkedPositions: 'Counted',
+      discrepancyCount: 'Discrepancies',
+      surplus: 'Surplus',
+      deficit: 'Deficits',
+      netBalance: 'Net Discrepancy Balance',
+      completeAudit: 'Complete Stock Count',
+      cancelAudit: 'Cancel Stock Count',
+      exportAct: 'Discrepancy Act (CSV)',
+      matchRemaining: 'Match Remaining',
+      matchRemainingTooltip: 'Set actual = expected for all remaining uncounted items',
+      confirmComplete: 'Complete inventory audit? Warehouse product stocks will be automatically updated, and corresponding stock movements (write-offs and surplus additions) will be generated.',
+      confirmCancel: 'Cancel this audit session without making any stock adjustments?',
+      saveCounts: 'Save Entered Counts',
+      savedSuccess: 'Counts saved successfully!',
+      completedSuccess: 'Inventory audit completed! Product stocks synchronized.',
+      actualQuantity: 'Actual Qty',
+      expectedQuantity: 'System Qty',
+      difference: 'Difference',
+      diffCost: 'Amount',
+      unitPrice: 'Unit Price',
+      quickInput: 'Fast Counting',
+      filterDiscrepancies: 'Discrepancies only',
+      searchPlaceholder: 'Search product by name or SKU...',
+      noAudits: 'No inventory audit documents found',
+      noItemsInAudit: 'No items in this audit session',
+      statuses: {
+        draft: 'Draft',
+        inProgress: 'In Progress',
+        completed: 'Completed',
+        cancelled: 'Cancelled'
+      },
+      itemStatuses: {
+        pending: 'Pending',
+        match: 'Match',
+        surplus: 'Surplus',
+        deficit: 'Deficit'
       }
     }
   }

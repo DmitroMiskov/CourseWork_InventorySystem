@@ -18,6 +18,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import HistoryIcon from '@mui/icons-material/History';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
 
 // Компоненти
 import ProductList from './components/ProductList';
@@ -27,6 +28,7 @@ import Dashboard from './components/Dashboard';
 import Partners from './components/Partners';
 import AdminPage from './components/AdminPage';
 import AuditLogPage from './components/AuditLogPage';
+import InventoryAuditPage from './components/InventoryAuditPage';
 import ProcurementIntelligence from './components/ProcurementIntelligence';
 import WarehouseCopilot from './components/WarehouseCopilot';
 import SignalRStatusBadge from './components/SignalRStatusBadge';
@@ -65,7 +67,7 @@ function App() {
   const [userRole, setUserRole] = useState(initialState.role);
   const [username, setUsername] = useState(initialState.name);
   
-  type ViewType = 'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin' | 'auditLog';
+  type ViewType = 'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin' | 'auditLog' | 'inventoryAudit';
 
   const [currentView, setCurrentView] = useState<ViewType>('list');
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
@@ -111,7 +113,10 @@ function App() {
     { id: 'categories' as const, label: t('nav.categories'), icon: <CategoryIcon /> },
     { id: 'partners' as const, label: t('nav.partners'), icon: <PeopleIcon /> },
     { id: 'dashboard' as const, label: t('nav.dashboard'), icon: <BarChartIcon /> },
-    ...(canAccessML ? [{ id: 'intelligence' as const, label: t('nav.intelligence'), icon: <PsychologyIcon /> }] : []),
+    ...(canAccessML ? [
+      { id: 'intelligence' as const, label: t('nav.intelligence'), icon: <PsychologyIcon /> },
+      { id: 'inventoryAudit' as const, label: t('nav.inventoryAudit'), icon: <FactCheckIcon /> }
+    ] : []),
     ...(canAccessAdmin ? [
       { id: 'admin' as const, label: t('nav.staff'), icon: <SupervisorAccountIcon /> },
       { id: 'auditLog' as const, label: t('nav.auditLog'), icon: <HistoryIcon /> }
@@ -119,7 +124,7 @@ function App() {
   ];
 
   const handleNavClick = (view: ViewType) => {
-    if (view === 'intelligence' && !canAccessML) {
+    if ((view === 'intelligence' || view === 'inventoryAudit') && !canAccessML) {
       setCurrentView('list');
     } else if ((view === 'admin' || view === 'auditLog') && !canAccessAdmin) {
       setCurrentView('list');
@@ -323,12 +328,14 @@ function App() {
         {currentView === 'admin' && canAccessAdmin && (<AdminPage onBack={() => setCurrentView('list')} />)}
 
         {currentView === 'auditLog' && canAccessAdmin && <AuditLogPage />}
+
+        {currentView === 'inventoryAudit' && canAccessML && <InventoryAuditPage isAdmin={isAdmin} isManager={isManager} />}
       </Container>
 
       {/* ІНТЕЛЕКТУАЛЬНИЙ AI-КОПІЛОТ СКЛАДУ (DRAWER + FAB) */}
       <WarehouseCopilot 
         onNavigateToTab={(tab) => {
-          if (tab === 'intelligence' && !canAccessML) return;
+          if ((tab === 'intelligence' || tab === 'inventoryAudit') && !canAccessML) return;
           if (tab === 'admin' && !canAccessAdmin) return;
           if (tab === 'auditLog' && !canAccessAdmin) return;
           setCurrentView(tab);

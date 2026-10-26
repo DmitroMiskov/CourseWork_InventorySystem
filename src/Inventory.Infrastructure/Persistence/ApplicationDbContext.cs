@@ -20,6 +20,8 @@ namespace Inventory.Infrastructure.Persistence
         public DbSet<Customer> Customers { get; set; }
         public DbSet<ProductHistory> ProductHistories { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<InventoryAudit> InventoryAudits { get; set; }
+        public DbSet<InventoryAuditItem> InventoryAuditItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,6 +55,32 @@ namespace Inventory.Infrastructure.Persistence
                 entity.HasIndex(e => e.UserName);
                 entity.HasIndex(e => e.Action);
                 entity.HasIndex(e => e.EntityType);
+            });
+            modelBuilder.Entity<InventoryAudit>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.AuditNumber).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(150);
+                entity.Property(e => e.CreatedByUserName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.TotalSurplusCost).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.TotalDeficitCost).HasColumnType("decimal(18,2)");
+                entity.HasIndex(e => e.AuditNumber).IsUnique();
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => e.Status);
+                entity.HasMany(e => e.Items)
+                      .WithOne(i => i.InventoryAudit)
+                      .HasForeignKey(i => i.InventoryAuditId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<InventoryAuditItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UnitPrice).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.DiscrepancyCost).HasColumnType("decimal(18,2)");
+                entity.HasOne(e => e.Product)
+                      .WithMany()
+                      .HasForeignKey(e => e.ProductId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

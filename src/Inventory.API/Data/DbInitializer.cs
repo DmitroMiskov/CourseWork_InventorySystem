@@ -35,6 +35,51 @@ namespace Inventory.API.Data
                         ALTER TABLE ""Suppliers"" ADD COLUMN IF NOT EXISTS ""LeadTimeDays"" integer NOT NULL DEFAULT 5;
                         ALTER TABLE ""Suppliers"" ADD COLUMN IF NOT EXISTS ""ContractNumber"" text NOT NULL DEFAULT '';
                         ALTER TABLE ""Suppliers"" ADD COLUMN IF NOT EXISTS ""PaymentTerms"" text NOT NULL DEFAULT '';
+
+                        CREATE TABLE IF NOT EXISTS ""AuditLogs"" (
+                            ""Id"" uuid NOT NULL PRIMARY KEY,
+                            ""UserId"" text,
+                            ""UserName"" character varying(100) NOT NULL,
+                            ""Action"" character varying(50) NOT NULL,
+                            ""EntityType"" character varying(50) NOT NULL,
+                            ""EntityId"" text,
+                            ""EntityName"" text,
+                            ""Details"" text,
+                            ""OldValues"" text,
+                            ""NewValues"" text,
+                            ""IpAddress"" text,
+                            ""Timestamp"" timestamp with time zone NOT NULL
+                        );
+
+                        CREATE TABLE IF NOT EXISTS ""InventoryAudits"" (
+                            ""Id"" uuid NOT NULL PRIMARY KEY,
+                            ""AuditNumber"" character varying(50) NOT NULL,
+                            ""Title"" character varying(150) NOT NULL,
+                            ""CreatedAt"" timestamp with time zone NOT NULL,
+                            ""CompletedAt"" timestamp with time zone,
+                            ""CreatedByUserName"" character varying(100) NOT NULL,
+                            ""Status"" integer NOT NULL,
+                            ""CategoryId"" uuid,
+                            ""Notes"" text,
+                            ""TotalItemsCount"" integer NOT NULL DEFAULT 0,
+                            ""CheckedItemsCount"" integer NOT NULL DEFAULT 0,
+                            ""DiscrepancyCount"" integer NOT NULL DEFAULT 0,
+                            ""TotalSurplusCost"" numeric(18,2) NOT NULL DEFAULT 0,
+                            ""TotalDeficitCost"" numeric(18,2) NOT NULL DEFAULT 0
+                        );
+
+                        CREATE TABLE IF NOT EXISTS ""InventoryAuditItems"" (
+                            ""Id"" uuid NOT NULL PRIMARY KEY,
+                            ""InventoryAuditId"" uuid NOT NULL,
+                            ""ProductId"" uuid NOT NULL,
+                            ""ExpectedQuantity"" integer NOT NULL,
+                            ""ActualQuantity"" integer,
+                            ""Discrepancy"" integer,
+                            ""UnitPrice"" numeric(18,2) NOT NULL,
+                            ""DiscrepancyCost"" numeric(18,2) NOT NULL DEFAULT 0,
+                            ""Status"" integer NOT NULL DEFAULT 0,
+                            ""Notes"" text
+                        );
                     ");
                 }
                 catch

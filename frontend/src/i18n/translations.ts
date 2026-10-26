@@ -49,7 +49,8 @@ export const translations = {
       intelligence: 'ML Планування',
       staff: 'Персонал',
       auditLog: 'Журнал аудиту',
-      inventoryAudit: 'Інвентаризація'
+      inventoryAudit: 'Інвентаризація',
+      reports: 'Звіти та ОСВ'
     },
     roles: {
       admin: 'Адміністратор',
@@ -380,6 +381,40 @@ export const translations = {
         surplus: 'Лишок',
         deficit: 'Нестача'
       }
+    },
+    reports: {
+      title: 'Звіти та Оборотно-сальдова відомість',
+      subtitle: 'Фінансово-матеріальний аналіз складу, рух запасів, оцінка категорій та активність контрагентів',
+      turnoverTab: 'Оборотно-сальдова відомість (ОСВ)',
+      valuationTab: 'Оцінка запасів за категоріями',
+      partnersTab: 'Активність контрагентів',
+      periodFrom: 'З дати',
+      periodTo: 'По дату',
+      allCategories: 'Всі категорії',
+      searchPlaceholder: 'Пошук за назвою або SKU...',
+      exportCsv: 'Експорт CSV (Excel)',
+      printReport: 'Друкувати відомість',
+      openingBalance: 'Початковий залишок',
+      inflow: 'Надходження (Прихід)',
+      outflow: 'Вибуття (Розхід)',
+      closingBalance: 'Кінцевий залишок',
+      qty: 'К-сть',
+      sum: 'Сума',
+      totalWarehouse: 'РАЗОМ ПО СКЛАДУ',
+      noData: 'Немає даних за обраний період',
+      asOfDate: 'Станом на',
+      totalCapital: 'Загальна вартість складу',
+      totalUnits: 'Всього одиниць',
+      categoryShare: 'Частка вартості',
+      topSuppliers: 'Топ постачальників за обсягом',
+      topCustomers: 'Топ замовників за обсягом',
+      operationsCount: 'Операцій',
+      quickPresets: {
+        last7Days: 'Останні 7 днів',
+        last30Days: 'Останні 30 днів',
+        thisMonth: 'Поточний місяць',
+        thisYear: 'Поточний рік'
+      }
     }
   },
   en: {
@@ -430,7 +465,8 @@ export const translations = {
       intelligence: 'ML Planning',
       staff: 'Staff',
       auditLog: 'Audit Log',
-      inventoryAudit: 'Stocktaking'
+      inventoryAudit: 'Stocktaking',
+      reports: 'Reports & OSV'
     },
     roles: {
       admin: 'Administrator',
@@ -760,6 +796,40 @@ export const translations = {
         match: 'Match',
         surplus: 'Surplus',
         deficit: 'Deficit'
+      }
+    },
+    reports: {
+      title: 'Reports & Trial Balance (OSV)',
+      subtitle: 'Financial and physical inventory analysis, stock movement balances, category valuation and counterparty turnover',
+      turnoverTab: 'Statement of Turnover (OSV)',
+      valuationTab: 'Category Stock Valuation',
+      partnersTab: 'Counterparty Activity',
+      periodFrom: 'From Date',
+      periodTo: 'To Date',
+      allCategories: 'All Categories',
+      searchPlaceholder: 'Search by item name or SKU...',
+      exportCsv: 'Export CSV (Excel)',
+      printReport: 'Print Statement',
+      openingBalance: 'Opening Balance',
+      inflow: 'Inflow (Receipts)',
+      outflow: 'Outflow (Dispatches)',
+      closingBalance: 'Closing Balance',
+      qty: 'Qty',
+      sum: 'Amount',
+      totalWarehouse: 'TOTAL WAREHOUSE',
+      noData: 'No movement data found for the selected period',
+      asOfDate: 'As of',
+      totalCapital: 'Total Warehouse Valuation',
+      totalUnits: 'Total Units',
+      categoryShare: 'Value Share',
+      topSuppliers: 'Top Suppliers by Volume',
+      topCustomers: 'Top Customers by Volume',
+      operationsCount: 'Operations',
+      quickPresets: {
+        last7Days: 'Last 7 Days',
+        last30Days: 'Last 30 Days',
+        thisMonth: 'This Month',
+        thisYear: 'This Year'
       }
     }
   }

@@ -80,6 +80,44 @@ namespace Inventory.API.Data
                             ""Status"" integer NOT NULL DEFAULT 0,
                             ""Notes"" text
                         );
+
+                        CREATE TABLE IF NOT EXISTS ""PurchaseOrders"" (
+                            ""Id"" uuid NOT NULL PRIMARY KEY,
+                            ""OrderNumber"" character varying(50) NOT NULL,
+                            ""Title"" character varying(150) NOT NULL,
+                            ""SupplierId"" uuid NOT NULL,
+                            ""CreatedAt"" timestamp with time zone NOT NULL,
+                            ""ExpectedDeliveryDate"" timestamp with time zone,
+                            ""ApprovedAt"" timestamp with time zone,
+                            ""CompletedAt"" timestamp with time zone,
+                            ""CreatedByUserName"" character varying(100) NOT NULL,
+                            ""ApprovedByUserName"" character varying(100),
+                            ""Status"" integer NOT NULL,
+                            ""TotalAmount"" numeric(18,2) NOT NULL DEFAULT 0,
+                            ""TotalItemsCount"" integer NOT NULL DEFAULT 0,
+                            ""TotalOrderedQuantity"" integer NOT NULL DEFAULT 0,
+                            ""TotalReceivedQuantity"" integer NOT NULL DEFAULT 0,
+                            ""Notes"" text,
+                            CONSTRAINT ""FK_PurchaseOrders_Suppliers_SupplierId"" FOREIGN KEY (""SupplierId"") REFERENCES ""Suppliers"" (""Id"") ON DELETE RESTRICT
+                        );
+                        CREATE UNIQUE INDEX IF NOT EXISTS ""IX_PurchaseOrders_OrderNumber"" ON ""PurchaseOrders"" (""OrderNumber"");
+                        CREATE INDEX IF NOT EXISTS ""IX_PurchaseOrders_CreatedAt"" ON ""PurchaseOrders"" (""CreatedAt"");
+                        CREATE INDEX IF NOT EXISTS ""IX_PurchaseOrders_Status"" ON ""PurchaseOrders"" (""Status"");
+
+                        CREATE TABLE IF NOT EXISTS ""PurchaseOrderItems"" (
+                            ""Id"" uuid NOT NULL PRIMARY KEY,
+                            ""PurchaseOrderId"" uuid NOT NULL,
+                            ""ProductId"" uuid NOT NULL,
+                            ""OrderedQuantity"" integer NOT NULL,
+                            ""ReceivedQuantity"" integer NOT NULL DEFAULT 0,
+                            ""UnitPrice"" numeric(18,2) NOT NULL,
+                            ""TotalCost"" numeric(18,2) NOT NULL DEFAULT 0,
+                            ""Notes"" text,
+                            CONSTRAINT ""FK_PurchaseOrderItems_PurchaseOrders_PurchaseOrderId"" FOREIGN KEY (""PurchaseOrderId"") REFERENCES ""PurchaseOrders"" (""Id"") ON DELETE CASCADE,
+                            CONSTRAINT ""FK_PurchaseOrderItems_Products_ProductId"" FOREIGN KEY (""ProductId"") REFERENCES ""Products"" (""Id"") ON DELETE RESTRICT
+                        );
+                        CREATE INDEX IF NOT EXISTS ""IX_PurchaseOrderItems_PurchaseOrderId"" ON ""PurchaseOrderItems"" (""PurchaseOrderId"");
+                        CREATE INDEX IF NOT EXISTS ""IX_PurchaseOrderItems_ProductId"" ON ""PurchaseOrderItems"" (""ProductId"");
                     ");
                 }
                 catch

@@ -20,6 +20,7 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import HistoryIcon from '@mui/icons-material/History';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 // Компоненти
 import ProductList from './components/ProductList';
@@ -31,6 +32,7 @@ import AdminPage from './components/AdminPage';
 import AuditLogPage from './components/AuditLogPage';
 import InventoryAuditPage from './components/InventoryAuditPage';
 import ReportsPage from './components/ReportsPage';
+import PurchaseOrdersPage from './components/PurchaseOrdersPage';
 import ProcurementIntelligence from './components/ProcurementIntelligence';
 import WarehouseCopilot from './components/WarehouseCopilot';
 import SignalRStatusBadge from './components/SignalRStatusBadge';
@@ -69,7 +71,7 @@ function App() {
   const [userRole, setUserRole] = useState(initialState.role);
   const [username, setUsername] = useState(initialState.name);
   
-  type ViewType = 'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin' | 'auditLog' | 'inventoryAudit' | 'reports';
+  type ViewType = 'list' | 'categories' | 'dashboard' | 'partners' | 'purchaseOrders' | 'intelligence' | 'admin' | 'auditLog' | 'inventoryAudit' | 'reports';
 
   const [currentView, setCurrentView] = useState<ViewType>('list');
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
@@ -114,6 +116,7 @@ function App() {
     { id: 'list' as const, label: t('nav.inventory'), icon: <TableChartIcon /> },
     { id: 'categories' as const, label: t('nav.categories'), icon: <CategoryIcon /> },
     { id: 'partners' as const, label: t('nav.partners'), icon: <PeopleIcon /> },
+    { id: 'purchaseOrders' as const, label: t('nav.purchaseOrders'), icon: <ShoppingCartIcon /> },
     { id: 'dashboard' as const, label: t('nav.dashboard'), icon: <BarChartIcon /> },
     ...(canAccessML ? [
       { id: 'intelligence' as const, label: t('nav.intelligence'), icon: <PsychologyIcon /> },
@@ -323,6 +326,8 @@ function App() {
         {currentView === 'categories' && <CategoryList isAdmin={isAdmin} isManager={isManager} />}
         
         {currentView === 'partners' && <Partners isAdmin={isAdmin} isManager={isManager} />}
+        
+        {currentView === 'purchaseOrders' && <PurchaseOrdersPage isAdmin={isAdmin} isManager={isManager} />}
         
         {currentView === 'dashboard' && <Dashboard />}
 

@@ -33,7 +33,7 @@ import { downloadOrderLetterPdf } from '../utils/pdfOrderLetterGenerator';
 import { useLanguage } from '../context/LanguageContext';
 
 interface WarehouseCopilotProps {
-  onNavigateToTab?: (tabName: 'list' | 'categories' | 'dashboard' | 'partners' | 'intelligence' | 'admin' | 'auditLog' | 'inventoryAudit' | 'reports') => void;
+  onNavigateToTab?: (tabName: 'list' | 'categories' | 'dashboard' | 'partners' | 'purchaseOrders' | 'intelligence' | 'admin' | 'auditLog' | 'inventoryAudit' | 'reports') => void;
 }
 
 const INITIAL_GREETING: CopilotMessage = {

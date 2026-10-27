@@ -22,6 +22,8 @@ namespace Inventory.Infrastructure.Persistence
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<InventoryAudit> InventoryAudits { get; set; }
         public DbSet<InventoryAuditItem> InventoryAuditItems { get; set; }
+        public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+        public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -77,6 +79,36 @@ namespace Inventory.Infrastructure.Persistence
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.UnitPrice).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.DiscrepancyCost).HasColumnType("decimal(18,2)");
+                entity.HasOne(e => e.Product)
+                      .WithMany()
+                      .HasForeignKey(e => e.ProductId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            modelBuilder.Entity<PurchaseOrder>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.OrderNumber).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(150);
+                entity.Property(e => e.CreatedByUserName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ApprovedByUserName).HasMaxLength(100);
+                entity.Property(e => e.TotalAmount).HasColumnType("decimal(18,2)");
+                entity.HasIndex(e => e.OrderNumber).IsUnique();
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => e.Status);
+                entity.HasOne(e => e.Supplier)
+                      .WithMany()
+                      .HasForeignKey(e => e.SupplierId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasMany(e => e.Items)
+                      .WithOne(i => i.PurchaseOrder)
+                      .HasForeignKey(i => i.PurchaseOrderId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<PurchaseOrderItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UnitPrice).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.TotalCost).HasColumnType("decimal(18,2)");
                 entity.HasOne(e => e.Product)
                       .WithMany()
                       .HasForeignKey(e => e.ProductId)

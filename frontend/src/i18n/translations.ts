@@ -51,7 +51,13 @@ export const translations = {
       auditLog: 'Журнал аудиту',
       inventoryAudit: 'Інвентаризація',
       reports: 'Звіти та ОСВ',
-      purchaseOrders: 'Замовлення на закупівлю'
+      purchaseOrders: 'Замовлення на закупівлю',
+      mainSection: 'Основне',
+      analyticsSection: 'Аналітика та облік',
+      adminSection: 'Адміністрування',
+      toggleSidebar: 'Згорнути / розгорнути панель',
+      hideSidebar: 'Приховати панель',
+      showSidebar: 'Показати панель'
     },
     roles: {
       admin: 'Адміністратор',
@@ -530,7 +536,13 @@ export const translations = {
       auditLog: 'Audit Log',
       inventoryAudit: 'Stocktaking',
       reports: 'Reports & OSV',
-      purchaseOrders: 'Purchase Orders'
+      purchaseOrders: 'Purchase Orders',
+      mainSection: 'Main',
+      analyticsSection: 'Analytics & Stock',
+      adminSection: 'Administration',
+      toggleSidebar: 'Toggle sidebar',
+      hideSidebar: 'Hide sidebar',
+      showSidebar: 'Show sidebar'
     },
     roles: {
       admin: 'Administrator',

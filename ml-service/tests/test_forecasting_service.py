@@ -7,6 +7,8 @@ from services.forecasting_service import (
     train_and_forecast_holt_winters,
     train_and_forecast_ridge,
     train_and_forecast_lightgbm,
+    train_and_forecast_residual_hybrid,
+    train_and_forecast_hybrid_ensemble,
     generate_custom_product_timeseries,
     generate_forecast
 )
@@ -71,6 +73,27 @@ class TestForecastingService(unittest.TestCase):
         self.assertEqual(len(preds), horizon)
         self.assertGreater(res_std, 0.0)
         self.assertIsNotNone(metrics.mae)
+        self.assertTrue(np.all(preds >= 0.0))
+
+    def test_train_and_forecast_residual_hybrid(self):
+        horizon = 14
+        preds, res_std, metrics = train_and_forecast_residual_hybrid(self.series, horizon)
+        self.assertEqual(len(preds), horizon)
+        self.assertGreater(res_std, 0.0)
+        self.assertIsNotNone(metrics.mae)
+        self.assertIn("Двоетапний гібрид", metrics.model_name)
+        self.assertTrue(np.all(preds >= 0.0))
+
+    def test_train_and_forecast_hybrid_ensemble(self):
+        horizon = 14
+        preds, res_std, metrics = train_and_forecast_hybrid_ensemble(self.series, horizon)
+        self.assertEqual(len(preds), horizon)
+        self.assertGreater(res_std, 0.0)
+        self.assertTrue(metrics.is_hybrid)
+        self.assertIsNotNone(metrics.ensemble_weights)
+        self.assertIsNotNone(metrics.candidate_metrics)
+        self.assertGreaterEqual(len(metrics.candidate_metrics), 3)
+        self.assertIn("Гібридний ансамбль", metrics.model_name)
         self.assertTrue(np.all(preds >= 0.0))
 
     def test_generate_custom_product_timeseries(self):

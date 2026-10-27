@@ -43,12 +43,23 @@ class ForecastPoint(BaseModel):
     lower_bound_95: float
     upper_bound_95: float
 
+class CandidateModelMetric(BaseModel):
+    model_name: str
+    mae: float
+    rmse: float
+    mape: float
+    r2: Optional[float] = None
+    weight: Optional[float] = None
+
 class ModelMetrics(BaseModel):
     mae: float
     rmse: float
     mape: float
     r2: Optional[float] = None
     model_name: str
+    is_hybrid: Optional[bool] = False
+    ensemble_weights: Optional[Dict[str, float]] = None
+    candidate_metrics: Optional[List[CandidateModelMetric]] = None
 
 class ForecastResponse(BaseModel):
     product_id: Union[int, str]

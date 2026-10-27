@@ -82,12 +82,24 @@ export interface ForecastPoint {
   upper_bound_95: number;
 }
 
+export interface CandidateModelMetric {
+  model_name: string;
+  mae: number;
+  rmse: number;
+  mape: number;
+  r2?: number;
+  weight?: number;
+}
+
 export interface ModelMetrics {
   mae: number;
   rmse: number;
   mape: number;
   r2?: number;
   model_name: string;
+  is_hybrid?: boolean;
+  ensemble_weights?: Record<string, number>;
+  candidate_metrics?: CandidateModelMetric[];
 }
 
 export interface ForecastResponse {

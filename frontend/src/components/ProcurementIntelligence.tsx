@@ -45,6 +45,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
@@ -69,7 +70,7 @@ const ProcurementIntelligence: React.FC = () => {
   // Стан фільтрів прогнозу
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [forecastHorizon, setForecastHorizon] = useState<number>(14);
-  const [selectedModel, setSelectedModel] = useState<string>('best');
+  const [selectedModel, setSelectedModel] = useState<string>('hybrid');
 
   // Індикатори завантаження та стану ML-сервісу
   const [loadingRadar, setLoadingRadar] = useState<boolean>(true);
@@ -496,15 +497,26 @@ const ProcurementIntelligence: React.FC = () => {
                       loadForecast(selectedProductId, forecastHorizon, m);
                     }}
                   >
-                    <MenuItem value="best">Автоматичний вибір (Найменша похибка)</MenuItem>
-                    <MenuItem value="lightgbm">LightGBM (Градієнтний бустінг)</MenuItem>
-                    <MenuItem value="holt_winters">Holt-Winters (Експоненційне згладжування)</MenuItem>
-                    <MenuItem value="ridge">Ridge Regression (Лагові ознаки)</MenuItem>
+                    <MenuItem value="hybrid">🚀 {t('intelligence.hybridModel')}</MenuItem>
+                    <MenuItem value="residual_hybrid">⚡ {t('intelligence.residualModel')}</MenuItem>
+                    <MenuItem value="best">🎯 Автоматичний вибір (Найменша похибка)</MenuItem>
+                    <MenuItem value="lightgbm">🌲 LightGBM (Градієнтний бустінг)</MenuItem>
+                    <MenuItem value="holt_winters">📈 Holt-Winters (Експоненційне згладжування)</MenuItem>
+                    <MenuItem value="ridge">📉 Ridge Regression (Лагові ознаки)</MenuItem>
                   </Select>
                 </FormControl>
 
                 {forecastData && (
                   <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+                    {forecastData.metrics.is_hybrid && (
+                      <Chip
+                        icon={<AutoAwesomeIcon />}
+                        label={t('intelligence.ensembleBadge')}
+                        color="primary"
+                        size="small"
+                        sx={{ mb: 1.5, fontWeight: 'bold' }}
+                      />
+                    )}
                     <Typography variant="subtitle2" fontWeight="bold" color="primary" gutterBottom>
                       Метрики точності навчання:
                     </Typography>
@@ -520,7 +532,12 @@ const ProcurementIntelligence: React.FC = () => {
                     <Typography variant="body2" sx={{ mb: 0.5 }}>
                       • <strong>RMSE:</strong> {forecastData.metrics.rmse} од.
                     </Typography>
-                    <Typography variant="body2">
+                    {forecastData.metrics.r2 !== undefined && (
+                      <Typography variant="body2" sx={{ mb: 0.5 }}>
+                        • <strong>R² (точність апроксимації):</strong> {forecastData.metrics.r2}
+                      </Typography>
+                    )}
+                    <Typography variant="body2" sx={{ mb: 1 }}>
                       • <strong>Тренд:</strong>{' '}
                       <Chip
                         size="small"
@@ -534,6 +551,61 @@ const ProcurementIntelligence: React.FC = () => {
                         }
                       />
                     </Typography>
+
+                    {/* Розподіл ваг в ансамблі */}
+                    {forecastData.metrics.ensemble_weights && Object.keys(forecastData.metrics.ensemble_weights).length > 0 && (
+                      <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px dashed', borderColor: 'divider' }}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          {t('intelligence.ensembleWeights')}
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {Object.entries(forecastData.metrics.ensemble_weights).map(([modelKey, weight]) => (
+                            <Chip
+                              key={modelKey}
+                              label={`${modelKey}: ${(weight * 100).toFixed(1)}%`}
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                              sx={{ fontSize: '0.75rem', fontWeight: 600 }}
+                            />
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
+
+                    {/* Порівняльний бенчмарк кандидатів */}
+                    {forecastData.metrics.candidate_metrics && forecastData.metrics.candidate_metrics.length > 0 && (
+                      <Box sx={{ mt: 2, pt: 1.5, borderTop: '1px dashed', borderColor: 'divider' }}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                          {t('intelligence.candidateBenchmarks')}
+                        </Typography>
+                        <TableContainer component={Paper} elevation={0} sx={{ bgcolor: 'background.paper', borderRadius: 1 }}>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell sx={{ fontSize: '0.7rem', p: 0.5, fontWeight: 'bold' }}>{t('intelligence.modelColumn')}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.7rem', p: 0.5, fontWeight: 'bold' }}>MAPE</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.7rem', p: 0.5, fontWeight: 'bold' }}>RMSE</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.7rem', p: 0.5, fontWeight: 'bold' }}>R²</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {forecastData.metrics.candidate_metrics.map((cand) => (
+                                <TableRow key={cand.model_name}>
+                                  <TableCell sx={{ fontSize: '0.7rem', p: 0.5, fontWeight: cand.weight ? 'bold' : 'normal' }}>
+                                    {cand.model_name}
+                                    {cand.weight ? ` (${(cand.weight * 100).toFixed(0)}%)` : ''}
+                                  </TableCell>
+                                  <TableCell align="right" sx={{ fontSize: '0.7rem', p: 0.5 }}>{cand.mape}%</TableCell>
+                                  <TableCell align="right" sx={{ fontSize: '0.7rem', p: 0.5 }}>{cand.rmse}</TableCell>
+                                  <TableCell align="right" sx={{ fontSize: '0.7rem', p: 0.5 }}>{cand.r2}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </Box>
+                    )}
                   </Box>
                 )}
               </CardContent>

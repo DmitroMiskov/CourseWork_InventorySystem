@@ -187,7 +187,16 @@ export const translations = {
       mlEngineOnline: 'ML Inference: Онлайн',
       mlEngineOffline: 'ML Сервіс: Автономний',
       productName: 'Товар',
-      sku: 'SKU'
+      sku: 'SKU',
+      hybridModel: 'Гібридний ансамбль (Holt-Winters + LightGBM Residuals)',
+      residualModel: 'Двоетапний гібрид (Residual Booster)',
+      ensembleBadge: 'Гібридне ансамблеве прогнозування',
+      ensembleWeights: 'Ваги моделей в ансамблі:',
+      candidateBenchmarks: 'Порівняння моделей за метриками точності:',
+      modelColumn: 'Модель',
+      weightColumn: 'Вага',
+      mapeColumn: 'MAPE (похибка)',
+      r2Column: 'Коеф. R²'
     },
     copilot: {
       title: 'AI-Копілот складу',
@@ -742,7 +751,16 @@ export const translations = {
       mlEngineOnline: 'ML Inference: Online',
       mlEngineOffline: 'ML Service: Standalone',
       productName: 'Product',
-      sku: 'SKU'
+      sku: 'SKU',
+      hybridModel: 'Hybrid Ensemble (Holt-Winters + LightGBM Residuals)',
+      residualModel: 'Two-Stage Residual Hybrid',
+      ensembleBadge: 'Hybrid Ensemble Forecasting',
+      ensembleWeights: 'Ensemble Component Weights:',
+      candidateBenchmarks: 'Model Accuracy Benchmark Comparison:',
+      modelColumn: 'Model',
+      weightColumn: 'Weight',
+      mapeColumn: 'MAPE (Error)',
+      r2Column: 'R² Score'
     },
     copilot: {
       title: 'Warehouse AI Copilot',

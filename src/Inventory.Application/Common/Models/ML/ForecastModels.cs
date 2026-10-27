@@ -79,6 +79,27 @@ namespace Inventory.Application.Common.Models.ML
         public double UpperBound95 { get; set; }
     }
 
+    public class CandidateModelMetricDto
+    {
+        [JsonPropertyName("model_name")]
+        public string ModelName { get; set; } = string.Empty;
+
+        [JsonPropertyName("mae")]
+        public double Mae { get; set; }
+
+        [JsonPropertyName("rmse")]
+        public double Rmse { get; set; }
+
+        [JsonPropertyName("mape")]
+        public double Mape { get; set; }
+
+        [JsonPropertyName("r2")]
+        public double? R2 { get; set; }
+
+        [JsonPropertyName("weight")]
+        public double? Weight { get; set; }
+    }
+
     public class ModelMetricsDto
     {
         [JsonPropertyName("mae")]
@@ -95,6 +116,15 @@ namespace Inventory.Application.Common.Models.ML
 
         [JsonPropertyName("model_name")]
         public string ModelName { get; set; } = string.Empty;
+
+        [JsonPropertyName("is_hybrid")]
+        public bool IsHybrid { get; set; } = false;
+
+        [JsonPropertyName("ensemble_weights")]
+        public Dictionary<string, double>? EnsembleWeights { get; set; }
+
+        [JsonPropertyName("candidate_metrics")]
+        public List<CandidateModelMetricDto>? CandidateMetrics { get; set; }
     }
 
     public class ForecastResponseDto

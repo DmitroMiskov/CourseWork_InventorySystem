@@ -39,24 +39,28 @@ interface WarehouseCopilotProps {
 const INITIAL_GREETING: CopilotMessage = {
   id: 'init-1',
   role: 'assistant',
-  content: `### 👋 Вітаю! Я ваш AI-Копілот складу
+  content: `### 👋 Вітаю! Я ваш інтелектуальний асистент складу (AI Copilot)
 
-Я маю доступ до **бази даних складу PostgreSQL**, математичних моделей **ML-прогнозування**, розрахунків страхового запасу ($SS, ROP, EOQ$) та матриці **ABC-XYZ**.
+Я маю прямий доступ до **бази даних PostgreSQL**, прогнозного ML-стеку (**Prophet, LightGBM, Holt-Winters**), розрахунків **страхового запасу ($SS, ROP, EOQ$)** та операцій мультискладу.
 
-Чим я можу допомогти вам прямо зараз:
+🎯 **Чим я можу допомогти вам прямо зараз:**
+• 💰 **Баланс та вартість**: запитайте *«Яка загальна вартість складу?»*
 • 🚨 **Аудит дефіциту**: запитайте *«Що сьогодні треба замовити?»*
-• 🧠 **Explainable AI (XAI)**: запитайте *«Чому статус товару RTX 4070 критичний?»*
+• 🏢 **Мультисклад**: запитайте *«Як перемістити товар між складами?»*
+• 🧠 **Explainable AI (XAI)**: запитайте *«Чому для RTX 4070 статус УВАГА?»*
+• 📐 **Логістичні формули**: запитайте *«Як рахується страховий запас SS та ROP?»*
 • ✉️ **Ділові листи**: напишіть *«Склади лист постачальнику на замовлення»*
-• 📊 **Матриця ABC-XYZ**: запитайте *«Які товари приносять 80% виручки?»*
 
 Оберіть швидку підказку нижче або введіть власне запитання!`,
   model_used: 'Warehouse DSS Cognitive Engine',
   timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
   actions: [
-    { label: '🚨 Що треба замовити?', action_type: 'quick_reply', payload: 'Що терміново треба замовити?' },
-    { label: '🧠 Поясни статус RTX 4070', action_type: 'quick_reply', payload: 'Поясни статус товару RTX 4070' },
-    { label: '✉️ Склади лист постачальнику', action_type: 'quick_reply', payload: 'Склади лист постачальнику на замовлення' },
-    { label: '📊 Товари групи A (80% виручки)', action_type: 'quick_reply', payload: 'Які товари приносять 80% виручки згідно з аналізом ABC?' }
+    { label: '💰 Вартість складу', action_type: 'quick_reply', payload: 'Яка загальна вартість складу та капітал у товарах?' },
+    { label: '🚨 Що треба замовити?', action_type: 'quick_reply', payload: 'Що сьогодні треба терміново замовити і який бюджет потрібен?' },
+    { label: '🏢 Мультисклад і трансфери', action_type: 'quick_reply', payload: 'Як працює мультискладський облік та внутрішні переміщення?' },
+    { label: '🧠 ML-моделі попиту', action_type: 'quick_reply', payload: 'Які моделі машинного навчання використовуються для прогнозування попиту?' },
+    { label: '📐 Формули SS, ROP, EOQ', action_type: 'quick_reply', payload: 'Як розраховуються формули страхового запасу SS, точки перезамовлення ROP та EOQ?' },
+    { label: '🛒 Замовлення на закупівлю', action_type: 'quick_reply', payload: 'Який життєвий цикл замовлення на закупівлю?' }
   ]
 };
 
@@ -136,7 +140,12 @@ export const WarehouseCopilot: React.FC<WarehouseCopilotProps> = ({ onNavigateTo
   const handleActionClick = (action: CopilotAction) => {
     if (action.action_type === 'quick_reply') {
       handleSendMessage(action.payload || action.label);
-    } else if (action.action_type === 'open_radar' || action.action_type === 'open_forecast' || action.action_type === 'open_abc') {
+    } else if (
+      action.action_type === 'open_radar' || 
+      action.action_type === 'open_forecast' || 
+      action.action_type === 'open_abc' ||
+      action.action_type === 'open_what_if'
+    ) {
       if (onNavigateToTab) {
         onNavigateToTab('intelligence');
         setIsOpen(false);
@@ -153,6 +162,41 @@ export const WarehouseCopilot: React.FC<WarehouseCopilotProps> = ({ onNavigateTo
     } else if (action.action_type === 'open_stock') {
       if (onNavigateToTab) {
         onNavigateToTab('list');
+        setIsOpen(false);
+      }
+    } else if (action.action_type === 'open_warehouses' || action.action_type === 'open_transfers') {
+      if (onNavigateToTab) {
+        onNavigateToTab('warehouses');
+        setIsOpen(false);
+      }
+    } else if (action.action_type === 'open_purchase_orders') {
+      if (onNavigateToTab) {
+        onNavigateToTab('purchaseOrders');
+        setIsOpen(false);
+      }
+    } else if (action.action_type === 'open_categories') {
+      if (onNavigateToTab) {
+        onNavigateToTab('categories');
+        setIsOpen(false);
+      }
+    } else if (action.action_type === 'open_partners') {
+      if (onNavigateToTab) {
+        onNavigateToTab('partners');
+        setIsOpen(false);
+      }
+    } else if (action.action_type === 'open_reports') {
+      if (onNavigateToTab) {
+        onNavigateToTab('reports');
+        setIsOpen(false);
+      }
+    } else if (action.action_type === 'open_audit') {
+      if (onNavigateToTab) {
+        onNavigateToTab('inventoryAudit');
+        setIsOpen(false);
+      }
+    } else if (action.action_type === 'open_audit_log') {
+      if (onNavigateToTab) {
+        onNavigateToTab('auditLog');
         setIsOpen(false);
       }
     }

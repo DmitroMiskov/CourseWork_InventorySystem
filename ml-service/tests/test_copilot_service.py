@@ -130,6 +130,98 @@ class TestCopilotService(unittest.TestCase):
         self.assertIn("Warehouse AI Copilot", reply)
         self.assertTrue(len(actions) > 0)
 
+    def test_inventory_valuation(self):
+        query = "Яка загальна вартість складу та баланс запасів?"
+        reply, intent, actions = generate_offline_heuristic_reply(query, self.products, self.context)
+        self.assertEqual(intent, "inventory_valuation")
+        self.assertIn("Фінансово-інвентарна оцінка складу", reply)
+        self.assertIn("₴", reply)
+        action_types = [a.action_type for a in actions]
+        self.assertIn("open_stock", action_types)
+        self.assertIn("open_reports", action_types)
+
+    def test_multi_warehouse(self):
+        query = "Як влаштований мультискладський облік та переміщення?"
+        reply, intent, actions = generate_offline_heuristic_reply(query, self.products, self.context)
+        self.assertEqual(intent, "multi_warehouse")
+        self.assertIn("Мультискладський облік", reply)
+        self.assertIn("InTransit", reply)
+        action_types = [a.action_type for a in actions]
+        self.assertIn("open_warehouses", action_types)
+        self.assertIn("open_transfers", action_types)
+
+    def test_purchase_orders(self):
+        query = "Який життєвий цикл замовлення на закупівлю?"
+        reply, intent, actions = generate_offline_heuristic_reply(query, self.products, self.context)
+        self.assertEqual(intent, "purchase_orders")
+        self.assertIn("Purchase Orders", reply)
+        self.assertIn("Draft", reply)
+        action_types = [a.action_type for a in actions]
+        self.assertIn("open_purchase_orders", action_types)
+
+    def test_ml_models_explanation(self):
+        query = "Які моделі машинного навчання та ансамбль прогнозують попит?"
+        reply, intent, actions = generate_offline_heuristic_reply(query, self.products, self.context)
+        self.assertEqual(intent, "ml_models_explanation")
+        self.assertIn("LightGBM", reply)
+        self.assertIn("Prophet", reply)
+        self.assertIn("Holt-Winters", reply)
+        action_types = [a.action_type for a in actions]
+        self.assertIn("open_forecast", action_types)
+
+    def test_explainable_ai_and_what_if(self):
+        query = "Як працює симулятор what-if та пояснення SHAP?"
+        reply, intent, actions = generate_offline_heuristic_reply(query, self.products, self.context)
+        self.assertEqual(intent, "explainable_ai_and_what_if")
+        self.assertIn("TreeSHAP", reply)
+        self.assertIn("What-If", reply)
+        action_types = [a.action_type for a in actions]
+        self.assertIn("open_what_if", action_types)
+
+    def test_logistics_formulas(self):
+        query = "Які формули використовуються для розрахунку страхового запасу SS та точки ROP?"
+        reply, intent, actions = generate_offline_heuristic_reply(query, self.products, self.context)
+        self.assertEqual(intent, "logistics_formulas")
+        self.assertIn("SS =", reply)
+        self.assertIn("ROP =", reply)
+        self.assertIn("EOQ =", reply)
+
+    def test_category_breakdown(self):
+        query = "Яка структура асортименту за категоріями?"
+        reply, intent, actions = generate_offline_heuristic_reply(query, self.products, self.context)
+        self.assertEqual(intent, "category_breakdown")
+        self.assertIn("Структура товарного асортименту", reply)
+        action_types = [a.action_type for a in actions]
+        self.assertIn("open_categories", action_types)
+
+    def test_suppliers_overview(self):
+        query = "Яка база постачальників зареєстрована в системі?"
+        reply, intent, actions = generate_offline_heuristic_reply(query, self.products, self.context)
+        self.assertEqual(intent, "suppliers_overview")
+        self.assertIn("Реєстр активних постачальників", reply)
+        action_types = [a.action_type for a in actions]
+        self.assertIn("open_partners", action_types)
+
+    def test_inventory_audit_operations(self):
+        query = "Як проводиться інвентаризація та списання нестач?"
+        reply, intent, actions = generate_offline_heuristic_reply(query, self.products, self.context)
+        self.assertEqual(intent, "inventory_audit_operations")
+        self.assertIn("Інвентаризація, списання та аудит дій", reply)
+        action_types = [a.action_type for a in actions]
+        self.assertIn("open_audit", action_types)
+
+    def test_top_and_extreme_products(self):
+        query = "Які найдорожчі товари на складі?"
+        reply, intent, actions = generate_offline_heuristic_reply(query, self.products, self.context)
+        self.assertEqual(intent, "top_and_extreme_products")
+        self.assertIn("Рейтинг ключових позицій складу", reply)
+
+    def test_direct_product_mention(self):
+        query = "ThinkPad"
+        reply, intent, actions = generate_offline_heuristic_reply(query, self.products, self.context)
+        self.assertEqual(intent, "explain_product")
+        self.assertIn("ThinkPad", reply)
+
     def test_process_chat_message_offline_end_to_end(self):
         req = CopilotChatRequest(
             message="Покажи дефіцитні позиції",

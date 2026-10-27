@@ -78,7 +78,7 @@ const ProcurementIntelligence: React.FC = () => {
   const [abcXyzData, setAbcXyzData] = useState<AbcXyzResponse | null>(null);
 
   // Стан фільтрів прогнозу
-  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [selectedProductId, setSelectedProductId] = useState<string>('1');
   const [forecastHorizon, setForecastHorizon] = useState<number>(14);
   const [selectedModel, setSelectedModel] = useState<string>('hybrid');
 
@@ -106,11 +106,11 @@ const ProcurementIntelligence: React.FC = () => {
 
       const radarRes = await api.get<ProcurementRadarResponse>('/procurementintelligence/radar');
       setRadarData(radarRes.data);
-      if (radarRes.data.items && radarRes.data.items.length > 0) {
-        const firstId = String(radarRes.data.items[0].product_id);
-        setSelectedProductId(firstId);
-        loadForecast(firstId, forecastHorizon, selectedModel);
-      }
+      const firstId = radarRes.data.items && radarRes.data.items.length > 0
+        ? String(radarRes.data.items[0].product_id)
+        : (selectedProductId || '1');
+      setSelectedProductId(firstId);
+      loadForecast(firstId, forecastHorizon, selectedModel);
     } catch (err) {
       console.error('Помилка завантаження Радару закупівель:', err);
       setErrorMsg('Не вдалося завантажити дані Радару. Перевірте з’єднання з сервером.');
@@ -121,12 +121,12 @@ const ProcurementIntelligence: React.FC = () => {
 
   // Завантаження прогнозу для обраного товару
   const loadForecast = async (prodId: string, horizon: number, model: string) => {
-    if (!prodId) return;
+    const idToUse = prodId || selectedProductId || '1';
     setLoadingForecast(true);
     setWhatIfResult(null);
     try {
       const res = await api.get<ForecastResponse>(
-        `/procurementintelligence/forecast/${prodId}?horizonDays=${horizon}&modelType=${model}`
+        `/procurementintelligence/forecast/${idToUse}?horizonDays=${horizon}&modelType=${model}`
       );
       setForecastData(res.data);
     } catch (err) {
@@ -171,6 +171,7 @@ const ProcurementIntelligence: React.FC = () => {
 
   useEffect(() => {
     checkHealthAndLoadRadar();
+    loadForecast(selectedProductId || '1', forecastHorizon, selectedModel);
   }, []);
 
   const exportRadarToExcel = () => {
@@ -228,8 +229,10 @@ const ProcurementIntelligence: React.FC = () => {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
-    if (newValue === 1 && !forecastData) {
-      loadForecast(selectedProductId, forecastHorizon, selectedModel);
+    if (newValue === 1) {
+      const prodId = selectedProductId || (radarData?.items?.[0] ? String(radarData.items[0].product_id) : '1');
+      if (!selectedProductId) setSelectedProductId(prodId);
+      loadForecast(prodId, forecastHorizon, selectedModel);
     } else if (newValue === 2 && !abcXyzData) {
       loadAbcXyz();
     }
@@ -252,18 +255,20 @@ const ProcurementIntelligence: React.FC = () => {
   const chartPoints = React.useMemo(() => {
     if (!forecastData) return [];
 
-    const historyMapped = forecastData.historical_points.map((p) => ({
-      date: p.date.substring(5), // MM-DD
+    const historyMapped = (forecastData.historical_points || []).map((p) => ({
+      date: p.date ? p.date.substring(5) : '', // MM-DD
       actual: p.actual_quantity,
       forecast: null,
       lowerBound: null,
       upperBound: null,
     }));
 
-    const lastHist = forecastData.historical_points[forecastData.historical_points.length - 1];
+    const lastHist = forecastData.historical_points && forecastData.historical_points.length > 0
+      ? forecastData.historical_points[forecastData.historical_points.length - 1]
+      : null;
 
-    const forecastMapped = forecastData.forecast_points.map((p, idx) => ({
-      date: p.date.substring(5),
+    const forecastMapped = (forecastData.forecast_points || []).map((p, idx) => ({
+      date: p.date ? p.date.substring(5) : '',
       actual: idx === 0 && lastHist ? lastHist.actual_quantity : null,
       forecast: p.predicted_demand,
       lowerBound: p.lower_bound_95,
@@ -498,12 +503,14 @@ const ProcurementIntelligence: React.FC = () => {
                       loadForecast(newId, forecastHorizon, selectedModel);
                     }}
                   >
-                    {radarData?.items.map((it) => (
-                      <MenuItem key={it.sku} value={String(it.product_id)}>
-                        {it.sku} — {it.name}
-                      </MenuItem>
-                    )) || (
-                      <MenuItem value="1">EL-001 — Ноутбук Pro 15.6"</MenuItem>
+                    {radarData?.items && radarData.items.length > 0 ? (
+                      radarData.items.map((it) => (
+                        <MenuItem key={it.sku} value={String(it.product_id)}>
+                          {it.sku} — {it.name}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem value="1">1 — Ноутбук Pro 15.6" (Демо-товар)</MenuItem>
                     )}
                   </Select>
                 </FormControl>
@@ -671,6 +678,20 @@ const ProcurementIntelligence: React.FC = () => {
                 {loadingForecast ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', py: 14 }}>
                     <CircularProgress />
+                  </Box>
+                ) : chartPoints.length === 0 ? (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 12, gap: 1.5 }}>
+                    <Typography variant="body1" color="text.secondary">
+                      Немає точок часового ряду для обраного товару.
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<RefreshIcon />}
+                      onClick={() => loadForecast(selectedProductId || '1', forecastHorizon, selectedModel)}
+                    >
+                      Завантажити прогноз
+                    </Button>
                   </Box>
                 ) : (
                   <Box sx={{ width: '100%', height: 400 }}>

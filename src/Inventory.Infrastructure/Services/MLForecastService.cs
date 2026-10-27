@@ -357,7 +357,27 @@ namespace Inventory.Infrastructure.Services
                 },
                 Trend = "Стабільний",
                 SummaryForecastQty = 5.2 * horizonDays,
-                AvgDailyDemand = 5.2
+                AvgDailyDemand = 5.2,
+                Explainability = new ExplainabilityReportDto
+                {
+                    BaseValue = 5.2,
+                    FinalPrediction = 5.2,
+                    SummaryText = "Базовий рівень споживання на основі середньодобового попиту 5.2 шт/день.",
+                    TopPositiveFactors = new List<ShapFeatureContributionDto>
+                    {
+                        new ShapFeatureContributionDto
+                        {
+                            FeatureKey = "rolling_mean_7",
+                            FeatureName = "Тижневий тренд попиту (MA-7)",
+                            Contribution = 0.5,
+                            Percentage = 60.0,
+                            ImpactType = "positive",
+                            Description = "Стабільне середньотижневе споживання"
+                        }
+                    },
+                    TopNegativeFactors = new List<ShapFeatureContributionDto>(),
+                    AllContributions = new List<ShapFeatureContributionDto>()
+                }
             };
         }
 

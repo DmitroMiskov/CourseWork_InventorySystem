@@ -536,7 +536,24 @@ export const translations = {
       successCreatedTransfer: 'Документ переміщення створено',
       successReceivedTransfer: 'Вантаж успішно прийнято на складі-одержувачі',
       successCancelledTransfer: 'Переміщення скасовано, залишки повернуто',
-      printTransfer: 'Друкувати накладну переміщення'
+      printTransfer: 'Друкувати накладну переміщення',
+      enterWarehouse: 'Увійти до складу',
+      openWorkspace: 'Робоче місце',
+      backToAllWarehouses: 'До всіх складів',
+      warehouseWorkspace: 'Робоче місце складу',
+      lowStockCount: 'Позицій у дефіциті',
+      inTransitIncoming: 'Очікується надходжень',
+      inTransitOutgoing: 'Відправлено в дорозі',
+      warehouseStocksTab: 'Номенклатура та залишки',
+      warehouseTransfersTab: 'Переміщення та логістика',
+      adjustStock: 'Оприбуткувати / Коригувати',
+      addStock: 'Додати товар на склад',
+      quickTransferFrom: 'Створити відвантаження',
+      minStockLimit: 'Страховий запас (мін.)',
+      adjustQtyPrompt: 'Коригування залишку товару на складі',
+      isDeltaCheckbox: 'Зміна від поточного (дельта +/-)',
+      reasonLabel: 'Причина або номер накладної',
+      successAdjustedStock: 'Залишок товару успішно оновлено'
     }
   },
   en: {
@@ -1074,7 +1091,24 @@ export const translations = {
       successCreatedTransfer: 'Stock transfer created',
       successReceivedTransfer: 'Goods successfully received into destination warehouse',
       successCancelledTransfer: 'Transfer cancelled, stock restored to source warehouse',
-      printTransfer: 'Print Transfer Waybill'
+      printTransfer: 'Print Transfer Waybill',
+      enterWarehouse: 'Enter Warehouse',
+      openWorkspace: 'Workspace',
+      backToAllWarehouses: 'Back to all warehouses',
+      warehouseWorkspace: 'Warehouse Workspace',
+      lowStockCount: 'Low stock items',
+      inTransitIncoming: 'Incoming in-transit',
+      inTransitOutgoing: 'Outgoing in-transit',
+      warehouseStocksTab: 'Inventory & Stocks',
+      warehouseTransfersTab: 'Transfers & Logistics',
+      adjustStock: 'Receive / Adjust Stock',
+      addStock: 'Add Product to Warehouse',
+      quickTransferFrom: 'Dispatch Transfer',
+      minStockLimit: 'Safety Stock (Min)',
+      adjustQtyPrompt: 'Adjust Warehouse Stock',
+      isDeltaCheckbox: 'Delta adjustment (+/- change)',
+      reasonLabel: 'Reason or Invoice Ref',
+      successAdjustedStock: 'Stock successfully adjusted'
     }
   }
 } as const;

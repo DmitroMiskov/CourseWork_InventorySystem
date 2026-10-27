@@ -92,7 +92,8 @@ namespace Inventory.API.Controllers
                 Description = w.Description,
                 TotalItemsCount = w.Stocks.Count(s => s.Quantity > 0),
                 TotalQuantity = w.Stocks.Sum(s => s.Quantity),
-                TotalValuation = w.Stocks.Sum(s => s.Quantity * (s.Product != null ? s.Product.Price : 0))
+                TotalValuation = w.Stocks.Sum(s => s.Quantity * (s.Product != null ? s.Product.Price : 0)),
+                LowStockCount = w.Stocks.Count(s => s.Quantity <= (s.MinStock ?? 5))
             }).ToList();
 
             return Ok(result);
@@ -115,6 +116,11 @@ namespace Inventory.API.Controllers
                 return NotFound("Склад не знайдено");
             }
 
+            var inTransitIncoming = await _context.WarehouseTransfers
+                .CountAsync(t => t.ToWarehouseId == id && t.Status == TransferStatus.InTransit);
+            var inTransitOutgoing = await _context.WarehouseTransfers
+                .CountAsync(t => t.FromWarehouseId == id && t.Status == TransferStatus.InTransit);
+
             return Ok(new WarehouseSummaryDto
             {
                 Id = w.Id,
@@ -127,7 +133,10 @@ namespace Inventory.API.Controllers
                 Description = w.Description,
                 TotalItemsCount = w.Stocks.Count(s => s.Quantity > 0),
                 TotalQuantity = w.Stocks.Sum(s => s.Quantity),
-                TotalValuation = w.Stocks.Sum(s => s.Quantity * (s.Product != null ? s.Product.Price : 0))
+                TotalValuation = w.Stocks.Sum(s => s.Quantity * (s.Product != null ? s.Product.Price : 0)),
+                LowStockCount = w.Stocks.Count(s => s.Quantity <= (s.MinStock ?? 5)),
+                InTransitIncomingCount = inTransitIncoming,
+                InTransitOutgoingCount = inTransitOutgoing
             });
         }
 
@@ -362,6 +371,134 @@ namespace Inventory.API.Controllers
 
             await _context.SaveChangesAsync();
             return Ok();
+        }
+
+        /// <summary>
+        /// Оприбуткування, списання або коригування залишку товару на конкретному складі
+        /// </summary>
+        [HttpPost("{id}/stocks/adjust")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<ActionResult<WarehouseStockDto>> AdjustStock(Guid id, [FromBody] AdjustWarehouseStockDto dto)
+        {
+            var warehouse = await _context.Warehouses.FindAsync(id);
+            if (warehouse == null || !warehouse.IsActive)
+            {
+                return NotFound("Склад не знайдено або він деактивований");
+            }
+
+            var product = await _context.Products.Include(p => p.Category).FirstOrDefaultAsync(p => p.Id == dto.ProductId);
+            if (product == null)
+            {
+                return NotFound("Товар не знайдено");
+            }
+
+            var stock = await _context.WarehouseStocks
+                .FirstOrDefaultAsync(s => s.WarehouseId == id && s.ProductId == dto.ProductId);
+
+            int oldStockQty = stock?.Quantity ?? 0;
+            int newStockQty = dto.IsDelta ? (oldStockQty + dto.Quantity) : dto.Quantity;
+
+            if (newStockQty < 0)
+            {
+                return BadRequest($"Залишок не може бути меншим за 0. Поточний: {oldStockQty}, коригування: {dto.Quantity}");
+            }
+
+            int delta = newStockQty - oldStockQty;
+
+            if (stock == null)
+            {
+                stock = new WarehouseStock
+                {
+                    Id = Guid.NewGuid(),
+                    WarehouseId = id,
+                    ProductId = dto.ProductId,
+                    Quantity = newStockQty,
+                    MinStock = dto.MinStock ?? product.MinStock,
+                    LocationZone = dto.LocationZone?.Trim(),
+                    LastUpdated = DateTime.UtcNow
+                };
+                _context.WarehouseStocks.Add(stock);
+            }
+            else
+            {
+                stock.Quantity = newStockQty;
+                if (!string.IsNullOrWhiteSpace(dto.LocationZone))
+                {
+                    stock.LocationZone = dto.LocationZone.Trim();
+                }
+                if (dto.MinStock.HasValue)
+                {
+                    stock.MinStock = dto.MinStock.Value;
+                }
+                stock.LastUpdated = DateTime.UtcNow;
+            }
+
+            // Оновлюємо сумарну кількість товару по системі
+            product.Quantity = Math.Max(0, product.Quantity + delta);
+
+            // Фіксуємо рух товару при зміні залишку
+            if (delta != 0)
+            {
+                var userName = GetCurrentUserName();
+                var movement = new StockMovement
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product.Id,
+                    WarehouseId = id,
+                    Quantity = Math.Abs(delta),
+                    Type = delta > 0 ? MovementType.In : MovementType.Out,
+                    MovementDate = DateTime.UtcNow,
+                    Note = !string.IsNullOrWhiteSpace(dto.Reason) 
+                        ? dto.Reason.Trim() 
+                        : (delta > 0 ? $"Оприбуткування на склад '{warehouse.Name}'" : $"Списання зі складу '{warehouse.Name}'")
+                };
+                _context.StockMovements.Add(movement);
+
+                _context.ProductHistories.Add(new ProductHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product.Id,
+                    Change = delta,
+                    StockAfter = product.Quantity,
+                    Note = movement.Note,
+                    UserName = userName,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(
+                action: "AdjustStock",
+                entityType: "WarehouseStock",
+                entityId: stock.Id.ToString(),
+                entityName: $"{product.Name} @ {warehouse.Name}",
+                details: $"Коригування залишку товару '{product.Name}' на складі '{warehouse.Name}': було {oldStockQty}, стало {newStockQty} (дельта: {delta})",
+                oldValues: $"{oldStockQty}",
+                newValues: $"{newStockQty}"
+            );
+
+            await _notifier.NotifyGeneralAsync(
+                title: "Залишок оновлено",
+                message: $"{product.Name} на складі '{warehouse.Name}': {newStockQty} {product.Unit}",
+                severity: "info");
+
+            return Ok(new WarehouseStockDto
+            {
+                Id = stock.Id,
+                WarehouseId = id,
+                WarehouseName = warehouse.Name,
+                ProductId = product.Id,
+                ProductName = product.Name,
+                ProductSKU = product.SKU,
+                CategoryName = product.Category != null ? product.Category.Name : "Без категорії",
+                Unit = product.Unit,
+                UnitPrice = product.Price,
+                Quantity = stock.Quantity,
+                MinStock = stock.MinStock,
+                LocationZone = stock.LocationZone,
+                LastUpdated = stock.LastUpdated
+            });
         }
 
         /// <summary>

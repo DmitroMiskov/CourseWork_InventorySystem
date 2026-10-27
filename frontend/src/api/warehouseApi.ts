@@ -20,6 +20,18 @@ export interface WarehouseSummary {
   totalItemsCount: number;
   totalQuantity: number;
   totalValuation: number;
+  lowStockCount?: number;
+  inTransitIncomingCount?: number;
+  inTransitOutgoingCount?: number;
+}
+
+export interface AdjustStockInput {
+  productId: string;
+  quantity: number;
+  isDelta?: boolean;
+  locationZone?: string;
+  minStock?: number;
+  reason?: string;
 }
 
 export interface CreateWarehouseInput {
@@ -152,6 +164,11 @@ export const warehouseApi = {
 
   async updateLocation(stockId: string, data: { locationZone?: string; minStock?: number }): Promise<void> {
     await api.put(`/warehouses/stocks/${stockId}/location`, data);
+  },
+
+  async adjustStock(warehouseId: string, data: AdjustStockInput): Promise<WarehouseStockItem> {
+    const res = await api.post(`/warehouses/${warehouseId}/stocks/adjust`, data);
+    return res.data;
   },
 
   async getDistribution(params?: { categoryId?: string; search?: string }): Promise<ProductStockDistribution[]> {

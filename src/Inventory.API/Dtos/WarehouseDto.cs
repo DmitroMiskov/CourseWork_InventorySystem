@@ -17,6 +17,19 @@ namespace Inventory.API.Dtos
         public int TotalItemsCount { get; set; }
         public int TotalQuantity { get; set; }
         public decimal TotalValuation { get; set; }
+        public int LowStockCount { get; set; }
+        public int InTransitIncomingCount { get; set; }
+        public int InTransitOutgoingCount { get; set; }
+    }
+
+    public class AdjustWarehouseStockDto
+    {
+        public Guid ProductId { get; set; }
+        public int Quantity { get; set; }
+        public bool IsDelta { get; set; } = false;
+        public string? LocationZone { get; set; }
+        public int? MinStock { get; set; }
+        public string? Reason { get; set; }
     }
 
     public class CreateWarehouseDto

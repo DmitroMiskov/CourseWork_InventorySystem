@@ -360,5 +360,42 @@ namespace Inventory.Tests
             await context.Entry(kyivStock).ReloadAsync();
             Assert.Equal(40, kyivStock.Quantity); // 30 + 10 = 40
         }
+
+        [Fact]
+        public async Task AdjustStock_DeltaAndDirect_UpdatesWarehouseStockAndProductAggregateQuantity()
+        {
+            using var context = CreateInMemoryDbContext();
+            var controller = CreateController(context);
+            var (wh1, _, product) = await SeedWarehousesAndProductAsync(context);
+
+            // Початковий залишок на wh1 = 40, Product.Quantity = 50
+            var adjustDto = new AdjustWarehouseStockDto
+            {
+                ProductId = product.Id,
+                Quantity = 15, // +15 од. дельта
+                IsDelta = true,
+                LocationZone = "Секція Б-12",
+                MinStock = 12,
+                Reason = "Позапланове оприбуткування партії"
+            };
+
+            var res = await controller.AdjustStock(wh1.Id, adjustDto);
+            var okRes = Assert.IsType<OkObjectResult>(res.Result);
+            var stockDto = Assert.IsType<WarehouseStockDto>(okRes.Value);
+
+            Assert.Equal(55, stockDto.Quantity); // 40 + 15
+            Assert.Equal("Секція Б-12", stockDto.LocationZone);
+            Assert.Equal(12, stockDto.MinStock);
+
+            // Перевіряємо загальний залишок товару по системі
+            var updatedProduct = await context.Products.FindAsync(product.Id);
+            Assert.Equal(65, updatedProduct!.Quantity); // 50 + 15
+
+            // Перевіряємо рух товару
+            var movement = await context.StockMovements.FirstOrDefaultAsync(m => m.WarehouseId == wh1.Id && m.ProductId == product.Id);
+            Assert.NotNull(movement);
+            Assert.Equal(MovementType.In, movement.Type);
+            Assert.Equal(15, movement.Quantity);
+        }
     }
 }

@@ -35,7 +35,8 @@ import {
   Checkbox,
   Stepper,
   Step,
-  StepLabel
+  StepLabel,
+  Breadcrumbs
 } from '@mui/material';
 import {
   Warehouse as WarehouseIcon,
@@ -52,7 +53,11 @@ import {
   Print as PrintIcon,
   Star as StarIcon,
   LocationOn as LocationOnIcon,
-  ArrowForward as ArrowForwardIcon
+  ArrowForward as ArrowForwardIcon,
+  ArrowBack as ArrowBackIcon,
+  MeetingRoom as MeetingRoomIcon,
+  Tune as TuneIcon,
+  Inventory as InventoryIcon
 } from '@mui/icons-material';
 
 import {
@@ -128,6 +133,22 @@ export const WarehousesPage: React.FC<Props> = ({ isAdmin = false, isManager = f
   const [locWarehouseName, setLocWarehouseName] = useState<string>('');
   const [locZone, setLocZone] = useState<string>('');
   const [locMinStock, setLocMinStock] = useState<number | ''>('');
+
+  // 5. Individual Warehouse Workspace View
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null);
+  const [selectedWarehouseSummary, setSelectedWarehouseSummary] = useState<WarehouseSummary | null>(null);
+  const [selectedWarehouseStocks, setSelectedWarehouseStocks] = useState<WarehouseStockItem[]>([]);
+  const [workspaceTab, setWorkspaceTab] = useState<number>(0);
+  const [onlyLowStockFilter, setOnlyLowStockFilter] = useState<boolean>(false);
+
+  // 6. Adjust Stock Dialog
+  const [adjustModalOpen, setAdjustModalOpen] = useState<boolean>(false);
+  const [adjProductId, setAdjProductId] = useState<string>('');
+  const [adjQuantity, setAdjQuantity] = useState<number | ''>(0);
+  const [adjIsDelta, setAdjIsDelta] = useState<boolean>(false);
+  const [adjLocationZone, setAdjLocationZone] = useState<string>('');
+  const [adjMinStock, setAdjMinStock] = useState<number | ''>('');
+  const [adjReason, setAdjReason] = useState<string>('');
 
   // Initial load
   useEffect(() => {
@@ -229,6 +250,32 @@ export const WarehousesPage: React.FC<Props> = ({ isAdmin = false, isManager = f
       return true;
     });
   }, [transfers, transferStatusFilter, searchQuery]);
+
+  // Filtered Warehouse Stocks for Individual Workspace
+  const filteredWarehouseStocks = useMemo(() => {
+    return selectedWarehouseStocks.filter(item => {
+      if (onlyLowStockFilter) {
+        const min = item.minStock !== null && item.minStock !== undefined ? item.minStock : 5;
+        if (item.quantity > min) return false;
+      }
+      if (categoryFilter !== 'all' && item.categoryName !== categoryFilter) {
+        return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesName = item.productName.toLowerCase().includes(q);
+        const matchesSku = item.productSKU.toLowerCase().includes(q);
+        if (!matchesName && !matchesSku) return false;
+      }
+      return true;
+    });
+  }, [selectedWarehouseStocks, searchQuery, categoryFilter, onlyLowStockFilter]);
+
+  // Filtered Transfers for Individual Workspace
+  const workspaceTransfers = useMemo(() => {
+    if (!selectedWarehouseId) return [];
+    return transfers.filter(t => t.fromWarehouseId === selectedWarehouseId || t.toWarehouseId === selectedWarehouseId);
+  }, [transfers, selectedWarehouseId]);
 
   // -------------------------------------------------------------
   // Warehouse CRUD Actions
@@ -474,6 +521,9 @@ export const WarehousesPage: React.FC<Props> = ({ isAdmin = false, isManager = f
       setLocationModalOpen(false);
       setSuccessMsg('Комірку зберігання та страховий запас оновлено');
       await fetchInitialData();
+      if (selectedWarehouseId) {
+        await handleRefreshWorkspace();
+      }
     } catch (err) {
       console.error(err);
       setError('Не вдалося оновити дані комірки');
@@ -482,49 +532,114 @@ export const WarehousesPage: React.FC<Props> = ({ isAdmin = false, isManager = f
     }
   };
 
+  // -------------------------------------------------------------
+  // Workspace (Single Warehouse) Action Handlers
+  // -------------------------------------------------------------
+  const handleEnterWarehouse = async (warehouseId: string) => {
+    setSelectedWarehouseId(warehouseId);
+    setLoading(true);
+    setError(null);
+    try {
+      const [wh, stocks] = await Promise.all([
+        warehouseApi.getById(warehouseId),
+        warehouseApi.getStocks(warehouseId)
+      ]);
+      setSelectedWarehouseSummary(wh);
+      setSelectedWarehouseStocks(stocks);
+      setWorkspaceTab(0);
+      setSearchQuery('');
+      setCategoryFilter('all');
+      setOnlyLowStockFilter(false);
+    } catch (err) {
+      console.error(err);
+      setError('Не вдалося завантажити робоче місце складу');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefreshWorkspace = async () => {
+    if (!selectedWarehouseId) return;
+    setLoading(true);
+    try {
+      const [wh, stocks, transData] = await Promise.all([
+        warehouseApi.getById(selectedWarehouseId),
+        warehouseApi.getStocks(selectedWarehouseId),
+        warehouseApi.getTransfers({ warehouseId: selectedWarehouseId })
+      ]);
+      setSelectedWarehouseSummary(wh);
+      setSelectedWarehouseStocks(stocks);
+      setTransfers(transData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenTransferFromCurrentWarehouse = () => {
+    if (!selectedWarehouseId) return;
+    setFromWhId(selectedWarehouseId);
+    const otherWh = warehouses.find(w => w.id !== selectedWarehouseId && w.isActive);
+    setToWhId(otherWh ? otherWh.id : '');
+    setTransferNotes('');
+    setCompleteImmediately(false);
+    setTransferModalOpen(true);
+  };
+
+  const handleOpenAdjustStock = (stock?: WarehouseStockItem) => {
+    if (stock) {
+      setAdjProductId(stock.productId);
+      setAdjQuantity(stock.quantity);
+      setAdjIsDelta(false);
+      setAdjLocationZone(stock.locationZone || '');
+      setAdjMinStock(stock.minStock !== null && stock.minStock !== undefined ? stock.minStock : '');
+      setAdjReason('');
+    } else {
+      const firstProd = distribution.length > 0 ? distribution[0].productId : '';
+      setAdjProductId(firstProd);
+      setAdjQuantity(1);
+      setAdjIsDelta(false);
+      setAdjLocationZone('');
+      setAdjMinStock(5);
+      setAdjReason('Оприбуткування партії на склад');
+    }
+    setAdjustModalOpen(true);
+  };
+
+  const handleSaveAdjustStock = async () => {
+    if (!selectedWarehouseId || !adjProductId) {
+      setError('Оберіть товар для операції');
+      return;
+    }
+    if (adjQuantity === '' || (!adjIsDelta && Number(adjQuantity) < 0)) {
+      setError('Вкажіть коректну кількість');
+      return;
+    }
+    try {
+      setLoading(true);
+      await warehouseApi.adjustStock(selectedWarehouseId, {
+        productId: adjProductId,
+        quantity: Number(adjQuantity),
+        isDelta: adjIsDelta,
+        locationZone: adjLocationZone.trim() || undefined,
+        minStock: adjMinStock !== '' ? Number(adjMinStock) : undefined,
+        reason: adjReason.trim() || undefined
+      });
+      setSuccessMsg(t('warehouses.successAdjustedStock'));
+      setAdjustModalOpen(false);
+      await handleRefreshWorkspace();
+      await fetchInitialData();
+    } catch (err: unknown) {
+      console.error(err);
+      setError('Помилка при коригуванні залишку товару');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Box>
-          <Typography variant="h4" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <WarehouseIcon color="primary" fontSize="large" />
-            {t('warehouses.title')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {t('warehouses.subtitle')}
-          </Typography>
-        </Box>
-        <Stack direction="row" spacing={1.5}>
-          <Button
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-            onClick={() => fetchInitialData()}
-            disabled={loading}
-          >
-            Оновити
-          </Button>
-          {canManage && activeTab === 1 && (
-            <Button
-              variant="contained"
-              startIcon={<LocalShippingIcon />}
-              onClick={handleOpenCreateTransfer}
-            >
-              {t('warehouses.newTransfer')}
-            </Button>
-          )}
-          {canManage && activeTab === 2 && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleOpenCreateWarehouse}
-            >
-              {t('warehouses.newWarehouse')}
-            </Button>
-          )}
-        </Stack>
-      </Box>
-
       {/* Messages */}
       {error && (
         <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
@@ -536,6 +651,70 @@ export const WarehousesPage: React.FC<Props> = ({ isAdmin = false, isManager = f
           {successMsg}
         </Alert>
       )}
+
+      {/* ============================================================== */}
+      {/* 1. GENERAL MULTI-WAREHOUSE OVERVIEW VIEW                       */}
+      {/* ============================================================== */}
+      {!selectedWarehouseId && (
+        <Box>
+          {/* Header */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+            <Box>
+              <Typography variant="h4" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <WarehouseIcon color="primary" fontSize="large" />
+                {t('warehouses.title')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('warehouses.subtitle')}
+              </Typography>
+            </Box>
+            <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+              {/* Quick jump to warehouse */}
+              {warehouses.length > 0 && (
+                <FormControl size="small" sx={{ minWidth: 200 }}>
+                  <InputLabel>Перейти до складу</InputLabel>
+                  <Select
+                    value=""
+                    label="Перейти до складу"
+                    onChange={e => handleEnterWarehouse(e.target.value as string)}
+                  >
+                    {warehouses.map(w => (
+                      <MenuItem key={w.id} value={w.id}>
+                        {w.name} ({w.code})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={() => fetchInitialData()}
+                disabled={loading}
+              >
+                Оновити
+              </Button>
+              {canManage && activeTab === 1 && (
+                <Button
+                  variant="contained"
+                  startIcon={<LocalShippingIcon />}
+                  onClick={handleOpenCreateTransfer}
+                >
+                  {t('warehouses.newTransfer')}
+                </Button>
+              )}
+              {canManage && activeTab === 2 && (
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={handleOpenCreateWarehouse}
+                >
+                  {t('warehouses.newWarehouse')}
+                </Button>
+              )}
+            </Stack>
+          </Box>
 
       {/* Metric Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -960,29 +1139,541 @@ export const WarehousesPage: React.FC<Props> = ({ isAdmin = false, isManager = f
                   </Grid>
                 </CardContent>
 
-                {canManage && (
-                  <Box sx={{ p: 2, pt: 0, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                    <Button size="small" startIcon={<EditIcon />} onClick={() => handleOpenEditWarehouse(w)}>
-                      Редагувати
-                    </Button>
+                <Box sx={{ p: 2, pt: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="primary"
+                    startIcon={<MeetingRoomIcon />}
+                    onClick={() => handleEnterWarehouse(w.id)}
+                  >
+                    {t('warehouses.enterWarehouse')}
+                  </Button>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    {canManage && (
+                      <Tooltip title="Редагувати параметри складу">
+                        <IconButton size="small" onClick={() => handleOpenEditWarehouse(w)}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     {isAdmin && !w.isDefault && (
-                      <Button
-                        size="small"
-                        color="error"
-                        startIcon={<DeleteIcon />}
-                        disabled={w.totalQuantity > 0}
-                        onClick={() => handleDeleteWarehouse(w)}
-                      >
-                        Видалити
-                      </Button>
+                      <Tooltip title={w.totalQuantity > 0 ? "Неможливо видалити склад із залишками" : "Видалити склад"}>
+                        <span>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            disabled={w.totalQuantity > 0}
+                            onClick={() => handleDeleteWarehouse(w)}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
                     )}
                   </Box>
-                )}
+                </Box>
               </Card>
             </Grid>
           ))}
         </Grid>
       )}
+    </Box>
+  )}
+
+  {/* ============================================================== */}
+  {/* 2. DEDICATED INDIVIDUAL WAREHOUSE WORKSPACE                    */}
+  {/* ============================================================== */}
+  {selectedWarehouseId && selectedWarehouseSummary && (
+    <Box>
+      {/* Workspace Header & Navigation */}
+      <Paper sx={{ p: 2.5, mb: 3 }} elevation={1}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Box>
+            <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 1 }}>
+              <Button
+                variant="text"
+                size="small"
+                startIcon={<ArrowBackIcon />}
+                onClick={() => setSelectedWarehouseId(null)}
+                sx={{ textTransform: 'none', px: 0, fontWeight: 'bold' }}
+              >
+                {t('warehouses.backToAllWarehouses')}
+              </Button>
+              <Typography color="text.primary" fontWeight="bold">
+                {selectedWarehouseSummary.name}
+              </Typography>
+            </Breadcrumbs>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+              <Typography variant="h5" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <WarehouseIcon color="primary" />
+                {selectedWarehouseSummary.name}
+              </Typography>
+              <Chip label={selectedWarehouseSummary.code} color="primary" variant="outlined" size="small" sx={{ fontWeight: 'bold' }} />
+              {selectedWarehouseSummary.isDefault && (
+                <Chip icon={<StarIcon />} label="Основний склад" color="warning" size="small" sx={{ fontWeight: 'bold' }} />
+              )}
+              <Chip
+                label={selectedWarehouseSummary.isActive ? 'Активний' : 'В архіві'}
+                color={selectedWarehouseSummary.isActive ? 'success' : 'default'}
+                size="small"
+              />
+            </Box>
+            {selectedWarehouseSummary.address && (
+              <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                <LocationOnIcon fontSize="small" color="action" />
+                {selectedWarehouseSummary.address}
+              </Typography>
+            )}
+          </Box>
+
+          {/* Warehouse Switcher & Actions */}
+          <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+            {/* Quick warehouse switcher */}
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Змінити склад</InputLabel>
+              <Select
+                value={selectedWarehouseId}
+                label="Змінити склад"
+                onChange={(e) => handleEnterWarehouse(e.target.value as string)}
+              >
+                {warehouses.map(w => (
+                  <MenuItem key={w.id} value={w.id}>
+                    {w.name} ({w.code})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Button
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              onClick={handleRefreshWorkspace}
+              disabled={loading}
+            >
+              Оновити
+            </Button>
+
+            {canManage && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => handleOpenAdjustStock()}
+              >
+                {t('warehouses.adjustStock')}
+              </Button>
+            )}
+
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<LocalShippingIcon />}
+              onClick={handleOpenTransferFromCurrentWarehouse}
+            >
+              {t('warehouses.quickTransferFrom')}
+            </Button>
+
+            {canManage && (
+              <Button
+                variant="text"
+                startIcon={<EditIcon />}
+                onClick={() => handleOpenEditWarehouse(selectedWarehouseSummary)}
+              >
+                Налаштування
+              </Button>
+            )}
+          </Stack>
+        </Box>
+      </Paper>
+
+      {/* Metric KPI cards for this warehouse */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+          <Card elevation={1}>
+            <CardContent sx={{ py: 2 }}>
+              <Typography variant="caption" color="text.secondary" textTransform="uppercase">
+                {t('warehouses.totalItems')}
+              </Typography>
+              <Typography variant="h5" fontWeight="bold" color="primary.main">
+                {selectedWarehouseSummary.totalItemsCount}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+          <Card elevation={1}>
+            <CardContent sx={{ py: 2 }}>
+              <Typography variant="caption" color="text.secondary" textTransform="uppercase">
+                {t('warehouses.totalUnits')}
+              </Typography>
+              <Typography variant="h5" fontWeight="bold">
+                {selectedWarehouseSummary.totalQuantity} шт.
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+          <Card elevation={1}>
+            <CardContent sx={{ py: 2 }}>
+              <Typography variant="caption" color="text.secondary" textTransform="uppercase">
+                {t('warehouses.valuation')}
+              </Typography>
+              <Typography variant="h5" fontWeight="bold" color="success.main">
+                {selectedWarehouseSummary.totalValuation.toLocaleString('uk-UA', { maximumFractionDigits: 0 })} ₴
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+          <Card elevation={1}>
+            <CardContent sx={{ py: 2 }}>
+              <Typography variant="caption" color="text.secondary" textTransform="uppercase">
+                {t('warehouses.lowStockCount')}
+              </Typography>
+              <Typography variant="h5" fontWeight="bold" color={(selectedWarehouseSummary.lowStockCount || 0) > 0 ? "error.main" : "text.secondary"}>
+                {selectedWarehouseSummary.lowStockCount || 0}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+          <Card elevation={1}>
+            <CardContent sx={{ py: 2 }}>
+              <Typography variant="caption" color="text.secondary" textTransform="uppercase">
+                {t('warehouses.inTransitIncoming')}
+              </Typography>
+              <Typography variant="h5" fontWeight="bold" color={(selectedWarehouseSummary.inTransitIncomingCount || 0) > 0 ? "warning.main" : "text.secondary"}>
+                {selectedWarehouseSummary.inTransitIncomingCount || 0}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Workspace Tabs */}
+      <Paper sx={{ mb: 3 }} elevation={1}>
+        <Tabs
+          value={workspaceTab}
+          onChange={(_, val) => setWorkspaceTab(val)}
+          indicatorColor="primary"
+          textColor="primary"
+        >
+          <Tab icon={<InventoryIcon />} iconPosition="start" label={t('warehouses.warehouseStocksTab')} />
+          <Tab icon={<LocalShippingIcon />} iconPosition="start" label={t('warehouses.warehouseTransfersTab')} />
+        </Tabs>
+      </Paper>
+
+      {/* Workspace Tab 0: Inventory Stocks Table */}
+      {workspaceTab === 0 && (
+        <Box>
+          {/* Filter toolbar */}
+          <Paper sx={{ p: 2, mb: 3 }} elevation={1}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid size={{ xs: 12, md: 5 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Пошук товару за назвою або SKU..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: searchQuery ? (
+                      <InputAdornment position="end">
+                        <IconButton size="small" onClick={() => setSearchQuery('')}>
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null
+                  }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Категорія</InputLabel>
+                  <Select
+                    value={categoryFilter}
+                    label="Категорія"
+                    onChange={e => setCategoryFilter(e.target.value)}
+                  >
+                    <MenuItem value="all">Всі категорії</MenuItem>
+                    {categories.map(c => (
+                      <MenuItem key={c.id} value={c.name}>{c.name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={onlyLowStockFilter}
+                      onChange={e => setOnlyLowStockFilter(e.target.checked)}
+                      color="error"
+                    />
+                  }
+                  label="Тільки дефіцитні (≤ Min)"
+                />
+              </Grid>
+            </Grid>
+          </Paper>
+
+          <TableContainer component={Paper} elevation={1}>
+            <Table sx={{ minWidth: 800 }}>
+              <TableHead sx={{ backgroundColor: 'action.hover' }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Товар (Номенклатура)</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Категорія</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Комірка зберігання</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Ціна (грн)</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold', bgcolor: 'rgba(25, 118, 210, 0.08)' }}>
+                    Залишок на складі
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Страховий запас</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Оцінка на балансі</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Дії</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredWarehouseStocks.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                      Товарів на цьому складі не знайдено
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredWarehouseStocks.map(stock => {
+                    const isLow = stock.quantity <= (stock.minStock !== null && stock.minStock !== undefined ? stock.minStock : 5);
+                    return (
+                      <TableRow key={stock.id} hover>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight="bold">
+                            {stock.productName}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            SKU: {stock.productSKU}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Chip label={stock.categoryName} size="small" variant="outlined" />
+                        </TableCell>
+                        <TableCell align="center">
+                          {stock.locationZone ? (
+                            <Chip
+                              size="small"
+                              icon={<LocationOnIcon sx={{ fontSize: '0.9rem !important' }} />}
+                              label={stock.locationZone}
+                              color="info"
+                              variant="outlined"
+                              onClick={() => handleOpenEditLocation(
+                                stock.id,
+                                stock.productName,
+                                selectedWarehouseSummary.name,
+                                stock.locationZone,
+                                stock.minStock
+                              )}
+                              sx={{ cursor: 'pointer' }}
+                            />
+                          ) : (
+                            <Typography
+                              variant="caption"
+                              color="text.disabled"
+                              sx={{ cursor: 'pointer', textDecoration: 'underline' }}
+                              onClick={() => handleOpenEditLocation(
+                                stock.id,
+                                stock.productName,
+                                selectedWarehouseSummary.name,
+                                stock.locationZone,
+                                stock.minStock
+                              )}
+                            >
+                              + Призначити
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          {stock.unitPrice.toLocaleString('uk-UA', { minimumFractionDigits: 2 })} ₴
+                        </TableCell>
+                        <TableCell align="center" sx={{ bgcolor: isLow ? 'rgba(211, 47, 47, 0.08)' : 'rgba(25, 118, 210, 0.04)' }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight="bold"
+                            color={isLow ? "error.main" : "primary.main"}
+                          >
+                            {stock.quantity} {stock.unit}
+                          </Typography>
+                          {isLow && (
+                            <Chip label="Дефіцит" size="small" color="error" sx={{ height: 18, fontSize: '0.65rem', mt: 0.3 }} />
+                          )}
+                        </TableCell>
+                        <TableCell align="center">
+                          <Typography variant="body2">
+                            {stock.minStock !== null && stock.minStock !== undefined ? `${stock.minStock} ${stock.unit}` : '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2" fontWeight={500}>
+                            {(stock.quantity * stock.unitPrice).toLocaleString('uk-UA', { minimumFractionDigits: 2 })} ₴
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Stack direction="row" spacing={0.5} justifyContent="center">
+                            {canManage && (
+                              <Tooltip title="Оприбуткувати / Списати / Змінити залишок">
+                                <IconButton size="small" color="primary" onClick={() => handleOpenAdjustStock(stock)}>
+                                  <TuneIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                            <Tooltip title="Змінити комірку зберігання">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleOpenEditLocation(
+                                  stock.id,
+                                  stock.productName,
+                                  selectedWarehouseSummary.name,
+                                  stock.locationZone,
+                                  stock.minStock
+                                )}
+                              >
+                                <LocationOnIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Відвантажити на інший склад">
+                              <IconButton
+                                size="small"
+                                color="info"
+                                onClick={() => {
+                                  setFromWhId(selectedWarehouseSummary.id);
+                                  const otherWh = warehouses.find(w => w.id !== selectedWarehouseSummary.id && w.isActive);
+                                  setToWhId(otherWh ? otherWh.id : '');
+                                  setTransferItems([{ productId: stock.productId, quantity: 1, notes: '' }]);
+                                  setTransferNotes('');
+                                  setTransferModalOpen(true);
+                                }}
+                              >
+                                <LocalShippingIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
+
+      {/* Workspace Tab 1: Warehouse Specific Transfers Table */}
+      {workspaceTab === 1 && (
+        <TableContainer component={Paper} elevation={1}>
+          <Table sx={{ minWidth: 800 }}>
+            <TableHead sx={{ backgroundColor: 'action.hover' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold' }}>{t('warehouses.transferNumber')}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Напрямок переміщення</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold' }}>{t('warehouses.status')}</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Обсяг</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>{t('warehouses.operator')}</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold' }}>{t('warehouses.actions')}</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {workspaceTransfers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                    Переміщень для цього складу не зафіксовано
+                  </TableCell>
+                </TableRow>
+              ) : (
+                workspaceTransfers.map(tr => {
+                  const isIncoming = tr.toWarehouseId === selectedWarehouseId;
+                  const statusInfo = getTransferStatusInfo(tr.status);
+                  return (
+                    <TableRow key={tr.id} hover>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="bold">
+                          {tr.transferNumber}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {new Date(tr.createdAt).toLocaleString('uk-UA')}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Chip
+                            size="small"
+                            label={isIncoming ? "Вхідне надходження" : "Вихідне відвантаження"}
+                            color={isIncoming ? "success" : "info"}
+                            variant="outlined"
+                            sx={{ fontWeight: 'bold' }}
+                          />
+                          <Typography variant="body2">
+                            {isIncoming ? `з ${tr.fromWarehouseName}` : `до ${tr.toWarehouseName}`}
+                          </Typography>
+                        </Box>
+                        {tr.notes && (
+                          <Typography variant="caption" color="text.secondary" noWrap sx={{ maxWidth: 260, display: 'block' }}>
+                            {tr.notes}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Chip label={statusInfo.label} color={statusInfo.color} size="small" />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2" fontWeight="bold">
+                          {tr.totalItemsCount} поз. / {tr.totalQuantity} од.
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{tr.createdByUserName}</Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Stack direction="row" spacing={0.5} justifyContent="center">
+                          <Tooltip title="Деталі переміщення">
+                            <IconButton size="small" color="primary" onClick={() => handleViewTransferDetail(tr.id)}>
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          {isIncoming && tr.status === TransferStatus.InTransit && (
+                            <Tooltip title="Прийняти вантаж на цей склад">
+                              <IconButton size="small" color="success" onClick={() => handleReceiveTransfer(tr.id)}>
+                                <CheckCircleIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          {canManage && (tr.status === TransferStatus.InTransit || tr.status === TransferStatus.Draft) && (
+                            <Tooltip title={t('warehouses.cancelTransfer')}>
+                              <IconButton size="small" color="error" onClick={() => handleCancelTransfer(tr.id)}>
+                                <CancelIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+    </Box>
+  )}
 
       {/* ============================================================== */}
       {/* CREATE / EDIT WAREHOUSE MODAL                                  */}
@@ -1348,6 +2039,112 @@ export const WarehousesPage: React.FC<Props> = ({ isAdmin = false, isManager = f
         <DialogActions>
           <Button onClick={() => setLocationModalOpen(false)}>Скасувати</Button>
           <Button variant="contained" onClick={handleSaveLocation}>Зберегти</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ============================================================== */}
+      {/* ADJUST / RECEIVE STOCK MODAL                                   */}
+      {/* ============================================================== */}
+      <Dialog open={adjustModalOpen} onClose={() => setAdjustModalOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" fontWeight="bold">
+            {t('warehouses.adjustQtyPrompt')}
+          </Typography>
+          <IconButton size="small" onClick={() => setAdjustModalOpen(false)}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2.5}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Товар</InputLabel>
+              <Select
+                value={adjProductId}
+                label="Товар"
+                onChange={e => {
+                  const pid = e.target.value as string;
+                  setAdjProductId(pid);
+                  const existing = selectedWarehouseStocks.find(s => s.productId === pid);
+                  if (existing) {
+                    setAdjQuantity(existing.quantity);
+                    setAdjLocationZone(existing.locationZone || '');
+                    setAdjMinStock(existing.minStock !== null && existing.minStock !== undefined ? existing.minStock : '');
+                  } else {
+                    setAdjQuantity(1);
+                    setAdjLocationZone('');
+                    setAdjMinStock(5);
+                  }
+                }}
+              >
+                {distribution.map(p => {
+                  const st = selectedWarehouseStocks.find(s => s.productId === p.productId);
+                  return (
+                    <MenuItem key={p.productId} value={p.productId}>
+                      {p.productName} ({p.sku}) — на складі: {st ? `${st.quantity} ${p.unit}` : `0 ${p.unit}`}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={adjIsDelta}
+                  onChange={e => setAdjIsDelta(e.target.checked)}
+                />
+              }
+              label={t('warehouses.isDeltaCheckbox')}
+            />
+
+            <TextField
+              fullWidth
+              size="small"
+              type="number"
+              label={adjIsDelta ? "Кількість для зміни (+ додає, - списує)" : "Встановити точний залишок (од.)"}
+              value={adjQuantity}
+              onChange={e => setAdjQuantity(e.target.value === '' ? '' : Number(e.target.value))}
+            />
+
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Комірка зберігання (напр. A-02)"
+                  value={adjLocationZone}
+                  onChange={e => setAdjLocationZone(e.target.value)}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="number"
+                  label="Страховий запас (Min)"
+                  value={adjMinStock}
+                  onChange={e => setAdjMinStock(e.target.value === '' ? '' : Number(e.target.value))}
+                />
+              </Grid>
+            </Grid>
+
+            <TextField
+              fullWidth
+              size="small"
+              label={t('warehouses.reasonLabel')}
+              placeholder="Наприклад: Позапланова поставка, інвентаризація..."
+              value={adjReason}
+              onChange={e => setAdjReason(e.target.value)}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setAdjustModalOpen(false)}>
+            {t('common.cancel')}
+          </Button>
+          <Button variant="contained" onClick={handleSaveAdjustStock} disabled={loading}>
+            {t('common.save')}
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

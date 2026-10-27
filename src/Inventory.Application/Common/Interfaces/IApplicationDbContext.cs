@@ -17,6 +17,10 @@ namespace Inventory.Application.Common.Interfaces
         DbSet<InventoryAuditItem> InventoryAuditItems { get; }
         DbSet<PurchaseOrder> PurchaseOrders { get; }
         DbSet<PurchaseOrderItem> PurchaseOrderItems { get; }
+        DbSet<Warehouse> Warehouses { get; }
+        DbSet<WarehouseStock> WarehouseStocks { get; }
+        DbSet<WarehouseTransfer> WarehouseTransfers { get; }
+        DbSet<WarehouseTransferItem> WarehouseTransferItems { get; }
 
         DatabaseFacade Database { get; }
 

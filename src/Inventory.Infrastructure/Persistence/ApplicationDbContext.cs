@@ -24,6 +24,10 @@ namespace Inventory.Infrastructure.Persistence
         public DbSet<InventoryAuditItem> InventoryAuditItems { get; set; }
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
+        public DbSet<Warehouse> Warehouses { get; set; }
+        public DbSet<WarehouseStock> WarehouseStocks { get; set; }
+        public DbSet<WarehouseTransfer> WarehouseTransfers { get; set; }
+        public DbSet<WarehouseTransferItem> WarehouseTransferItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -112,6 +116,73 @@ namespace Inventory.Infrastructure.Persistence
                 entity.HasOne(e => e.Product)
                       .WithMany()
                       .HasForeignKey(e => e.ProductId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Мультискладський облік
+            modelBuilder.Entity<Warehouse>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.HasIndex(e => e.IsActive);
+            });
+
+            modelBuilder.Entity<WarehouseStock>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.WarehouseId, e.ProductId }).IsUnique();
+                entity.HasOne(e => e.Warehouse)
+                      .WithMany(w => w.Stocks)
+                      .HasForeignKey(e => e.WarehouseId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Product)
+                      .WithMany()
+                      .HasForeignKey(e => e.ProductId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<WarehouseTransfer>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.TransferNumber).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.CreatedByUserName).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.TransferNumber).IsUnique();
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => e.Status);
+                entity.HasOne(e => e.FromWarehouse)
+                      .WithMany()
+                      .HasForeignKey(e => e.FromWarehouseId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.ToWarehouse)
+                      .WithMany()
+                      .HasForeignKey(e => e.ToWarehouseId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasMany(e => e.Items)
+                      .WithOne(i => i.WarehouseTransfer)
+                      .HasForeignKey(i => i.WarehouseTransferId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<WarehouseTransferItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Product)
+                      .WithMany()
+                      .HasForeignKey(e => e.ProductId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<StockMovement>(entity =>
+            {
+                entity.HasOne(e => e.Warehouse)
+                      .WithMany()
+                      .HasForeignKey(e => e.WarehouseId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.ToWarehouse)
+                      .WithMany()
+                      .HasForeignKey(e => e.ToWarehouseId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
         }

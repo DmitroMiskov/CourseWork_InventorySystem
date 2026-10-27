@@ -23,6 +23,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
 
 // Компоненти
 import ProductList from './components/ProductList';
@@ -30,6 +31,7 @@ import CategoryList from './components/CategoryList';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import Partners from './components/Partners';
+import WarehousesPage from './components/WarehousesPage';
 import AdminPage from './components/AdminPage';
 import AuditLogPage from './components/AuditLogPage';
 import InventoryAuditPage from './components/InventoryAuditPage';
@@ -45,7 +47,7 @@ import { useLanguage } from './context/LanguageContext';
 import { SignalRProvider } from './context/SignalRContext';
 import type { CustomJwtPayload } from './types/inventory';
 
-export type ViewType = 'list' | 'categories' | 'dashboard' | 'partners' | 'purchaseOrders' | 'intelligence' | 'admin' | 'auditLog' | 'inventoryAudit' | 'reports';
+export type ViewType = 'list' | 'categories' | 'warehouses' | 'dashboard' | 'partners' | 'purchaseOrders' | 'intelligence' | 'admin' | 'auditLog' | 'inventoryAudit' | 'reports';
 
 function App() {
   // КРОК 1: Функція для отримання початкового стану (працює синхронно)
@@ -136,6 +138,7 @@ function App() {
     items: [
       { id: 'list', label: t('nav.inventory'), icon: <TableChartIcon /> },
       { id: 'categories', label: t('nav.categories'), icon: <CategoryIcon /> },
+      { id: 'warehouses', label: t('nav.warehouses'), icon: <WarehouseIcon /> },
       { id: 'partners', label: t('nav.partners'), icon: <PeopleIcon /> },
       { id: 'purchaseOrders', label: t('nav.purchaseOrders'), icon: <ShoppingCartIcon /> },
       { id: 'dashboard', label: t('nav.dashboard'), icon: <BarChartIcon /> },
@@ -464,6 +467,8 @@ function App() {
               {currentView === 'list' && <ProductList isAdmin={isAdmin} isManager={isManager} />}
 
               {currentView === 'categories' && <CategoryList isAdmin={isAdmin} isManager={isManager} />}
+              
+              {currentView === 'warehouses' && <WarehousesPage isAdmin={isAdmin} isManager={isManager} />}
               
               {currentView === 'partners' && <Partners isAdmin={isAdmin} isManager={isManager} />}
               

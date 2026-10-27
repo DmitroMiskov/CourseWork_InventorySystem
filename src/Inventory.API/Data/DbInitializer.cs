@@ -118,6 +118,67 @@ namespace Inventory.API.Data
                         );
                         CREATE INDEX IF NOT EXISTS ""IX_PurchaseOrderItems_PurchaseOrderId"" ON ""PurchaseOrderItems"" (""PurchaseOrderId"");
                         CREATE INDEX IF NOT EXISTS ""IX_PurchaseOrderItems_ProductId"" ON ""PurchaseOrderItems"" (""ProductId"");
+
+                        CREATE TABLE IF NOT EXISTS ""Warehouses"" (
+                            ""Id"" uuid NOT NULL PRIMARY KEY,
+                            ""Name"" character varying(100) NOT NULL,
+                            ""Code"" character varying(50) NOT NULL,
+                            ""Address"" text,
+                            ""IsDefault"" boolean NOT NULL DEFAULT false,
+                            ""IsActive"" boolean NOT NULL DEFAULT true,
+                            ""CreatedAt"" timestamp with time zone NOT NULL,
+                            ""Description"" text
+                        );
+                        CREATE UNIQUE INDEX IF NOT EXISTS ""IX_Warehouses_Code"" ON ""Warehouses"" (""Code"");
+                        CREATE INDEX IF NOT EXISTS ""IX_Warehouses_IsActive"" ON ""Warehouses"" (""IsActive"");
+
+                        CREATE TABLE IF NOT EXISTS ""WarehouseStocks"" (
+                            ""Id"" uuid NOT NULL PRIMARY KEY,
+                            ""WarehouseId"" uuid NOT NULL,
+                            ""ProductId"" uuid NOT NULL,
+                            ""Quantity"" integer NOT NULL DEFAULT 0,
+                            ""MinStock"" integer,
+                            ""LocationZone"" text,
+                            ""LastUpdated"" timestamp with time zone NOT NULL,
+                            CONSTRAINT ""FK_WarehouseStocks_Warehouses_WarehouseId"" FOREIGN KEY (""WarehouseId"") REFERENCES ""Warehouses"" (""Id"") ON DELETE CASCADE,
+                            CONSTRAINT ""FK_WarehouseStocks_Products_ProductId"" FOREIGN KEY (""ProductId"") REFERENCES ""Products"" (""Id"") ON DELETE RESTRICT
+                        );
+                        CREATE UNIQUE INDEX IF NOT EXISTS ""IX_WarehouseStocks_WarehouseId_ProductId"" ON ""WarehouseStocks"" (""WarehouseId"", ""ProductId"");
+                        CREATE INDEX IF NOT EXISTS ""IX_WarehouseStocks_ProductId"" ON ""WarehouseStocks"" (""ProductId"");
+
+                        CREATE TABLE IF NOT EXISTS ""WarehouseTransfers"" (
+                            ""Id"" uuid NOT NULL PRIMARY KEY,
+                            ""TransferNumber"" character varying(50) NOT NULL,
+                            ""FromWarehouseId"" uuid NOT NULL,
+                            ""ToWarehouseId"" uuid NOT NULL,
+                            ""CreatedAt"" timestamp with time zone NOT NULL,
+                            ""CompletedAt"" timestamp with time zone,
+                            ""CreatedByUserName"" character varying(100) NOT NULL,
+                            ""Status"" integer NOT NULL,
+                            ""Notes"" text,
+                            ""TotalItemsCount"" integer NOT NULL DEFAULT 0,
+                            ""TotalQuantity"" integer NOT NULL DEFAULT 0,
+                            CONSTRAINT ""FK_WarehouseTransfers_Warehouses_FromWarehouseId"" FOREIGN KEY (""FromWarehouseId"") REFERENCES ""Warehouses"" (""Id"") ON DELETE RESTRICT,
+                            CONSTRAINT ""FK_WarehouseTransfers_Warehouses_ToWarehouseId"" FOREIGN KEY (""ToWarehouseId"") REFERENCES ""Warehouses"" (""Id"") ON DELETE RESTRICT
+                        );
+                        CREATE UNIQUE INDEX IF NOT EXISTS ""IX_WarehouseTransfers_TransferNumber"" ON ""WarehouseTransfers"" (""TransferNumber"");
+                        CREATE INDEX IF NOT EXISTS ""IX_WarehouseTransfers_CreatedAt"" ON ""WarehouseTransfers"" (""CreatedAt"");
+                        CREATE INDEX IF NOT EXISTS ""IX_WarehouseTransfers_Status"" ON ""WarehouseTransfers"" (""Status"");
+
+                        CREATE TABLE IF NOT EXISTS ""WarehouseTransferItems"" (
+                            ""Id"" uuid NOT NULL PRIMARY KEY,
+                            ""WarehouseTransferId"" uuid NOT NULL,
+                            ""ProductId"" uuid NOT NULL,
+                            ""Quantity"" integer NOT NULL,
+                            ""Notes"" text,
+                            CONSTRAINT ""FK_WarehouseTransferItems_WarehouseTransfers_WarehouseTransferId"" FOREIGN KEY (""WarehouseTransferId"") REFERENCES ""WarehouseTransfers"" (""Id"") ON DELETE CASCADE,
+                            CONSTRAINT ""FK_WarehouseTransferItems_Products_ProductId"" FOREIGN KEY (""ProductId"") REFERENCES ""Products"" (""Id"") ON DELETE RESTRICT
+                        );
+                        CREATE INDEX IF NOT EXISTS ""IX_WarehouseTransferItems_WarehouseTransferId"" ON ""WarehouseTransferItems"" (""WarehouseTransferId"");
+                        CREATE INDEX IF NOT EXISTS ""IX_WarehouseTransferItems_ProductId"" ON ""WarehouseTransferItems"" (""ProductId"");
+
+                        ALTER TABLE ""StockMovements"" ADD COLUMN IF NOT EXISTS ""WarehouseId"" uuid;
+                        ALTER TABLE ""StockMovements"" ADD COLUMN IF NOT EXISTS ""ToWarehouseId"" uuid;
                     ");
                 }
                 catch
@@ -150,6 +211,9 @@ namespace Inventory.API.Data
 
                 // 3. Автоматичний посів демо-даних складу (якщо база порожня)
                 await SeedDemoWarehouseDataAsync(context, logger);
+
+                // 4. Ініціалізація мультискладського обліку
+                await EnsureWarehousesAndStocksAsync(context, logger);
             }
             catch (Exception ex)
             {
@@ -482,6 +546,93 @@ namespace Inventory.API.Data
 
             await context.SaveChangesAsync();
             logger.LogInformation("✅ Успішно наповнено БД демонстраційними даними: 20 товарів, 7 категорій, 4 постачальники, 3 клієнти та 120 складських операцій.");
+        }
+
+        private static async Task EnsureWarehousesAndStocksAsync(ApplicationDbContext context, ILogger logger)
+        {
+            try
+            {
+                // 1. Створюємо типові склади компанії, якщо їх ще немає
+                if (!await context.Warehouses.AnyAsync())
+                {
+                    var mainWarehouse = new Warehouse
+                    {
+                        Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                        Name = "Головний склад (Київ)",
+                        Code = "WH-MAIN",
+                        Address = "м. Київ, вул. Промислова, 10",
+                        IsDefault = true,
+                        IsActive = true,
+                        Description = "Центральний логістичний комплекс компанії",
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    var lvivWarehouse = new Warehouse
+                    {
+                        Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                        Name = "Регіональний склад (Львів)",
+                        Code = "WH-LVIV",
+                        Address = "м. Львів, вул. Городоцька, 280",
+                        IsDefault = false,
+                        IsActive = true,
+                        Description = "Західний розподільчий філіал",
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    var transitWarehouse = new Warehouse
+                    {
+                        Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                        Name = "Зона повернень та браку",
+                        Code = "WH-TRANSIT",
+                        Address = "Київський логістичний термінал, бокс 4B",
+                        IsDefault = false,
+                        IsActive = true,
+                        Description = "Буферна зона для контролю якості та рекламацій",
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    context.Warehouses.AddRange(mainWarehouse, lvivWarehouse, transitWarehouse);
+                    await context.SaveChangesAsync();
+                    logger.LogInformation("✅ Створено типові склади для мультискладського обліку.");
+                }
+
+                // 2. Гарантуємо наявність запису залишків у головному складі для всіх існуючих товарів
+                var defaultWh = await context.Warehouses.FirstOrDefaultAsync(w => w.IsDefault) 
+                    ?? await context.Warehouses.FirstOrDefaultAsync();
+
+                if (defaultWh != null)
+                {
+                    var products = await context.Products.ToListAsync();
+                    var existingStockProductIds = await context.WarehouseStocks
+                        .Where(s => s.WarehouseId == defaultWh.Id)
+                        .Select(s => s.ProductId)
+                        .ToListAsync();
+
+                    var missing = products.Where(p => !existingStockProductIds.Contains(p.Id)).ToList();
+                    if (missing.Any())
+                    {
+                        foreach (var prod in missing)
+                        {
+                            context.WarehouseStocks.Add(new WarehouseStock
+                            {
+                                Id = Guid.NewGuid(),
+                                WarehouseId = defaultWh.Id,
+                                ProductId = prod.Id,
+                                Quantity = prod.Quantity,
+                                MinStock = prod.MinStock,
+                                LocationZone = "Секція A-1",
+                                LastUpdated = DateTime.UtcNow
+                            });
+                        }
+                        await context.SaveChangesAsync();
+                        logger.LogInformation("✅ Створено складські записи залишків для {Count} товарів у складі '{Warehouse}'.", missing.Count, defaultWh.Name);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Помилка при ініціалізації складів та залишків");
+            }
         }
     }
 }

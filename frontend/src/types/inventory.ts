@@ -91,6 +91,25 @@ export interface CandidateModelMetric {
   weight?: number;
 }
 
+export interface ShapFeatureContribution {
+  feature_key: string;
+  feature_name: string;
+  feature_value?: number;
+  contribution: number;
+  percentage: number;
+  impact_type: 'positive' | 'negative' | 'neutral';
+  description: string;
+}
+
+export interface ExplainabilityReport {
+  base_value: number;
+  final_prediction: number;
+  summary_text: string;
+  top_positive_factors: ShapFeatureContribution[];
+  top_negative_factors: ShapFeatureContribution[];
+  all_contributions: ShapFeatureContribution[];
+}
+
 export interface ModelMetrics {
   mae: number;
   rmse: number;
@@ -114,6 +133,30 @@ export interface ForecastResponse {
   trend: string;
   summary_forecast_qty: number;
   avg_daily_demand: number;
+  explainability?: ExplainabilityReport;
+}
+
+export interface WhatIfScenarioRequest {
+  product_id: string | number;
+  horizon_days?: number;
+  price_change_percent?: number;
+  is_promo_active?: boolean;
+  marketing_campaign_boost?: number;
+}
+
+export interface WhatIfScenarioResponse {
+  product_id: string | number;
+  sku?: string;
+  name?: string;
+  horizon_days: number;
+  base_summary_demand: number;
+  simulated_summary_demand: number;
+  delta_demand_units: number;
+  delta_demand_percent: number;
+  recommended_procurement_qty: number;
+  simulated_forecast_points: ForecastPoint[];
+  drivers: ShapFeatureContribution[];
+  insights: string;
 }
 
 export interface ProcurementRadarItem {

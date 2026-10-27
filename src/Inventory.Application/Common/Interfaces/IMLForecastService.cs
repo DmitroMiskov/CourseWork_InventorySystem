@@ -31,6 +31,13 @@ namespace Inventory.Application.Common.Interfaces
             CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Симуляція сценарію What-If (зміна ціни, промо-акція, маркетинговий буст)
+        /// </summary>
+        Task<WhatIfScenarioResponseDto> SimulateWhatIfAsync(
+            WhatIfScenarioRequestDto request,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Перевірка доступності Python ML-мікросервісу
         /// </summary>
         Task<bool> CheckServiceHealthAsync(CancellationToken cancellationToken = default);

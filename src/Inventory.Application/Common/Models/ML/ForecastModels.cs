@@ -127,6 +127,51 @@ namespace Inventory.Application.Common.Models.ML
         public List<CandidateModelMetricDto>? CandidateMetrics { get; set; }
     }
 
+    public class ShapFeatureContributionDto
+    {
+        [JsonPropertyName("feature_key")]
+        public string FeatureKey { get; set; } = string.Empty;
+
+        [JsonPropertyName("feature_name")]
+        public string FeatureName { get; set; } = string.Empty;
+
+        [JsonPropertyName("feature_value")]
+        public double? FeatureValue { get; set; }
+
+        [JsonPropertyName("contribution")]
+        public double Contribution { get; set; }
+
+        [JsonPropertyName("percentage")]
+        public double Percentage { get; set; }
+
+        [JsonPropertyName("impact_type")]
+        public string ImpactType { get; set; } = "neutral";
+
+        [JsonPropertyName("description")]
+        public string Description { get; set; } = string.Empty;
+    }
+
+    public class ExplainabilityReportDto
+    {
+        [JsonPropertyName("base_value")]
+        public double BaseValue { get; set; }
+
+        [JsonPropertyName("final_prediction")]
+        public double FinalPrediction { get; set; }
+
+        [JsonPropertyName("summary_text")]
+        public string SummaryText { get; set; } = string.Empty;
+
+        [JsonPropertyName("top_positive_factors")]
+        public List<ShapFeatureContributionDto> TopPositiveFactors { get; set; } = new();
+
+        [JsonPropertyName("top_negative_factors")]
+        public List<ShapFeatureContributionDto> TopNegativeFactors { get; set; } = new();
+
+        [JsonPropertyName("all_contributions")]
+        public List<ShapFeatureContributionDto> AllContributions { get; set; } = new();
+    }
+
     public class ForecastResponseDto
     {
         [JsonPropertyName("product_id")]
@@ -161,6 +206,66 @@ namespace Inventory.Application.Common.Models.ML
 
         [JsonPropertyName("avg_daily_demand")]
         public double AvgDailyDemand { get; set; }
+
+        [JsonPropertyName("explainability")]
+        public ExplainabilityReportDto? Explainability { get; set; }
+    }
+
+    public class WhatIfScenarioRequestDto
+    {
+        [JsonPropertyName("product_id")]
+        public object ProductId { get; set; } = 1;
+
+        [JsonPropertyName("horizon_days")]
+        public int HorizonDays { get; set; } = 14;
+
+        [JsonPropertyName("price_change_percent")]
+        public double PriceChangePercent { get; set; } = 0.0;
+
+        [JsonPropertyName("is_promo_active")]
+        public bool IsPromoActive { get; set; } = false;
+
+        [JsonPropertyName("marketing_campaign_boost")]
+        public double MarketingCampaignBoost { get; set; } = 0.0;
+    }
+
+    public class WhatIfScenarioResponseDto
+    {
+        [JsonPropertyName("product_id")]
+        public object ProductId { get; set; } = 1;
+
+        [JsonPropertyName("sku")]
+        public string? Sku { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("horizon_days")]
+        public int HorizonDays { get; set; }
+
+        [JsonPropertyName("base_summary_demand")]
+        public double BaseSummaryDemand { get; set; }
+
+        [JsonPropertyName("simulated_summary_demand")]
+        public double SimulatedSummaryDemand { get; set; }
+
+        [JsonPropertyName("delta_demand_units")]
+        public double DeltaDemandUnits { get; set; }
+
+        [JsonPropertyName("delta_demand_percent")]
+        public double DeltaDemandPercent { get; set; }
+
+        [JsonPropertyName("recommended_procurement_qty")]
+        public double RecommendedProcurementQty { get; set; }
+
+        [JsonPropertyName("simulated_forecast_points")]
+        public List<ForecastPointDto> SimulatedForecastPoints { get; set; } = new();
+
+        [JsonPropertyName("drivers")]
+        public List<ShapFeatureContributionDto> Drivers { get; set; } = new();
+
+        [JsonPropertyName("insights")]
+        public string Insights { get; set; } = string.Empty;
     }
 
     public class ProcurementRadarItemDto

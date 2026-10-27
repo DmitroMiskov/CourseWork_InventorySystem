@@ -22,7 +22,11 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Tooltip as MuiTooltip
+  Tooltip as MuiTooltip,
+  Slider,
+  Switch,
+  FormControlLabel,
+  LinearProgress
 } from '@mui/material';
 import {
   ResponsiveContainer,
@@ -46,6 +50,11 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
+import TuneIcon from '@mui/icons-material/Tune';
+import ScienceIcon from '@mui/icons-material/Science';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
@@ -54,7 +63,8 @@ import type {
   ProcurementRadarResponse,
   ProcurementRadarItem,
   ForecastResponse,
-  AbcXyzResponse
+  AbcXyzResponse,
+  WhatIfScenarioResponse
 } from '../types/inventory';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -71,6 +81,13 @@ const ProcurementIntelligence: React.FC = () => {
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [forecastHorizon, setForecastHorizon] = useState<number>(14);
   const [selectedModel, setSelectedModel] = useState<string>('hybrid');
+
+  // Стан What-If симулятора
+  const [whatIfPriceDiscount, setWhatIfPriceDiscount] = useState<number>(0);
+  const [whatIfPromoActive, setWhatIfPromoActive] = useState<boolean>(false);
+  const [whatIfMarketingBoost, setWhatIfMarketingBoost] = useState<number>(0);
+  const [whatIfResult, setWhatIfResult] = useState<WhatIfScenarioResponse | null>(null);
+  const [loadingWhatIf, setLoadingWhatIf] = useState<boolean>(false);
 
   // Індикатори завантаження та стану ML-сервісу
   const [loadingRadar, setLoadingRadar] = useState<boolean>(true);
@@ -106,6 +123,7 @@ const ProcurementIntelligence: React.FC = () => {
   const loadForecast = async (prodId: string, horizon: number, model: string) => {
     if (!prodId) return;
     setLoadingForecast(true);
+    setWhatIfResult(null);
     try {
       const res = await api.get<ForecastResponse>(
         `/procurementintelligence/forecast/${prodId}?horizonDays=${horizon}&modelType=${model}`
@@ -115,6 +133,26 @@ const ProcurementIntelligence: React.FC = () => {
       console.error('Помилка завантаження ML-прогнозу:', err);
     } finally {
       setLoadingForecast(false);
+    }
+  };
+
+  // Симуляція сценаріїв What-If
+  const handleRunWhatIfSimulation = async () => {
+    if (!selectedProductId) return;
+    setLoadingWhatIf(true);
+    try {
+      const res = await api.post<WhatIfScenarioResponse>('/procurementintelligence/what-if', {
+        product_id: selectedProductId,
+        horizon_days: forecastHorizon,
+        price_change_percent: whatIfPriceDiscount,
+        is_promo_active: whatIfPromoActive,
+        marketing_campaign_boost: whatIfMarketingBoost
+      });
+      setWhatIfResult(res.data);
+    } catch (err) {
+      console.error('Помилка симуляції What-If:', err);
+    } finally {
+      setLoadingWhatIf(false);
     }
   };
 
@@ -499,6 +537,7 @@ const ProcurementIntelligence: React.FC = () => {
                   >
                     <MenuItem value="hybrid">🚀 {t('intelligence.hybridModel')}</MenuItem>
                     <MenuItem value="residual_hybrid">⚡ {t('intelligence.residualModel')}</MenuItem>
+                    <MenuItem value="prophet">🔮 {t('intelligence.prophetModel')}</MenuItem>
                     <MenuItem value="best">🎯 Автоматичний вибір (Найменша похибка)</MenuItem>
                     <MenuItem value="lightgbm">🌲 LightGBM (Градієнтний бустінг)</MenuItem>
                     <MenuItem value="holt_winters">📈 Holt-Winters (Експоненційне згладжування)</MenuItem>
@@ -675,6 +714,302 @@ const ProcurementIntelligence: React.FC = () => {
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* ======================================================== */}
+          {/* СЕКЦІЯ 1: EXPLAINABLE AI (SHAP FEATURE ATTRIBUTION)     */}
+          {/* ======================================================== */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card elevation={2} sx={{ borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+                  <PsychologyIcon color="secondary" sx={{ fontSize: 28 }} />
+                  <Box>
+                    <Typography variant="h6" fontWeight="bold">
+                      {t('intelligence.explainableAiTitle')}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('intelligence.explainableAiSubtitle')}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {forecastData?.explainability ? (
+                  <Box>
+                    {/* Текстовий AI-інсайт */}
+                    <Alert
+                      icon={<LightbulbOutlinedIcon fontSize="inherit" />}
+                      severity="info"
+                      sx={{ mb: 2, bgcolor: 'primary.50', color: 'text.primary', border: '1px solid', borderColor: 'primary.light' }}
+                    >
+                      <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
+                        {forecastData.explainability.summary_text}
+                      </Typography>
+                    </Alert>
+
+                    {/* Базовий попит */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, bgcolor: 'action.hover', borderRadius: 1.5, mb: 2 }}>
+                      <Typography variant="body2" fontWeight="medium">
+                        {t('intelligence.baseDemandLevel')}
+                      </Typography>
+                      <Chip
+                        label={`${forecastData.explainability.base_value} шт/день`}
+                        color="default"
+                        size="small"
+                        sx={{ fontWeight: 'bold' }}
+                      />
+                    </Box>
+
+                    {/* Драйвери зростання попиту */}
+                    <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1.5 }}>
+                      {t('intelligence.positiveImpact')} (SHAP &gt; 0):
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                      {forecastData.explainability.top_positive_factors.map((f) => (
+                        <Box key={f.feature_key} sx={{ p: 1, border: '1px solid', borderColor: 'success.light', borderRadius: 1, bgcolor: 'rgba(46, 125, 50, 0.04)' }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                              <ArrowUpwardIcon color="success" fontSize="small" />
+                              <Typography variant="body2" fontWeight="600">
+                                {f.feature_name}
+                              </Typography>
+                            </Box>
+                            <Chip
+                              label={`+${f.contribution} шт (${f.percentage}%)`}
+                              color="success"
+                              size="small"
+                              sx={{ fontWeight: 'bold', height: 22 }}
+                            />
+                          </Box>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            {f.description}
+                          </Typography>
+                          <LinearProgress
+                            variant="determinate"
+                            value={Math.min(100, f.percentage * 2)}
+                            color="success"
+                            sx={{ height: 4, borderRadius: 2, mt: 0.5 }}
+                          />
+                        </Box>
+                      ))}
+                      {forecastData.explainability.top_positive_factors.length === 0 && (
+                        <Typography variant="caption" color="text.secondary">
+                          Немає виражених додатних факторів відхилення.
+                        </Typography>
+                      )}
+                    </Box>
+
+                    {forecastData.explainability.top_negative_factors.length > 0 && (
+                      <>
+                        <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1.5 }}>
+                          {t('intelligence.negativeImpact')} (SHAP &lt; 0):
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          {forecastData.explainability.top_negative_factors.map((f) => (
+                            <Box key={f.feature_key} sx={{ p: 1, border: '1px solid', borderColor: 'error.light', borderRadius: 1, bgcolor: 'rgba(211, 47, 47, 0.04)' }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                                  <ArrowDownwardIcon color="error" fontSize="small" />
+                                  <Typography variant="body2" fontWeight="600">
+                                    {f.feature_name}
+                                  </Typography>
+                                </Box>
+                                <Chip
+                                  label={`${f.contribution} шт (${f.percentage}%)`}
+                                  color="error"
+                                  size="small"
+                                  sx={{ fontWeight: 'bold', height: 22 }}
+                                />
+                              </Box>
+                              <Typography variant="caption" color="text.secondary" display="block">
+                                {f.description}
+                              </Typography>
+                              <LinearProgress
+                                variant="determinate"
+                                value={Math.min(100, f.percentage * 2)}
+                                color="error"
+                                sx={{ height: 4, borderRadius: 2, mt: 0.5 }}
+                              />
+                            </Box>
+                          ))}
+                        </Box>
+                      </>
+                    )}
+                  </Box>
+                ) : (
+                  <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
+                    <Typography variant="body2">
+                      Пояснення моделі буде згенеровано після вибору товару та розрахунку прогнозу.
+                    </Typography>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* ======================================================== */}
+          {/* СЕКЦІЯ 2: WHAT-IF СЦЕНАРНИЙ СИМУЛЯТОР ПОПИТУ             */}
+          {/* ======================================================== */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card elevation={2} sx={{ borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+                  <TuneIcon color="primary" sx={{ fontSize: 28 }} />
+                  <Box>
+                    <Typography variant="h6" fontWeight="bold">
+                      {t('intelligence.whatIfSimulatorTitle')}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('intelligence.whatIfSimulatorSubtitle')}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Елементи керування сценарієм */}
+                <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2, mb: 2 }}>
+                  {/* Слайдер ціни / знижки */}
+                  <Typography variant="body2" fontWeight="600" gutterBottom>
+                    {t('intelligence.priceDiscountSlider')}: {whatIfPriceDiscount > 0 ? `+${whatIfPriceDiscount}%` : `${whatIfPriceDiscount}%`}
+                  </Typography>
+                  <Slider
+                    value={whatIfPriceDiscount}
+                    onChange={(_e, val) => setWhatIfPriceDiscount(val as number)}
+                    min={-30}
+                    max={30}
+                    step={5}
+                    marks={[
+                      { value: -30, label: '-30%' },
+                      { value: 0, label: '0%' },
+                      { value: 30, label: '+30%' }
+                    ]}
+                    valueLabelDisplay="auto"
+                    sx={{ mb: 2 }}
+                  />
+
+                  {/* Перемикач промо-акції */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={whatIfPromoActive}
+                          onChange={(e) => setWhatIfPromoActive(e.target.checked)}
+                          color="warning"
+                        />
+                      }
+                      label={
+                        <Typography variant="body2" fontWeight="600">
+                          {t('intelligence.promoActiveToggle')}
+                        </Typography>
+                      }
+                    />
+                    {whatIfPromoActive && (
+                      <Chip label="Ефект промо: +22%" color="warning" size="small" sx={{ fontWeight: 'bold' }} />
+                    )}
+                  </Box>
+
+                  {/* Слайдер маркетингового бусту */}
+                  <Typography variant="body2" fontWeight="600" gutterBottom>
+                    {t('intelligence.marketingBoostSlider')}: +{whatIfMarketingBoost}%
+                  </Typography>
+                  <Slider
+                    value={whatIfMarketingBoost}
+                    onChange={(_e, val) => setWhatIfMarketingBoost(val as number)}
+                    min={0}
+                    max={50}
+                    step={10}
+                    marks={[
+                      { value: 0, label: '0%' },
+                      { value: 25, label: '+25%' },
+                      { value: 50, label: '+50%' }
+                    ]}
+                    valueLabelDisplay="auto"
+                    color="secondary"
+                    sx={{ mb: 2 }}
+                  />
+
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    startIcon={loadingWhatIf ? <CircularProgress size={18} color="inherit" /> : <ScienceIcon />}
+                    onClick={handleRunWhatIfSimulation}
+                    disabled={loadingWhatIf || !selectedProductId}
+                    sx={{ textTransform: 'none', fontWeight: 'bold' }}
+                  >
+                    {t('intelligence.runSimulation')}
+                  </Button>
+                </Box>
+
+                {/* Результати симуляції */}
+                {whatIfResult ? (
+                  <Box>
+                    <Grid container spacing={1.5} sx={{ mb: 2 }}>
+                      <Grid size={{ xs: 6 }}>
+                        <Paper elevation={0} sx={{ p: 1.5, textAlign: 'center', border: '1px solid', borderColor: 'divider', borderRadius: 1.5 }}>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            {t('intelligence.baseDemand')}
+                          </Typography>
+                          <Typography variant="h6" fontWeight="bold">
+                            {whatIfResult.base_summary_demand} шт
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                      <Grid size={{ xs: 6 }}>
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            p: 1.5,
+                            textAlign: 'center',
+                            border: '1px solid',
+                            borderColor: whatIfResult.delta_demand_percent >= 0 ? 'success.main' : 'warning.main',
+                            bgcolor: whatIfResult.delta_demand_percent >= 0 ? 'rgba(46, 125, 50, 0.08)' : 'rgba(237, 108, 2, 0.08)',
+                            borderRadius: 1.5
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            {t('intelligence.simulatedDemand')}
+                          </Typography>
+                          <Typography variant="h6" fontWeight="bold" color={whatIfResult.delta_demand_percent >= 0 ? 'success.main' : 'warning.main'}>
+                            {whatIfResult.simulated_summary_demand} шт
+                          </Typography>
+                          <Typography variant="caption" fontWeight="bold">
+                            {whatIfResult.delta_demand_percent >= 0 ? `+${whatIfResult.delta_demand_percent}%` : `${whatIfResult.delta_demand_percent}%`}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                    </Grid>
+
+                    {/* Інсайт рекомендацій */}
+                    <Alert severity={whatIfResult.delta_demand_percent >= 0 ? 'success' : 'warning'} sx={{ mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {whatIfResult.insights}
+                      </Typography>
+                    </Alert>
+
+                    {/* Драйвери моделювання */}
+                    <Typography variant="caption" fontWeight="bold" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                      Внесок обраних факторів симуляції:
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {whatIfResult.drivers.map((d) => (
+                        <Chip
+                          key={d.feature_key}
+                          label={`${d.feature_name}: ${d.contribution > 0 ? `+${d.contribution}` : d.contribution} шт`}
+                          size="small"
+                          color={d.impact_type === 'positive' ? 'success' : d.impact_type === 'negative' ? 'error' : 'default'}
+                          variant="outlined"
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                ) : (
+                  <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+                    <Typography variant="caption">
+                      Налаштуйте повзунки та натисніть «{t('intelligence.runSimulation')}» для миттєвого розрахунку ефекту.
+                    </Typography>
                   </Box>
                 )}
               </CardContent>

@@ -278,6 +278,41 @@ namespace Inventory.Infrastructure.Services
             };
         }
 
+        public async Task<WhatIfScenarioResponseDto> SimulateWhatIfAsync(
+            WhatIfScenarioRequestDto request,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var url = $"{_baseUrl}api/forecast/what-if";
+                var response = await _httpClient.PostAsJsonAsync(url, request, cancellationToken);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<WhatIfScenarioResponseDto>(cancellationToken: cancellationToken);
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Помилка виклику ML What-If симуляції");
+            }
+
+            return new WhatIfScenarioResponseDto
+            {
+                ProductId = request.ProductId,
+                HorizonDays = request.HorizonDays,
+                BaseSummaryDemand = 70.0,
+                SimulatedSummaryDemand = 70.0,
+                DeltaDemandUnits = 0.0,
+                DeltaDemandPercent = 0.0,
+                RecommendedProcurementQty = 70.0,
+                Insights = "Симуляція недоступна в автономному режимі."
+            };
+        }
+
         private ForecastResponseDto CreateFallbackForecast(string productId, int horizonDays)
         {
             var today = DateTime.UtcNow.Date;

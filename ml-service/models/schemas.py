@@ -51,6 +51,23 @@ class CandidateModelMetric(BaseModel):
     r2: Optional[float] = None
     weight: Optional[float] = None
 
+class ShapFeatureContribution(BaseModel):
+    feature_key: str
+    feature_name: str
+    feature_value: Optional[float] = None
+    contribution: float  # Внесок у попит (+X або -Y одиниць)
+    percentage: float    # Відсоток від загального абсолютного впливу
+    impact_type: str     # "positive", "negative", "neutral"
+    description: str     # Зрозуміле текстове пояснення українською
+
+class ExplainabilityReport(BaseModel):
+    base_value: float    # Базовий рівень попиту (інтерцепт моделі)
+    final_prediction: float
+    summary_text: str    # Пояснення зрозумілою мовою для керівника складу
+    top_positive_factors: List[ShapFeatureContribution]
+    top_negative_factors: List[ShapFeatureContribution]
+    all_contributions: List[ShapFeatureContribution]
+
 class ModelMetrics(BaseModel):
     mae: float
     rmse: float
@@ -73,6 +90,29 @@ class ForecastResponse(BaseModel):
     trend: str  # "Зростаючий", "Спадний", "Стабільний"
     summary_forecast_qty: float
     avg_daily_demand: float
+    explainability: Optional[ExplainabilityReport] = None
+
+class WhatIfScenarioRequest(BaseModel):
+    product_id: Union[int, str]
+    horizon_days: int = Field(default=14, ge=1, le=90)
+    price_change_percent: float = Field(default=0.0, ge=-90.0, le=200.0)      # наприклад, -15% знижка
+    is_promo_active: bool = False                                            # промо-акція
+    marketing_campaign_boost: float = Field(default=0.0, ge=0.0, le=100.0)   # маркетинговий буст у %
+    history: Optional[List[MovementRecord]] = None
+
+class WhatIfScenarioResponse(BaseModel):
+    product_id: Union[int, str]
+    sku: Optional[str] = None
+    name: Optional[str] = None
+    horizon_days: int
+    base_summary_demand: float
+    simulated_summary_demand: float
+    delta_demand_units: float
+    delta_demand_percent: float
+    recommended_procurement_qty: float
+    simulated_forecast_points: List[ForecastPoint]
+    drivers: List[ShapFeatureContribution]
+    insights: str
 
 class ProcurementRadarItem(BaseModel):
     product_id: Union[int, str]

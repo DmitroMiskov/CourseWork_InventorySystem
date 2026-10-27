@@ -5,6 +5,8 @@ from typing import Optional, List
 from models.schemas import (
     ForecastRequest,
     ForecastResponse,
+    WhatIfScenarioRequest,
+    WhatIfScenarioResponse,
     ProcurementRadarRequest,
     ProcurementRadarResponse,
     AbcXyzRequest,
@@ -13,7 +15,7 @@ from models.schemas import (
     CopilotChatRequest,
     CopilotChatResponse
 )
-from services.forecasting_service import generate_forecast
+from services.forecasting_service import generate_forecast, simulate_what_if_scenario
 from services.procurement_service import generate_procurement_radar
 from services.abc_xyz_service import calculate_abc_xyz
 from services.copilot_service import process_chat_message
@@ -52,6 +54,24 @@ def health_check():
 # ==========================================
 # 1. Прогнозування попиту (Demand Forecasting)
 # ==========================================
+@app.post("/api/forecast/what-if", response_model=WhatIfScenarioResponse, tags=["Прогнозування"])
+def simulate_forecast_what_if(request: WhatIfScenarioRequest):
+    """
+    Симуляція What-If сценаріїв (зміна ціни, промо-акція, маркетинговий буст)
+    з декомпозицією драйверів зміни попиту (SHAP / Elasticity Attribution).
+    """
+    try:
+        return simulate_what_if_scenario(
+            product_id=request.product_id,
+            horizon_days=request.horizon_days,
+            price_change_percent=request.price_change_percent,
+            is_promo_active=request.is_promo_active,
+            marketing_campaign_boost=request.marketing_campaign_boost,
+            history_records=request.history
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Помилка What-If симуляції: {str(e)}")
+
 @app.post("/api/forecast/{productId}", response_model=ForecastResponse, tags=["Прогнозування"])
 def predict_product_demand(
     productId: str,

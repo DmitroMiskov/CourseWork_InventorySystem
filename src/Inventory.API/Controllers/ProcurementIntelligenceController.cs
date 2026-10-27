@@ -73,5 +73,18 @@ namespace Inventory.API.Controllers
             var result = await _mlService.GetAbcXyzAnalysisAsync(periodDays, cancellationToken);
             return Ok(result);
         }
+
+        /// <summary>
+        /// Симуляція What-If сценарію попиту (зміна ціни, промо-акція, маркетинговий буст)
+        /// </summary>
+        [HttpPost("what-if")]
+        [Authorize(Roles = "Admin, admin, Manager, manager")]
+        public async Task<IActionResult> SimulateWhatIf(
+            [FromBody] Inventory.Application.Common.Models.ML.WhatIfScenarioRequestDto request,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await _mlService.SimulateWhatIfAsync(request, cancellationToken);
+            return Ok(result);
+        }
     }
 }

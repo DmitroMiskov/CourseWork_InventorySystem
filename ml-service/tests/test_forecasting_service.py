@@ -7,10 +7,12 @@ from services.forecasting_service import (
     train_and_forecast_holt_winters,
     train_and_forecast_ridge,
     train_and_forecast_lightgbm,
+    train_and_forecast_prophet,
     train_and_forecast_residual_hybrid,
     train_and_forecast_hybrid_ensemble,
     generate_custom_product_timeseries,
-    generate_forecast
+    generate_forecast,
+    simulate_what_if_scenario
 )
 
 class TestForecastingService(unittest.TestCase):
@@ -141,6 +143,35 @@ class TestForecastingService(unittest.TestCase):
         self.assertEqual(resp.name, "Custom Router")
         self.assertEqual(len(resp.forecast_points), 7)
         self.assertEqual(len(resp.historical_points), 20)
+
+    def test_train_and_forecast_prophet(self):
+        horizon = 14
+        preds, res_std, metrics = train_and_forecast_prophet(self.series, horizon)
+        self.assertEqual(len(preds), horizon)
+        self.assertGreater(res_std, 0.0)
+        self.assertIsNotNone(metrics.mae)
+        self.assertIn("Prophet", metrics.model_name)
+        self.assertTrue(np.all(preds >= 0.0))
+
+    def test_shap_explainability_in_forecast(self):
+        resp = generate_forecast(product_id="1", horizon_days=14, model_type="hybrid")
+        self.assertIsNotNone(resp.explainability)
+        self.assertGreater(resp.explainability.base_value, 0.0)
+        self.assertGreater(len(resp.explainability.all_contributions), 0)
+        self.assertIsNotNone(resp.explainability.summary_text)
+
+    def test_simulate_what_if_scenario(self):
+        sim = simulate_what_if_scenario(
+            product_id="1",
+            horizon_days=14,
+            price_change_percent=-15.0,
+            is_promo_active=True,
+            marketing_campaign_boost=20.0
+        )
+        self.assertGreater(sim.simulated_summary_demand, sim.base_summary_demand)
+        self.assertGreater(sim.delta_demand_percent, 0.0)
+        self.assertGreater(len(sim.drivers), 1)
+        self.assertIn("зросте", sim.insights)
 
 
 if __name__ == "__main__":

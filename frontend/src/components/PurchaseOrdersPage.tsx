@@ -849,7 +849,7 @@ export const PurchaseOrdersPage: React.FC<Props> = ({ isAdmin = false, isManager
       <Dialog
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
-        maxWidth="md"
+        maxWidth="lg"
         fullWidth
       >
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -928,11 +928,11 @@ export const PurchaseOrdersPage: React.FC<Props> = ({ isAdmin = false, isManager
             <Table size="small">
               <TableHead sx={{ backgroundColor: 'action.hover' }}>
                 <TableRow>
-                  <TableCell sx={{ minWidth: 220 }}>{t('purchaseOrders.selectProduct')}</TableCell>
-                  <TableCell sx={{ width: 120 }}>{t('purchaseOrders.orderedQuantity')}</TableCell>
-                  <TableCell sx={{ width: 140 }}>{t('purchaseOrders.unitPrice')}</TableCell>
-                  <TableCell align="right" sx={{ width: 140 }}>{t('purchaseOrders.cost')}</TableCell>
-                  <TableCell align="center" sx={{ width: 60 }}></TableCell>
+                  <TableCell sx={{ minWidth: 260, fontWeight: 'bold' }}>{t('purchaseOrders.selectProduct')}</TableCell>
+                  <TableCell align="center" sx={{ width: 140, fontWeight: 'bold' }}>{t('purchaseOrders.orderedQuantity')}</TableCell>
+                  <TableCell align="center" sx={{ width: 220, fontWeight: 'bold' }}>{t('purchaseOrders.unitPrice')}</TableCell>
+                  <TableCell align="right" sx={{ width: 160, fontWeight: 'bold' }}>{t('purchaseOrders.cost')}</TableCell>
+                  <TableCell align="center" sx={{ width: 50 }}></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -961,8 +961,9 @@ export const PurchaseOrdersPage: React.FC<Props> = ({ isAdmin = false, isManager
                             </Select>
                           </FormControl>
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ width: 140 }}>
                           <TextField
+                            fullWidth
                             size="small"
                             type="number"
                             inputProps={{ min: 1 }}
@@ -975,11 +976,15 @@ export const PurchaseOrdersPage: React.FC<Props> = ({ isAdmin = false, isManager
                             }}
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ width: 220 }}>
                           <TextField
+                            fullWidth
                             size="small"
                             type="number"
                             inputProps={{ min: 0, step: '0.01' }}
+                            InputProps={{
+                              endAdornment: <InputAdornment position="end">₴</InputAdornment>
+                            }}
                             value={item.unitPrice}
                             onChange={e => {
                               const val = Math.max(0, parseFloat(e.target.value) || 0);
@@ -989,7 +994,7 @@ export const PurchaseOrdersPage: React.FC<Props> = ({ isAdmin = false, isManager
                             }}
                           />
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell align="right" sx={{ width: 160 }}>
                           <Typography variant="body2" fontWeight="bold">
                             {rowCost.toLocaleString('uk-UA', { minimumFractionDigits: 2 })} ₴
                           </Typography>
